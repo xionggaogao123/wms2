@@ -1,0 +1,43 @@
+# Spring Config
+spring:
+  # Scheduling Config
+  scheduling:
+    enabled: true
+  # DataSource Config
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    platform: mysql
+    username: wms
+    password: FpLSHCiY66KaMxz7
+    url: jdbc:mysql://127.0.0.1:3316/wms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&autoReconnect=true&tinyInt1isBit=false&timezone=utc&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+# Socket Config
+wss:
+  server:
+    enabled: false
+    port: 3233
+    host: 0.0.0.0
+    upgrade-timeout: 10000
+    timeout: 180000
+    interval: 60000
+# Logging Config
+logging:
+  config: classpath:logback-prod.xml
+# Doc Config
+knife4j:
+  # 开启Swagger的Basic认证功能,默认是false
+  basic:
+    enable: true
+    # Basic认证用户名
+    username: huanhong
+    # Basic认证密码
+    password: 160114
+#=================================================================================
+# 自定义参数相关配置
+project:
+  domain: https://aux.aiairy.com/
+  # 文件资源配置
+  oss:
+    url: https://aux.aiairy.com/oss/
+    yun-url: https://aux.aiairy.com/oss/
+    path: /www/wwwroot/aux.aiairy.com/oss/

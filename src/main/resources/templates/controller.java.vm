@@ -1,0 +1,93 @@
+package ${package.Controller};
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
+import com.github.xiaoymin.knife4j.annotations.ApiSort;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+#if(${restControllerStyle})
+import org.springframework.web.bind.annotation.RestController;
+#else
+import org.springframework.stereotype.Controller;
+#end
+#if(${superControllerClassPackage})
+import ${superControllerClassPackage};
+#end
+import com.huanhong.wms.mapper.${table.mapperName};
+import com.huanhong.wms.service.${table.serviceName};
+
+#if(${restControllerStyle})
+@RestController
+#else
+@Controller
+#end
+@RequestMapping("#if(${package.ModuleName})/${package.ModuleName}#end/#if(${controllerMappingHyphenStyle})${controllerMappingHyphen}#else${table.entityPath}#end")
+#if(${kotlin})
+class ${table.controllerName}#if(${superControllerClass}) : ${superControllerClass}()#end
+
+#else
+#if(${superControllerClass})
+@ApiSort()
+@Api(tags = "$!{table.comment}")
+public class ${table.controllerName} extends ${superControllerClass} {
+
+    @Resource
+    private ${table.serviceName} ${table.name}Service;
+    @Resource
+    private ${table.mapperName} ${table.name}Mapper;
+
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "current", value = "当前页码"),
+        @ApiImplicitParam(name = "size", value = "每页行数"),
+        @ApiImplicitParam(name = "search", value = "聚合搜索（标题）"),
+    })
+    @ApiOperationSupport(order = 1)
+    @ApiOperation(value = "分页查询$!{table.comment}", notes = "生成代码")
+    @GetMapping("/page")
+    public Result<Page<${entity}>> page(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size,
+                                           @RequestParam Map<String, Object> search) {
+        QueryWrapper<${entity}> query = new QueryWrapper<>();
+        query.orderByDesc("id");
+        if (search.containsKey("search")) {
+            String text = search.get("search").toString();
+            if (StrUtil.isNotEmpty(text)) {
+                 query.and(qw -> qw.like("title", text).or()
+                    .like("user_name", text)
+             );
+            }
+        }
+            return Result.success(${table.name}Mapper.selectPage(new Page<>(current, size), query));
+        }
+
+        @ApiOperationSupport(order = 2)
+        @ApiOperation(value = "添加$!{table.comment}", notes = "生成代码")
+        @PostMapping
+        public Result add(@Valid @RequestBody ${entity} ${table.name}) {
+            int insert = ${table.name}Mapper.insert(${table.name});
+            return render(insert > 0);
+        }
+
+        @ApiOperationSupport(order = 3)
+        @ApiOperation(value = "更新$!{table.comment}", notes = "生成代码")
+        @PutMapping
+        public Result update(@Valid @RequestBody ${entity} ${table.name}) {
+             int update = ${table.name}Mapper.updateById(${table.name});
+              return render(update > 0);
+        }
+
+        @ApiOperationSupport(order = 4)
+        @ApiOperation(value = "删除$!{table.comment}", notes = "生成代码")
+        @DeleteMapping("/{id}")
+        public Result delete(@PathVariable Integer id) {
+            int i = ${table.name}Mapper.deleteById(id);
+            return render(i > 0);
+        }
+
+#else
+public class ${table.controllerName} {
+#end
+
+}
+
+#end

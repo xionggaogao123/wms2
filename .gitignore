@@ -1,0 +1,16 @@
+target/
+.mvn
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+rebel.xml
+
+### NetBeans ###
+/dist/
+build/
+
+### VS Code ###
+.vscode/

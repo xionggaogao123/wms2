@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huanhong.wms.mapper.DeptMapper">
+
+    <select id="getDeptUp" resultType="java.util.Map">
+        SELECT T2.id, T2.name, T2.parent_id
+        FROM (SELECT @r                                                AS _id,
+                     (SELECT @r := parent_id FROM dept WHERE id = _id) AS 2v2,
+                     @l := @l + 1                                      AS lvl
+              FROM (SELECT @r := #{id,jdbcType=VARCHAR}) vars,
+                   dept
+              WHERE @r != 0) T1
+                     JOIN dept T2 ON T1._id = T2.id
+        ORDER BY T2.level ASC
+    </select>
+</mapper>

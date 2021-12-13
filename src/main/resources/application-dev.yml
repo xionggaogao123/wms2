@@ -1,0 +1,34 @@
+# Spring Config
+spring:
+  # Scheduling Config
+  scheduling:
+    enabled: false
+  # DataSource Config
+  datasource:
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    type: com.zaxxer.hikari.HikariDataSource
+    platform: mysql
+    username: root
+    password: Wsad123456.
+    url: jdbc:p6spy:mysql://47.100.1.173:3306/meike_test?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&autoReconnect=true&tinyInt1isBit=false&timezone=utc&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+# Socket Config
+wss:
+  server:
+    enabled: false
+    port: 3233
+    host: 0.0.0.0
+    upgrade-timeout: 10000
+    timeout: 180000
+    interval: 60000
+# Logging Config
+logging:
+  config: classpath:logback-dev.xml
+#=================================================================================
+# 自定义参数相关配置
+project:
+  domain: http://127.0.0.1
+  # 文件资源配置
+  oss:
+    url: http://127.0.0.1/oss/
+    yun-url: http://127.0.0.1/oss/
+    path: D:\project\visitor\oss\

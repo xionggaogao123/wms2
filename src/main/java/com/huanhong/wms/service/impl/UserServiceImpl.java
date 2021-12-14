@@ -1,15 +1,23 @@
 package com.huanhong.wms.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.huanhong.wms.SuperServiceImpl;
+import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.entity.Company;
+import com.huanhong.wms.entity.Dept;
 import com.huanhong.wms.entity.User;
+import com.huanhong.wms.entity.dto.AddUserDTO;
 import com.huanhong.wms.entity.dto.LoginDTO;
+import com.huanhong.wms.entity.dto.UpUserDTO;
+import com.huanhong.wms.mapper.CompanyMapper;
 import com.huanhong.wms.mapper.DeptMapper;
 import com.huanhong.wms.mapper.UserMapper;
+import com.huanhong.wms.service.IDeptService;
 import com.huanhong.wms.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -36,6 +44,11 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
     @Resource
     private RedisTemplate redisTemplate;
 
+    @Resource
+    private IDeptService deptService;
+
+    @Resource
+    private CompanyMapper companyMapper;
     @Resource
     private DeptMapper deptMapper;
 
@@ -75,19 +88,81 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         User user = this.baseMapper.selectById(userId);
         if (user != null) {
             List<Map<String, Object>> depts = new ArrayList<>();
-//            this.getDeptUp(depts, user.getDeptId());
+            this.getDeptUp(depts, user.getDeptId());
             Collections.reverse(depts);
             user.setDepts(depts);
         }
         return user;
     }
 
-    private void getDeptUp(List<Map<String, Object>> depts, String deptId) {
+    @Override
+    public Result<Integer> addUser(LoginUser loginUser, AddUserDTO dto) {
+        User check = this.baseMapper.getUserByAccount(dto.getLoginName());
+        if (check != null) {
+            return Result.failure("该账号已存在");
+        }
+        User addUser = new User();
+        BeanUtil.copyProperties(dto, addUser);
+        addUser.setCompanyId(loginUser.getCompanyId());
+        addUser.setParentCompanyId(loginUser.getParentCompanyId());
+        Company company = companyMapper.selectById(addUser.getCompanyId());
+        if (company == null) {
+            return Result.failure("公司信息不存在或已删除");
+        }
+        Dept dept = deptMapper.selectById(addUser.getDeptId());
+        if (dept == null) {
+            return Result.failure("部门信息不存在或已删除");
+        }
+        addUser.setCompanyName(company.getName());
+        addUser.setDeptName(dept.getName());
+        if (StrUtil.isNotEmpty(addUser.getPassword())) {
+            addUser.setPassword(SecureUtil.md5(addUser.getPassword()));
+        }
+        int insert = 0;
+        try {
+            insert = this.baseMapper.insert(addUser);
+        } catch (Exception e) {
+            log.error("用户信息添加异常: {}", addUser);
+        }
+        if (insert > 0) {
+            // 更新部门人数
+            deptService.updateDeptUserCount();
+        }
+        return insert > 0 ? Result.success(addUser.getId()) : Result.failure("新增失败");
+    }
+
+    @Override
+    public Result<Integer> updateUser(LoginUser loginUser, UpUserDTO dto) {
+        if (dto.getId() == null) {
+            dto.setId(loginUser.getId());
+        }
+        User updateUser = new User();
+        BeanUtil.copyProperties(dto, updateUser);
+        if (StrUtil.isNotEmpty(dto.getPassword())) {
+            updateUser.setPassword(SecureUtil.md5(dto.getPassword()));
+        }
+        if (updateUser.getDeptId() != null) {
+            Dept dept = deptMapper.selectById(updateUser.getDeptId());
+            if (dept == null) {
+                return Result.failure("部门信息不存在或已删除");
+            }
+            updateUser.setDeptName(dept.getName());
+        }
+        int update = 0;
+        try {
+            update = this.baseMapper.updateById(updateUser);
+        } catch (Exception e) {
+            log.error("用户信息更新异常: {}", updateUser);
+        }
+        return update > 0 ? Result.success(updateUser.getId()) : Result.failure("更新失败");
+    }
+
+    private void getDeptUp(List<Map<String, Object>> depts, Integer deptId) {
         Map<String, Object> dept = deptMapper.getDeptById(deptId);
         if (ObjectUtil.isNotEmpty(dept)) {
             depts.add(dept);
             if (Convert.toInt(dept.get("parentId")) != 0) {
-                this.getDeptUp(depts, dept.get("parentId").toString());
+                this.getDeptUp(depts, Convert.toInt(dept.get("parentId")));
             }
         }
     }

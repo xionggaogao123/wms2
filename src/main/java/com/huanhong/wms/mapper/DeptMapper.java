@@ -28,7 +28,7 @@ public interface DeptMapper extends BaseMapper<Dept> {
     Integer[] getIdByName(@Param("name") String name);
 
     @Select("select id, name, parent_id, level from dept where id = #{id}")
-    Map<String, Object> getDeptById(String id);
+    Map<String, Object> getDeptById(Integer id);
 
     /**
      * 获取部门上级目录

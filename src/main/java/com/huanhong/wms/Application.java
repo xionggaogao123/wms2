@@ -1,5 +1,6 @@
 package com.huanhong.wms;
 
+import cn.hutool.core.lang.Console;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,6 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -27,7 +29,7 @@ public class Application {
         String port = env.getProperty("server.port");
         String hostAddress = InetAddress.getLocalHost().getHostAddress();
         String path = env.getProperty("server.servlet.context-path");
-        log.debug("\n----------------------------------------------------------\n\t" +
+        Console.log("\n----------------------------------------------------------\n\t" +
                         "Application '{}' is running! Access URLs:\n\t" +
                         "Local: \t\thttp://localhost:{}{}\n\t" +
                         "External: \thttp://{}:{}{}\n\t" +

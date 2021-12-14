@@ -7,27 +7,32 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 @Data
-@ApiModel(description = "更新用户")
-public class UpUserDTO {
+@ApiModel(description = "新增用户DTO")
+public class AddUserDTO {
 
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty(value = "用户ID", required = true)
-    private Integer id;
+    @NotNull
+    @Length(max = 32, min = 5, message = "账号长度在5～32位之间")
+    @ApiModelProperty(value = "登录账号", required = true)
+    private String loginName;
 
     @Length(max = 32, min = 5, message = "密码长度在5～32位之间")
     @ApiModelProperty(value = "登录密码")
     private String password;
 
+    @NotNull
     @Length(max = 24, min = 2, message = "姓名长度在2～24位之间")
-    @ApiModelProperty(value = "姓名")
+    @ApiModelProperty(value = "姓名", required = true)
     private String userName;
 
     @ApiModelProperty(value = "手机号")
     private String phoneNumber;
 
+    @NotNull
     @Min(0)
     @Max(2)
     @ApiModelProperty(value = "性别 0.未知 1.男 2.女")
@@ -39,7 +44,8 @@ public class UpUserDTO {
     @ApiModelProperty(value = "身份证号")
     private String idNumber;
 
-    @ApiModelProperty(value = "所属部门ID")
+    @NotNull
+    @ApiModelProperty(value = "所属部门ID", required = true)
     private Integer deptId;
 
     @ApiModelProperty(value = "生产队/组")

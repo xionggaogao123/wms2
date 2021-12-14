@@ -22,15 +22,15 @@ import com.huanhong.wms.service.${table.serviceName};
 #else
 @Controller
 #end
-@RequestMapping("#if(${package.ModuleName})/${package.ModuleName}#end/#if(${controllerMappingHyphenStyle})${controllerMappingHyphen}#else${table.entityPath}#end")
+@RequestMapping("/v1/#if(${package.ModuleName})/${package.ModuleName}#end/#if(${controllerMappingHyphenStyle})${controllerMappingHyphen}#else${table.entityPath}#end")
 #if(${kotlin})
 class ${table.controllerName}#if(${superControllerClass}) : ${superControllerClass}()#end
 
 #else
-#if(${superControllerClass})
-@ApiSort()
-@Api(tags = "$!{table.comment}")
-public class ${table.controllerName} extends ${superControllerClass} {
+    #if(${superControllerClass})
+    @ApiSort()
+    @Api(tags = "$!{table.comment}")
+    public class ${table.controllerName} extends ${superControllerClass} {
 
     @Resource
     private ${table.serviceName} ${table.name}Service;

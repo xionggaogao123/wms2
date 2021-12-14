@@ -1,5 +1,6 @@
 package com.huanhong.wms.bean;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -9,21 +10,22 @@ import lombok.Data;
 @Data
 public class LoginUser {
 
-    /**
-     * 用户ID
-     */
+    @ApiModelProperty(value = "用户ID")
     private Integer id;
-    /**
-     * 账号
-     */
+
+    @ApiModelProperty(value = "账号")
     private String loginName;
-    /**
-     * 用户名称
-     */
+
+    @ApiModelProperty(value = "用户名称")
     private String userName;
-    /**
-     * 权限等级
-     */
+
+    @ApiModelProperty(value = "权限等级")
     private String permissionLevel;
+
+    @ApiModelProperty(value = "父公司ID")
+    private Integer parentCompanyId;
+
+    @ApiModelProperty(value = "所属公司ID")
+    private Integer companyId;
 
 }

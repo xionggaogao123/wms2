@@ -35,6 +35,8 @@ public class TokenUtil {
                 .setSubject(user.getLoginName())
                 .setIssuer(user.getUserName())
                 .claim("pl", user.getPermissionLevel())
+                .claim("c", user.getCompanyId())
+                .claim("pc", user.getParentCompanyId())
                 .signWith(SignatureAlgorithm.HS256, TOKEN_SECRET)
                 .setIssuedAt(now);
         if (timeOutMinute > 0) {
@@ -56,6 +58,8 @@ public class TokenUtil {
         user.setLoginName(body.getSubject());
         user.setUserName(body.getIssuer());
         user.setPermissionLevel(body.get("pl", String.class));
+        user.setCompanyId(body.get("c", Integer.class));
+        user.setParentCompanyId(body.get("pc", Integer.class));
         return user;
     }
 
@@ -74,6 +78,8 @@ public class TokenUtil {
                 .setSubject(body.getSubject())
                 .setIssuer(body.getIssuer())
                 .claim("pl", body.get("pl"))
+                .claim("c", body.get("c"))
+                .claim("pc", body.get("pc"))
                 .signWith(SignatureAlgorithm.HS256, TOKEN_SECRET)
                 .setIssuedAt(now);
         if (timeOutMinute > 0) {
@@ -89,10 +95,16 @@ public class TokenUtil {
                 .setSubject(user.getLoginName())
                 .setIssuer(user.getUserName())
                 .claim("pl", user.getPermissionLevel())
+                .claim("c", user.getCompanyId())
+                .claim("pc", user.getParentCompanyId())
                 .signWith(SignatureAlgorithm.HS256, TOKEN_SECRET)
                 .setIssuedAt(now);
         builder.setExpiration(body.getExpiration());
         return builder.compact();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(parseJWT("eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI0Iiwic3ViIjoiYWRtaW4iLCJpc3MiOiLnrqHnkIblkZgiLCJwbCI6IjAiLCJjIjoxLCJwYyI6MCwiaWF0IjoxNjM5NDY1ODY4LCJleHAiOjE2NDAwNzA2Njh9.PZxzt3Dc5DsYEcbYvV1jUnTY9-J0aDIf9JCwfMsM2lE"));
     }
 
 }

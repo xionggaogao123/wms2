@@ -1,7 +1,7 @@
 package com.huanhong.wms.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.huanhong.wms.SuperEntity;
+import com.huanhong.wms.SuperBsEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -11,26 +11,19 @@ import lombok.experimental.Accessors;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Accessors(chain = true)
 @ApiModel(description = "部门表")
-public class Dept extends SuperEntity {
+public class Dept extends SuperBsEntity {
 
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "部门代码")
-    private Integer deptCode;
+    private Integer code;
 
     @ApiModelProperty(value = "部门名称")
     private String name;
-
-    @ApiModelProperty(value = "0.不隐藏本部门 1.隐藏本部门")
-    private Integer isHide;
-
-    @ApiModelProperty(value = "0.无限制 1.不能看到所有通讯录，仅可见自己 2.只能看到所在部门及下级部门通讯录")
-    private Integer isLimit;
 
     @ApiModelProperty(value = "等级")
     private Integer level;
@@ -46,9 +39,6 @@ public class Dept extends SuperEntity {
 
     @ApiModelProperty(value = "是否为公司")
     private Integer isCompany;
-
-    @ApiModelProperty(value = "部门自定义字段")
-    private String ext;
 
     @ApiModelProperty(value = "用户数")
     private Integer userCount;

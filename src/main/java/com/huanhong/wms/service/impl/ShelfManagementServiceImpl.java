@@ -1,13 +1,14 @@
 package com.huanhong.wms.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.entity.ShelfManagement;
-import com.huanhong.wms.entity.WarehouseAreaManagement;
 import com.huanhong.wms.entity.vo.ShelfVO;
 import com.huanhong.wms.mapper.ShelfManagementMapper;
 import com.huanhong.wms.service.IShelfManagementService;
-import com.huanhong.wms.SuperServiceImpl;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -38,12 +39,30 @@ public class ShelfManagementServiceImpl extends SuperServiceImpl<ShelfManagement
     }
 
     @Override
-    public ShelfManagement getShelfByWarehouseAreaId(String shelfId) {
-        return null;
+    public ShelfManagement getShelfByShelfId(String shelfId) {
+        QueryWrapper<ShelfManagement> wrapper = new QueryWrapper<>();
+        wrapper.eq("shelf_id", shelfId);
+        ShelfManagement shelfManagement = shelfManagementMapper.selectOne(wrapper);
+        return shelfManagement;
     }
 
     @Override
     public Page<ShelfManagement> pageFuzzyQuery(Page<ShelfManagement> shelfManagementPage, ShelfVO shelfVO) {
-        return null;
+        //新建QueryWrapper对象
+        QueryWrapper<ShelfManagement> query = new QueryWrapper<>();
+        //根据id排序
+        query.orderByDesc("id");
+        //判断此时的条件对象Vo是否等于空，若等于空，
+        //直接进行selectPage查询
+        if (ObjectUtil.isEmpty(shelfVO)) {
+            return baseMapper.selectPage(shelfManagementPage, query);
+        }
+        //若Vo对象不为空，分别获取其中的字段，
+        //并对其进行判断是否为空，这一步类似动态SQL的拼装
+        query.like(StringUtils.isNotBlank(shelfVO.getWarehouseAreaId()), "warehouse_area_id", shelfVO.getWarehouseAreaId());
+
+        query.like(StringUtils.isNotBlank(shelfVO.getShelfId()), "shelf_id", shelfVO.getShelfId());
+
+        return baseMapper.selectPage(shelfManagementPage, query);
     }
 }

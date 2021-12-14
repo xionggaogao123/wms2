@@ -1,7 +1,6 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -9,13 +8,14 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
+import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
-import com.huanhong.wms.entity.SublibraryManagement;
 import com.huanhong.wms.entity.WarehouseAreaManagement;
-import com.huanhong.wms.entity.vo.SublibraryVO;
 import com.huanhong.wms.entity.vo.WarehouseAreaVO;
+import com.huanhong.wms.mapper.WarehouseAreaManagementMapper;
+import com.huanhong.wms.service.IWarehouseAreaManagementService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -25,15 +25,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.bind.annotation.RestController;
-import com.huanhong.wms.BaseController;
-import com.huanhong.wms.mapper.WarehouseAreaManagementMapper;
-import com.huanhong.wms.service.IWarehouseAreaManagementService;
-
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/warehouse-area-management")
@@ -57,7 +51,7 @@ public class WarehouseAreaManagementController extends BaseController {
             @ApiImplicitParam(name = "size", value = "每页行数"),
     })
     @ApiOperationSupport(order = 1)
-    @ApiOperation(value = "分页查询组合库区")
+    @ApiOperation(value = "分页组合查询库区")
     @GetMapping("/pagingFuzzyQuery")
     public Result<Page<WarehouseAreaManagement>> page(@RequestParam(defaultValue = "1") Integer current,
                                                       @RequestParam(defaultValue = "10") Integer size,

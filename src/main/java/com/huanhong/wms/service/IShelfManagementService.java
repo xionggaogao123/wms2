@@ -1,11 +1,9 @@
 package com.huanhong.wms.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.huanhong.wms.entity.ShelfManagement;
 import com.huanhong.wms.SuperService;
-import com.huanhong.wms.entity.WarehouseAreaManagement;
+import com.huanhong.wms.entity.ShelfManagement;
 import com.huanhong.wms.entity.vo.ShelfVO;
-import com.huanhong.wms.entity.vo.WarehouseAreaVO;
 
 import java.util.List;
 
@@ -23,7 +21,7 @@ public interface IShelfManagementService extends SuperService<ShelfManagement> {
     List<ShelfManagement> getShelfListByWarehouseAreaId(String warehouseAreaId);
 
     //根据货架ID获取货架信息
-    ShelfManagement getShelfByWarehouseAreaId(String shelfId);
+    ShelfManagement getShelfByShelfId(String shelfId);
 
     //组合分页模糊查询
     Page<ShelfManagement> pageFuzzyQuery(Page<ShelfManagement> shelfManagementPage, ShelfVO shelfVO);

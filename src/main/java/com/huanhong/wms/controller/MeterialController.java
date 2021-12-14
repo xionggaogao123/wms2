@@ -8,12 +8,15 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
+import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
 import com.huanhong.wms.entity.Meterial;
 import com.huanhong.wms.entity.vo.MeterialVO;
 import com.huanhong.wms.entity.vo.UpdateMeterialVO;
+import com.huanhong.wms.mapper.MeterialMapper;
+import com.huanhong.wms.service.IMeterialService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -22,16 +25,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import com.huanhong.wms.BaseController;
-import com.huanhong.wms.mapper.MeterialMapper;
-import com.huanhong.wms.service.IMeterialService;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-
-import static net.coobird.thumbnailator.tasks.UnsupportedFormatException.UNKNOWN;
 
 @RestController
 @RequestMapping("/meterial")
@@ -182,7 +180,7 @@ public class MeterialController extends BaseController {
     @ApiOperationSupport(order = 4)
     @ApiOperation(value = "删除物料")
     @DeleteMapping("/deleteByMeterialCode/{meterialCode}")
-    public Result delete(@PathVariable("meterialCode") String meterialCode) {
+    public Result delete(@PathVariable String meterialCode) {
 
         try {
             Meterial meterial_exist = meterialService.getMeterialByMeterialCode(meterialCode);

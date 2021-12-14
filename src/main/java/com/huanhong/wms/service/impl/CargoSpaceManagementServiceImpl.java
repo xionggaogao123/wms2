@@ -1,9 +1,9 @@
 package com.huanhong.wms.service.impl;
 
+import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.entity.CargoSpaceManagement;
 import com.huanhong.wms.mapper.CargoSpaceManagementMapper;
 import com.huanhong.wms.service.ICargoSpaceManagementService;
-import com.huanhong.wms.SuperServiceImpl;
 import org.springframework.stereotype.Service;
 
 /**
@@ -16,5 +16,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CargoSpaceManagementServiceImpl extends SuperServiceImpl<CargoSpaceManagementMapper, CargoSpaceManagement> implements ICargoSpaceManagementService {
+
 
 }

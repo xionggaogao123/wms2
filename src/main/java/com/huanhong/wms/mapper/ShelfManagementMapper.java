@@ -1,7 +1,7 @@
 package com.huanhong.wms.mapper;
 
-import com.huanhong.wms.entity.ShelfManagement;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.huanhong.wms.entity.ShelfManagement;
 
 /**
  * <p>

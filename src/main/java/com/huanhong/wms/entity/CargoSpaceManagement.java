@@ -14,10 +14,10 @@ public class CargoSpaceManagement extends SuperEntity {
     private static final long serialVersionUID=1L;
 
     @ApiModelProperty(value = "货架编号")
-    private String shelfNumber;
+    private String shelfId;
 
     @ApiModelProperty(value = "货位编号")
-    private String cargoSpaceNumber;
+    private String cargoSpaceId;
 
     @ApiModelProperty(value = "货位所在层")
     private String cargoSpaceFloor;

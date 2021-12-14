@@ -28,6 +28,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
+@RequestMapping("/v1")
 @ApiSort(1)
 @Api(tags = "公共方法 🏔")
 public class MainController extends BaseController {

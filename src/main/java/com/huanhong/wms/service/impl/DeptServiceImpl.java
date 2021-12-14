@@ -34,7 +34,7 @@ public class DeptServiceImpl extends SuperServiceImpl<DeptMapper, Dept> implemen
     @Override
     public Result<List<Dept>> getDeptTree(QueryWrapper<Dept> query) {
         Result<List<Dept>> result = new Result<>();
-        query.select("id, `name`, is_hide, is_limit, level, parent_id, parent_code, user_count");
+        query.select("id, `name`, level, parent_id, parent_code, user_count");
         List<Dept> depts = this.baseMapper.selectList(query);
         result.setData(new Dept().builTree(depts, false));
         result.setOk(true);
@@ -58,7 +58,7 @@ public class DeptServiceImpl extends SuperServiceImpl<DeptMapper, Dept> implemen
     @Override
     public void updateDeptUserCount() {
         QueryWrapper<Dept> query = new QueryWrapper<>();
-        query.select("id, `name`, is_hide, is_limit, level, parent_id, (select count(*) from user where del = 0 and dept_id = dept.id) as userCount");
+        query.select("id, `name`, level, parent_id, (select count(*) from user where del = 0 and dept_id = dept.id) as userCount");
         List<Dept> depts = this.baseMapper.selectList(query);
         final List<Dept> tree = new Dept().builTree(depts, true);
         this.recursionUpdate(tree);

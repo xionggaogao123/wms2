@@ -1,6 +1,7 @@
 package com.huanhong.wms.controller;
 
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -10,11 +11,10 @@ import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.RedisKey;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.Dept;
+import com.huanhong.wms.entity.dto.DeptDTO;
 import com.huanhong.wms.mapper.DeptMapper;
 import com.huanhong.wms.service.IDeptService;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @RestController
-@RequestMapping("/dept")
+@RequestMapping("/v1/dept")
 @ApiSort(22)
 @Api(tags = "部门管理 🏢")
 public class DeptController extends BaseController {
@@ -38,18 +38,14 @@ public class DeptController extends BaseController {
     @Resource
     private DeptMapper deptMapper;
 
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "filterEmptyUser", value = "过滤部门下无用户的部门"),
-    })
     @ApiOperationSupport(order = 1)
     @ApiOperation(value = "获取部门树")
     @GetMapping("/tree")
-    public Result<List<Dept>> tree(@RequestParam(required = false) boolean filterEmptyUser) {
+    public Result<List<Dept>> tree() {
+        LoginUser loginUser = this.getLoginUser();
         QueryWrapper<Dept> query = new QueryWrapper<>();
-        query.orderByAsc("sort");
-        if (filterEmptyUser) {
-            query.gt("user_count", 0);
-        }
+        query.eq("company_id", loginUser.getCompanyId())
+                .orderByAsc("sort");
         String redisKey = RedisKey.DEPT_TREE;
         List<Dept> data = (List<Dept>) redisTemplate.opsForValue().get(redisKey);
 
@@ -65,13 +61,19 @@ public class DeptController extends BaseController {
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "新增部门")
     @PostMapping
-    public Result add(@Valid @RequestBody Dept dept) {
+    public Result add(@Valid @RequestBody DeptDTO dto) {
         LoginUser loginUser = this.getLoginUser();
 //        if (loginUser.getPermissionLevel()) {
 //            return Result.noAuthority();
 //        }
+        Dept dept = new Dept();
+        BeanUtil.copyProperties(dto, dept);
+
+        dept.setCompanyId(loginUser.getCompanyId());
+        dept.setParentCompanyId(loginUser.getParentCompanyId());
+
         int insert = deptMapper.insert(dept);
-        if(insert > 0) {
+        if (insert > 0) {
             redisTemplate.delete(RedisKey.DEPT_TREE);
             return Result.success();
         }
@@ -82,13 +84,16 @@ public class DeptController extends BaseController {
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "更新部门")
     @PutMapping
-    public Result update(@Valid @RequestBody Dept dept) {
+    public Result update(@Valid @RequestBody DeptDTO dto) {
         LoginUser loginUser = this.getLoginUser();
 //        if (loginUser.getPermissionLevel()) {
 //            return Result.noAuthority();
 //        }
+        Dept dept = new Dept();
+        BeanUtil.copyProperties(dto, dept);
+
         int update = deptMapper.updateById(dept);
-        if(update > 0) {
+        if (update > 0) {
             redisTemplate.delete(RedisKey.DEPT_TREE);
             return Result.success();
         }

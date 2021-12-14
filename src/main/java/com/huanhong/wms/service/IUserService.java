@@ -1,9 +1,12 @@
 package com.huanhong.wms.service;
 
 import com.huanhong.wms.SuperService;
+import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.User;
+import com.huanhong.wms.entity.dto.AddUserDTO;
 import com.huanhong.wms.entity.dto.LoginDTO;
+import com.huanhong.wms.entity.dto.UpUserDTO;
 
 /**
  * <p>
@@ -26,5 +29,10 @@ public interface IUserService extends SuperService<User> {
     Result<User> checkLogin(LoginDTO login);
 
     User getUserInfo(Integer userId);
+
+    Result<Integer> addUser(LoginUser loginUser, AddUserDTO dto);
+
+    Result<Integer> updateUser(LoginUser loginUser, UpUserDTO dto);
+
 
 }

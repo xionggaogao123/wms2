@@ -1,7 +1,7 @@
 package com.huanhong.wms.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.huanhong.wms.SuperEntity;
+import com.huanhong.wms.SuperBsEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -16,7 +16,7 @@ import java.util.Map;
 @EqualsAndHashCode(callSuper = true)
 @Accessors(chain = true)
 @ApiModel(description = "用户")
-public class User extends SuperEntity {
+public class User extends SuperBsEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -32,8 +32,8 @@ public class User extends SuperEntity {
     @ApiModelProperty(value = "手机号")
     private Integer phoneNumber;
 
-    @ApiModelProperty(value = "性别")
-    private String sex;
+    @ApiModelProperty(value = "性别 0.未知 1.男 2.女")
+    private Integer gender;
 
     @ApiModelProperty(value = "邮箱号")
     private String mail;
@@ -44,8 +44,11 @@ public class User extends SuperEntity {
     @ApiModelProperty(value = "公司名称")
     private String companyName;
 
+    @ApiModelProperty(value = "所属部门ID")
+    private Integer deptId;
+
     @ApiModelProperty(value = "工作部门")
-    private String department;
+    private String deptName;
 
     @ApiModelProperty(value = "生产队/组")
     private String productionTeam;

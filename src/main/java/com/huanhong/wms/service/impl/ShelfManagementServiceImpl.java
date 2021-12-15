@@ -33,6 +33,7 @@ public class ShelfManagementServiceImpl extends SuperServiceImpl<ShelfManagement
     @Override
     public List<ShelfManagement> getShelfListByWarehouseAreaId(String warehouseAreaId) {
         QueryWrapper<ShelfManagement> wrapper = new QueryWrapper<>();
+        wrapper.eq("del",0);
         wrapper.eq("warehouse_area_id", warehouseAreaId);
         List<ShelfManagement> ShelfList = shelfManagementMapper.selectList(wrapper);
         return ShelfList;
@@ -42,6 +43,7 @@ public class ShelfManagementServiceImpl extends SuperServiceImpl<ShelfManagement
     public ShelfManagement getShelfByShelfId(String shelfId) {
         QueryWrapper<ShelfManagement> wrapper = new QueryWrapper<>();
         wrapper.eq("shelf_id", shelfId);
+        wrapper.eq("del",0);
         ShelfManagement shelfManagement = shelfManagementMapper.selectOne(wrapper);
         return shelfManagement;
     }

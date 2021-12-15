@@ -1,11 +1,9 @@
 package com.huanhong.wms.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.huanhong.wms.entity.Meterial;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.huanhong.wms.entity.User;
-import com.huanhong.wms.entity.vo.UpdateMeterialVO;
+import com.huanhong.wms.entity.Meterial;
+import com.huanhong.wms.entity.dto.UpdateMeterialDTO;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -50,5 +48,5 @@ public interface MeterialMapper extends BaseMapper<Meterial> {
     List<String> fuzzyQuerySelectList(String field, String value);
 
 
-    int update(UpdateMeterialVO updateMeterialVO, UpdateWrapper<UpdateMeterialVO> updateWrapper);
+    int update(UpdateMeterialDTO updateMeterialVO, UpdateWrapper<UpdateMeterialDTO> updateWrapper);
 }

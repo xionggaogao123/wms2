@@ -1,4 +1,4 @@
-package com.huanhong.wms.entity.vo;
+package com.huanhong.wms.entity.dto;
 
 
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
@@ -9,7 +9,7 @@ import lombok.Data;
 
 @ApiModel(value = "UpdateShelfVO更新对象", description = "货架更新对象封装")
 @Data
-public class UpdateShelfVO{
+public class UpdateShelfDTO {
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "货架编号")

@@ -30,7 +30,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/warehouse-area-management")
+@RequestMapping("/v1/warehouse-area-management")
 @ApiSort()
 @Api(tags = "库房区域管理")
 public class WarehouseAreaManagementController extends BaseController {

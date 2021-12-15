@@ -1,9 +1,9 @@
 package com.huanhong.wms.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.huanhong.wms.entity.Meterial;
 import com.huanhong.wms.SuperService;
-import com.huanhong.wms.entity.vo.MeterialVO;
+import com.huanhong.wms.entity.Meterial;
+import com.huanhong.wms.entity.dto.AddMeterialDTO;
 
 /**
  * <p>
@@ -19,5 +19,5 @@ public interface IMeterialService extends SuperService<Meterial> {
 
     Meterial getMeterialByMeterialName(String meterialName);
 
-    Page<Meterial> pageFuzzyQuery(Page<Meterial> meterialPage, MeterialVO meterialVO);
+    Page<Meterial> pageFuzzyQuery(Page<Meterial> meterialPage, AddMeterialDTO addMeterialDTO);
 }

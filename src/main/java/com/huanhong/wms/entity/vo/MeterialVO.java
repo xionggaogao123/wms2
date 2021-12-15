@@ -28,6 +28,9 @@ public class MeterialVO {
     @ApiModelProperty(value = "辅助单位")
     private String auxiliaryUnit;
 
+    @ApiModelProperty(value="品牌")
+    private String brand;
+
     @ApiModelProperty(value = "材质")
     private String material;
 

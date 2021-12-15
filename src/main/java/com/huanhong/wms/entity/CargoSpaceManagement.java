@@ -13,6 +13,7 @@ public class CargoSpaceManagement extends SuperEntity {
 
     private static final long serialVersionUID=1L;
 
+
     @ApiModelProperty(value = "货架编号")
     private String shelfId;
 

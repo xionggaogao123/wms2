@@ -15,8 +15,8 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
 import com.huanhong.wms.entity.ShelfManagement;
 import com.huanhong.wms.entity.WarehouseAreaManagement;
+import com.huanhong.wms.entity.dto.UpdateShelfDTO;
 import com.huanhong.wms.entity.vo.ShelfVO;
-import com.huanhong.wms.entity.vo.UpdateShelfVO;
 import com.huanhong.wms.mapper.ShelfManagementMapper;
 import com.huanhong.wms.service.IShelfManagementService;
 import com.huanhong.wms.service.IWarehouseAreaManagementService;
@@ -34,7 +34,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/shelf-management")
+@RequestMapping("/v1/shelf-management")
 @ApiSort()
 @Api(tags = "货架管理")
 public class ShelfManagementController extends BaseController {
@@ -140,21 +140,21 @@ public class ShelfManagementController extends BaseController {
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "更新货架管理", notes = "生成代码")
     @PutMapping
-    public Result updateShelfByShelfID(@Valid @RequestBody UpdateShelfVO updateShelfVO) {
+    public Result updateShelfByShelfId(@Valid @RequestBody UpdateShelfDTO updateShelfDTO) {
         UpdateWrapper<ShelfManagement> updateWrapper = new UpdateWrapper<>();
         try {
             //空值判断
-            if (StringUtils.isBlank(updateShelfVO.getShelfId())) {
+            if (StringUtils.isBlank(updateShelfDTO.getShelfId())) {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "货架编码不能为空");
             }
             //判断更新的货架是否存在
-            ShelfManagement shelfManagementIsExist = shelfManagementService.getShelfByShelfId(updateShelfVO.getShelfId());
+            ShelfManagement shelfManagementIsExist = shelfManagementService.getShelfByShelfId(updateShelfDTO.getShelfId());
             if (ObjectUtil.isEmpty(shelfManagementIsExist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此货架编码，货架不存在");
             }
-            updateWrapper.eq("shelf_id", updateShelfVO.getShelfId());
+            updateWrapper.eq("shelf_id", updateShelfDTO.getShelfId());
             ShelfManagement updateShlef = new ShelfManagement();
-            BeanUtil.copyProperties(updateShelfVO, updateShlef);
+            BeanUtil.copyProperties(updateShelfDTO, updateShlef);
             int update = shelfManagementMapper.update(updateShlef, updateWrapper);
             return render(update > 0);
         } catch (Exception e) {

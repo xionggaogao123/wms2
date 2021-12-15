@@ -1,4 +1,4 @@
-package com.huanhong.wms.entity.vo;
+package com.huanhong.wms.entity.dto;
 
 
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @ApiModel(value = "Meterial更新对象", description = "Meterial更新对象封装")
 @Data
-public class UpdateMeterialVO {
+public class UpdateMeterialDTO {
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "物料编码")
     private String materialCoding;

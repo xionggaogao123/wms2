@@ -13,8 +13,8 @@ import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
 import com.huanhong.wms.entity.Meterial;
-import com.huanhong.wms.entity.vo.MeterialVO;
-import com.huanhong.wms.entity.vo.UpdateMeterialVO;
+import com.huanhong.wms.entity.dto.AddMeterialDTO;
+import com.huanhong.wms.entity.dto.UpdateMeterialDTO;
 import com.huanhong.wms.mapper.MeterialMapper;
 import com.huanhong.wms.service.IMeterialService;
 import io.swagger.annotations.Api;
@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/meterial")
+@RequestMapping("/v1/meterial")
 @ApiSort()
 @Api(tags = "物料基础信息")
 public class MeterialController extends BaseController {
@@ -65,11 +65,11 @@ public class MeterialController extends BaseController {
     @GetMapping("/pagingFuzzyQuery")
     public Result<Page<Meterial>> page(@RequestParam(defaultValue = "1") Integer current,
                                        @RequestParam(defaultValue = "10") Integer size,
-                                       MeterialVO meterialVO //查询条件封装的对象
+                                       AddMeterialDTO addMeterialDTO//查询条件封装的对象
     ) {
         try {
             //调用服务层方法，传入page对象和查询条件对象
-            Page<Meterial> pageResult = meterialService.pageFuzzyQuery(new Page<>(current, size), meterialVO);
+            Page<Meterial> pageResult = meterialService.pageFuzzyQuery(new Page<>(current, size), addMeterialDTO);
             return Result.success(pageResult);
         } catch (Exception e) {
             return Result.failure("查询失败--异常：" + e);
@@ -146,7 +146,7 @@ public class MeterialController extends BaseController {
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "更新物料")
     @PutMapping("/updateByMaterialCoding")
-    public Result updateByMaterialCoding(@Valid @RequestBody UpdateMeterialVO updateMeterialVO) {
+    public Result updateByMaterialCoding(@Valid @RequestBody UpdateMeterialDTO updateMeterialVO) {
 
         /**
          * 物料编码不能为空，为更新依据
@@ -160,7 +160,7 @@ public class MeterialController extends BaseController {
             if (meterial_exist == null) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此物料编码");
             }
-            UpdateWrapper<UpdateMeterialVO> updateWrapper = new UpdateWrapper<>();
+            UpdateWrapper<UpdateMeterialDTO> updateWrapper = new UpdateWrapper<>();
             updateWrapper.eq("material_coding", updateMeterialVO.getMaterialCoding());
             int i = meterialMapper.update(updateMeterialVO, updateWrapper);
             LOGGER.info("物料: " + updateMeterialVO.getMaterialCoding() + " 更新成功");

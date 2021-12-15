@@ -1,5 +1,6 @@
 package com.huanhong.wms.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -138,32 +139,36 @@ public class MeterialController extends BaseController {
         }
     }
 
+
     /**
-     * 通过物料编码更新物料信息
-     * @param updateMeterialVO
+     * 过物料编码更新物料信息
+     * @param updateMeterialDTO
      * @return
      */
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "更新物料")
     @PutMapping("/updateByMaterialCoding")
-    public Result updateByMaterialCoding(@Valid @RequestBody UpdateMeterialDTO updateMeterialVO) {
+    public Result updateByMaterialCoding(@Valid @RequestBody UpdateMeterialDTO updateMeterialDTO) {
 
         /**
          * 物料编码不能为空，为更新依据
          */
         try {
-            if (StringUtils.isBlank(updateMeterialVO.getMaterialCoding())) {
+            if (StringUtils.isBlank(updateMeterialDTO.getMaterialCoding())) {
                 return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, "物料编码为空");
             }
             //判断此物料是否存在
-            Meterial meterial_exist = meterialService.getMeterialByMeterialCode(updateMeterialVO.getMaterialCoding());
+            Meterial meterial_exist = meterialService.getMeterialByMeterialCode(updateMeterialDTO.getMaterialCoding());
             if (meterial_exist == null) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此物料编码");
             }
-            UpdateWrapper<UpdateMeterialDTO> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("material_coding", updateMeterialVO.getMaterialCoding());
-            int i = meterialMapper.update(updateMeterialVO, updateWrapper);
-            LOGGER.info("物料: " + updateMeterialVO.getMaterialCoding() + " 更新成功");
+
+            UpdateWrapper<Meterial> updateWrapper = new UpdateWrapper<>();
+            Meterial updateMeterial = new Meterial();
+            BeanUtil.copyProperties(updateMeterialDTO, updateMeterial );
+            updateWrapper.eq("material_coding", updateMeterialDTO.getMaterialCoding());
+            int i = meterialMapper.update(updateMeterial, updateWrapper);
+            LOGGER.info("物料: " + updateMeterialDTO.getMaterialCoding() + " 更新成功");
             return render(i > 0);
         } catch (Exception e) {
             LOGGER.error("更新物料信息出错--更新失败，异常：" + e);

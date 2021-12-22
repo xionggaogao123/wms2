@@ -2,7 +2,6 @@ package com.huanhong.wms.controller;
 
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/v1/dept")
@@ -44,17 +42,17 @@ public class DeptController extends BaseController {
     public Result<List<Dept>> tree() {
         LoginUser loginUser = this.getLoginUser();
         QueryWrapper<Dept> query = new QueryWrapper<>();
-        query.eq("company_id", loginUser.getCompanyId())
+        query.select("*")
+//                .eq("company_id", loginUser.getCompanyId())
                 .orderByAsc("sort");
-        String redisKey = RedisKey.DEPT_TREE;
-        List<Dept> data = (List<Dept>) redisTemplate.opsForValue().get(redisKey);
+//        String redisKey = RedisKey.DEPT_TREE;
+//        List<Dept> data = (List<Dept>) redisTemplate.opsForValue().get(redisKey);
+//        if (CollectionUtil.isEmpty(data)) {
+        List<Dept> data = deptService.getDeptTree(query).getData();
 
-        if (CollectionUtil.isEmpty(data)) {
-            data = deptService.getDeptTree(query).getData();
-
-            redisTemplate.opsForValue().set(redisKey, data);
-            redisTemplate.expire(redisKey, 2, TimeUnit.HOURS);
-        }
+//            redisTemplate.opsForValue().set(redisKey, data);
+//            redisTemplate.expire(redisKey, 2, TimeUnit.HOURS);
+//        }
         return Result.success(data);
     }
 

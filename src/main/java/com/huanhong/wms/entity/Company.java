@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ApiModel(description = "门店表")
+@ApiModel(description = "公司对象")
 public class Company extends SuperEntity {
 
     private static final long serialVersionUID = 1L;

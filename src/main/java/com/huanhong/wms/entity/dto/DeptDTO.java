@@ -34,7 +34,4 @@ public class DeptDTO {
     @ApiModelProperty(value = "顺序 从小到大")
     private Integer sort;
 
-    @ApiModelProperty(value = "是否为公司")
-    private Integer isCompany;
-
 }

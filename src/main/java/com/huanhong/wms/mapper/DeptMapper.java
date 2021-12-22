@@ -30,6 +30,9 @@ public interface DeptMapper extends BaseMapper<Dept> {
     @Select("select id, name, parent_id, level from dept where id = #{id}")
     Map<String, Object> getDeptById(Integer id);
 
+    @Select("select id, code, level from dept where is_company = 1 and company_id = #{companyId}")
+    Dept getParentCompanyDept(Integer companyId);
+
     /**
      * 获取部门上级目录
      *

@@ -34,7 +34,6 @@ public class DeptServiceImpl extends SuperServiceImpl<DeptMapper, Dept> implemen
     @Override
     public Result<List<Dept>> getDeptTree(QueryWrapper<Dept> query) {
         Result<List<Dept>> result = new Result<>();
-        query.select("id, `name`, level, parent_id, parent_code, user_count");
         List<Dept> depts = this.baseMapper.selectList(query);
         result.setData(new Dept().builTree(depts, false));
         result.setOk(true);

@@ -44,4 +44,7 @@ public interface DeptMapper extends BaseMapper<Dept> {
     @Update("update dept set user_count = #{userCount} where id = #{id}")
     int updateDeptUserCount(@Param("id") Integer id, @Param("userCount") Integer userCount);
 
+    @Update("update dept set del = 1 where company_id = #{companyId}")
+    int deleteByCompanyId(Integer companyId);
+
 }

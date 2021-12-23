@@ -79,6 +79,10 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
 //        if (!user.getState().equals(1)) {
 //            return Result.failure(2003, "账号已禁用");
 //        }
+        Company company = companyMapper.selectById(user.getCompanyId());
+        if (!company.getState().equals(1)) {
+            return Result.failure("公司账号已被禁用");
+        }
         user.setPassword(null);
         return Result.success(user);
     }

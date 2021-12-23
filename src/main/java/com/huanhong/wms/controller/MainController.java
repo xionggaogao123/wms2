@@ -10,7 +10,6 @@ import com.huanhong.wms.bean.RedisKey;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.User;
 import com.huanhong.wms.entity.dto.LoginDTO;
-import com.huanhong.wms.properties.OssProperties;
 import com.huanhong.wms.service.IUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -32,9 +31,6 @@ import java.util.Map;
 @ApiSort(1)
 @Api(tags = "公共方法 🏔")
 public class MainController extends BaseController {
-
-    @Resource
-    private OssProperties ossProperties;
 
     @Resource
     private RedisTemplate redisTemplate;

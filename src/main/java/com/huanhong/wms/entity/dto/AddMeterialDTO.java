@@ -22,9 +22,12 @@ public class AddMeterialDTO {
     @ApiModelProperty(value = "物料名称")
     private String materialName;
 
-
     @ApiModelProperty(value = "俗称")
     private String slang;
+
+    @NotNull
+    @ApiModelProperty(value = "分类编码")
+    private String typeCode;
 
     @NotNull
     @ApiModelProperty(value = "规格型号")
@@ -85,6 +88,10 @@ public class AddMeterialDTO {
 
     @ApiModelProperty(value = "备注")
     private String remark;
+
+    @NotNull
+    @ApiModelProperty(value = "创建时间")
+    private LocalDateTime createTime;
 
     @NotNull
     @ApiModelProperty(value = "失效提醒时间")

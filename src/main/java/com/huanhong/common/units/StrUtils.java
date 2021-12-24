@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author ldy81
@@ -103,6 +105,29 @@ public class StrUtils extends StrUtil {
             log.error("转换JSON字符串错误", e);
         }
         return null;
+    }
+
+    /**
+     * 过滤特殊字符
+     *
+     * @param str
+     * @return
+     */
+    public static String HandleData(String str) {
+        String regEx = "[`~!@#$%^&*()+=|{}':;',\\[\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
+        Pattern p = Pattern.compile(regEx);
+        Matcher m = p.matcher(str);
+        return m.replaceAll("").trim();
+    }
+
+    /**
+     * 判断是否含有非数字
+     * @param str
+     * @return
+     */
+    public static boolean isNumeric(String str) {
+        Pattern p = Pattern.compile("[0-9]*");
+        return p.matcher(str).matches();
     }
 
 }

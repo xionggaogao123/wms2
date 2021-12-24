@@ -6,12 +6,13 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.entity.Meterial;
-import com.huanhong.wms.entity.dto.AddMeterialDTO;
+import com.huanhong.wms.entity.vo.MeterialVO;
 import com.huanhong.wms.mapper.MeterialMapper;
 import com.huanhong.wms.service.IMeterialService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * <p>
@@ -39,27 +40,39 @@ public class MeterialServiceImpl extends SuperServiceImpl<MeterialMapper, Meteri
         return meterial;
     }
 
-    /**
-     * 通过物料名称获取物料
-     *
-     * @param meterialName
-     * @return
-     */
+//    /**
+//     * 通过物料名称获取物料
+//     *
+//     * @param meterialName
+//     * @return
+//     */
+//    @Override
+//    public Meterial getMeterialByMeterialName(String meterialName) {
+//        Meterial meterial = meterialMapper.getMeterialByMeterialCode(meterialName);
+//        return meterial;
+//    }
+
     @Override
-    public Meterial getMeterialByMeterialName(String meterialName) {
-        Meterial meterial = meterialMapper.getMeterialByMeterialCode(meterialName);
-        return meterial;
+    public List<Meterial> listFuzzyQuery(String typeCode) {
+        //新建QueryWrapper对象
+        QueryWrapper<Meterial> query = new QueryWrapper<>();
+        //根据id排序
+        query.orderByDesc("id");
+
+        query.likeRight("type_code",typeCode);
+
+        return baseMapper.selectList(query);
     }
 
 
     /**
      * 条件组合模糊分页查询
      * @param meterialPage
-     * @param addMeterialDTO
+     * @param materialVO
      * @return
      */
     @Override
-    public Page pageFuzzyQuery(Page meterialPage, AddMeterialDTO addMeterialDTO) {
+    public Page pageFuzzyQuery(Page meterialPage, MeterialVO materialVO) {
 
         //新建QueryWrapper对象
         QueryWrapper<Meterial> query = new QueryWrapper<>();
@@ -67,49 +80,49 @@ public class MeterialServiceImpl extends SuperServiceImpl<MeterialMapper, Meteri
         query.orderByDesc("id");
         //判断此时的条件对象Vo是否等于空，若等于空，
         //直接进行selectPage查询
-        if (ObjectUtil.isEmpty(addMeterialDTO)) {
+        if (ObjectUtil.isEmpty(materialVO)) {
             return baseMapper.selectPage(meterialPage, query);
         }
         //若Vo对象不为空，分别获取其中的字段，
         //并对其进行判断是否为空，这一步类似动态SQL的拼装
         //物料编码
-        query.like(StringUtils.isNotBlank(addMeterialDTO.getMaterialCoding()), "material_coding", addMeterialDTO.getMaterialCoding());
+        query.like(StringUtils.isNotBlank(materialVO.getMaterialCoding()), "material_coding", materialVO.getMaterialCoding());
         //物料名称
 
-        query.like(StringUtils.isNotBlank(addMeterialDTO.getMaterialName()), "material_name", addMeterialDTO.getMaterialName());
+        query.like(StringUtils.isNotBlank(materialVO.getMaterialName()), "material_name", materialVO.getMaterialName());
 
         //物料俗称
-        query.like(StringUtils.isNotBlank(addMeterialDTO.getSlang()), "slang", addMeterialDTO.getSlang());
+        query.like(StringUtils.isNotBlank(materialVO.getSlang()), "slang", materialVO.getSlang());
 
         //规格型号
-        query.like(StringUtils.isNotBlank(addMeterialDTO.getSpecificationModel()), "specification_model",addMeterialDTO.getSpecificationModel());
+        query.like(StringUtils.isNotBlank(materialVO.getSpecificationModel()), "specification_model", materialVO.getSpecificationModel());
 
         //物料材质
-        query.like(StringUtils.isNotBlank(addMeterialDTO.getMaterial()), "material", addMeterialDTO.getMaterial());
+        query.like(StringUtils.isNotBlank(materialVO.getMaterial()), "material", materialVO.getMaterial());
 
         //物料图号
-        query.like(StringUtils.isNotBlank(addMeterialDTO.getDrawingNumber()), "drawing_number", addMeterialDTO.getMeasurementUnit());
+        query.like(StringUtils.isNotBlank(materialVO.getDrawingNumber()), "drawing_number", materialVO.getMeasurementUnit());
 
         //计量单位
-        query.like(StringUtils.isNotBlank(addMeterialDTO.getMeasurementUnit()), "measurement_unit", addMeterialDTO.getMeasurementUnit());
+        query.like(StringUtils.isNotBlank(materialVO.getMeasurementUnit()), "measurement_unit", materialVO.getMeasurementUnit());
 
         //辅助单位
-        query.like(StringUtils.isNotBlank(addMeterialDTO.getAuxiliaryUnit()), "auxiliary_unit", addMeterialDTO.getAuxiliaryUnit());
+        query.like(StringUtils.isNotBlank(materialVO.getAuxiliaryUnit()), "auxiliary_unit", materialVO.getAuxiliaryUnit());
 
         //执行标准
-        query.like(StringUtils.isNotBlank(addMeterialDTO.getExecutiveStandard()), "executive_standard", addMeterialDTO.getExecutiveStandard());
+        query.like(StringUtils.isNotBlank(materialVO.getExecutiveStandard()), "executive_standard", materialVO.getExecutiveStandard());
 
         //技术要求
-        query.like(StringUtils.isNotBlank(addMeterialDTO.getSkillsRequiremen()), "skills_requiremen", addMeterialDTO.getSkillsRequiremen());
+        query.like(StringUtils.isNotBlank(materialVO.getSkillsRequiremen()), "skills_requiremen", materialVO.getSkillsRequiremen());
 
         //图号
-        query.like(StringUtils.isNotBlank(addMeterialDTO.getDrawingNumber()), "drawing_number", addMeterialDTO.getDrawingNumber());
+        query.like(StringUtils.isNotBlank(materialVO.getDrawingNumber()), "drawing_number", materialVO.getDrawingNumber());
 
         //安全质量标准
-        query.like(StringUtils.isNotBlank(addMeterialDTO.getSafetyQualityStandards()), "safety_quality_standards", addMeterialDTO.getSafetyQualityStandards());
+        query.like(StringUtils.isNotBlank(materialVO.getSafetyQualityStandards()), "safety_quality_standards", materialVO.getSafetyQualityStandards());
 
         //品牌
-        query.like(StringUtils.isNotBlank(addMeterialDTO.getBrand()),"brand",addMeterialDTO.getBrand());
+        query.like(StringUtils.isNotBlank(materialVO.getBrand()), "brand", materialVO.getBrand());
 
         return baseMapper.selectPage(meterialPage, query);
     }

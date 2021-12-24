@@ -13,10 +13,13 @@ import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
+import com.huanhong.wms.entity.MaterialClassification;
 import com.huanhong.wms.entity.Meterial;
 import com.huanhong.wms.entity.dto.AddMeterialDTO;
 import com.huanhong.wms.entity.dto.UpdateMeterialDTO;
+import com.huanhong.wms.entity.vo.MeterialVO;
 import com.huanhong.wms.mapper.MeterialMapper;
+import com.huanhong.wms.service.IMaterialClassificationService;
 import com.huanhong.wms.service.IMeterialService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -29,7 +32,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -43,6 +45,9 @@ public class MeterialController extends BaseController {
 
     @Resource
     private MeterialMapper meterialMapper;
+
+    @Resource
+    private IMaterialClassificationService materialClassificationService;
 
     @Autowired
     private JudgeConfig judgeConfig;
@@ -66,11 +71,11 @@ public class MeterialController extends BaseController {
     @GetMapping("/pagingFuzzyQuery")
     public Result<Page<Meterial>> page(@RequestParam(defaultValue = "1") Integer current,
                                        @RequestParam(defaultValue = "10") Integer size,
-                                       AddMeterialDTO addMeterialDTO//查询条件封装的对象
+                                       MeterialVO meterialVO//查询条件封装的对象
     ) {
         try {
             //调用服务层方法，传入page对象和查询条件对象
-            Page<Meterial> pageResult = meterialService.pageFuzzyQuery(new Page<>(current, size), addMeterialDTO);
+            Page<Meterial> pageResult = meterialService.pageFuzzyQuery(new Page<>(current, size), meterialVO);
             return Result.success(pageResult);
         } catch (Exception e) {
             return Result.failure("查询失败--异常：" + e);
@@ -80,13 +85,13 @@ public class MeterialController extends BaseController {
     /**
      * 添加物料
      *
-     * @param meterial
+     * @param addMeterialDTO
      * @return
      */
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "添加物料")
     @PostMapping("/add")
-    public Result add(@Valid @RequestBody Meterial meterial) {
+    public Result add(@Valid @RequestBody AddMeterialDTO addMeterialDTO) {
 
         /**
          * 判断是否有必填参数为空
@@ -95,7 +100,7 @@ public class MeterialController extends BaseController {
             /**
              * 实体类转为json
              */
-            String meterialToJoStr = JSONObject.toJSONString(meterial);
+            String meterialToJoStr = JSONObject.toJSONString(addMeterialDTO);
             JSONObject meterialJo = JSONObject.parseObject(meterialToJoStr);
             /**
              * 不能为空的参数list
@@ -112,6 +117,15 @@ public class MeterialController extends BaseController {
                     return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, key + ": 不能为空");
                 }
             }
+
+            /**
+             * 判断物料分类编码是否为空
+             */
+            MaterialClassification materialClassification = materialClassificationService.getMaterialClassificationByTypeCode(addMeterialDTO.getTypeCode());
+            if (ObjectUtil.isEmpty(materialClassification)){
+                return Result.failure(ErrorCode.PARAM_FORMAT_ERROR,  "分类编码: "+addMeterialDTO.getTypeCode()+" 不能为空");
+            }
+
         } catch (Exception e) {
             LOGGER.error("添加物料失败--判断参数空值出错,异常：" + e);
             return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--判空失败，请稍后再试或联系管理员");
@@ -121,11 +135,13 @@ public class MeterialController extends BaseController {
          * 在此处查重
          */
         try {
-            Meterial meterial_exist = meterialService.getMeterialByMeterialCode(meterial.getMaterialCoding());
+            Meterial meterial_exist = meterialService.getMeterialByMeterialCode(addMeterialDTO.getMaterialCoding());
             if (ObjectUtil.isNotEmpty(meterial_exist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "物料编码重复");
             }
             try {
+                Meterial meterial = new Meterial();
+                BeanUtil.copyProperties(addMeterialDTO, meterial);
                 int insert = meterialMapper.insert(meterial);
                 LOGGER.info("添加物料成功");
                 return render(insert > 0);
@@ -142,6 +158,7 @@ public class MeterialController extends BaseController {
 
     /**
      * 过物料编码更新物料信息
+     *
      * @param updateMeterialDTO
      * @return
      */
@@ -165,7 +182,7 @@ public class MeterialController extends BaseController {
 
             UpdateWrapper<Meterial> updateWrapper = new UpdateWrapper<>();
             Meterial updateMeterial = new Meterial();
-            BeanUtil.copyProperties(updateMeterialDTO, updateMeterial );
+            BeanUtil.copyProperties(updateMeterialDTO, updateMeterial);
             updateWrapper.eq("material_coding", updateMeterialDTO.getMaterialCoding());
             int i = meterialMapper.update(updateMeterial, updateWrapper);
             LOGGER.info("物料: " + updateMeterialDTO.getMaterialCoding() + " 更新成功");
@@ -219,43 +236,43 @@ public class MeterialController extends BaseController {
         return Result.noDataError();
     }
 
-    /**
-     * 根据物料名称查询物料信息
-     *
-     * @param meterialName
-     * @return
-     */
-    @ApiOperationSupport(order = 6)
-    @ApiOperation(value = "根据物料名称查询物料信息")
-    @GetMapping("/getMeterialByMeterialName/{meterialName}")
-    public Result getMeterialByMeterialName(@PathVariable("meterialName") String meterialName) {
-        QueryWrapper<Meterial> wrapper = new QueryWrapper<>();
-        wrapper.eq("material_name", meterialName);
-        ArrayList<Meterial> meterialList = (ArrayList<Meterial>) meterialMapper.selectList(wrapper);
-        if (meterialList != null) {
-            return Result.success(meterialList, "查询成功");
-        }
-        return Result.noDataError();
-    }
+//    /**
+//     * 根据物料名称查询物料信息
+//     *
+//     * @param meterialName
+//     * @return
+//     */
+//    @ApiOperationSupport(order = 6)
+//    @ApiOperation(value = "根据物料名称查询物料信息")
+//    @GetMapping("/getMeterialByMeterialName/{meterialName}")
+//    public Result getMeterialByMeterialName(@PathVariable("meterialName") String meterialName) {
+//        QueryWrapper<Meterial> wrapper = new QueryWrapper<>();
+//        wrapper.eq("material_name", meterialName);
+//        ArrayList<Meterial> meterialList = (ArrayList<Meterial>) meterialMapper.selectList(wrapper);
+//        if (meterialList != null) {
+//            return Result.success(meterialList, "查询成功");
+//        }
+//        return Result.noDataError();
+//    }
 
-    /**
-     * 根据物料俗称查询物料信息
-     *
-     * @param slang
-     * @return
-     */
-    @ApiOperationSupport(order = 7)
-    @ApiOperation(value = "根据物料俗称查询物料信息")
-    @GetMapping("/getMetrialByMeterialName/{slang}")
-    public Result getMeterialBySlang(@PathVariable("slang") String slang) {
-        QueryWrapper<Meterial> wrapper = new QueryWrapper<>();
-        wrapper.eq("slang", slang);
-        ArrayList<Meterial> meterialList = (ArrayList<Meterial>) meterialMapper.selectList(wrapper);
-        if (meterialList != null) {
-            return Result.success(meterialList, "查询成功");
-        }
-        return Result.noDataError();
-    }
+//    /**
+//     * 根据物料俗称查询物料信息
+//     *
+//     * @param slang
+//     * @return
+//     */
+//    @ApiOperationSupport(order = 7)
+//    @ApiOperation(value = "根据物料俗称查询物料信息")
+//    @GetMapping("/getMetrialByMeterialName/{slang}")
+//    public Result getMeterialBySlang(@PathVariable("slang") String slang) {
+//        QueryWrapper<Meterial> wrapper = new QueryWrapper<>();
+//        wrapper.eq("slang", slang);
+//        ArrayList<Meterial> meterialList = (ArrayList<Meterial>) meterialMapper.selectList(wrapper);
+//        if (meterialList != null) {
+//            return Result.success(meterialList, "查询成功");
+//        }
+//        return Result.noDataError();
+//    }
 
 
     /**

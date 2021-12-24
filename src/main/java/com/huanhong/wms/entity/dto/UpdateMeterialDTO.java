@@ -21,6 +21,10 @@ public class UpdateMeterialDTO {
     private String materialName;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "分类编码")
+    private String typeCode;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "俗称")
     private String slang;
 

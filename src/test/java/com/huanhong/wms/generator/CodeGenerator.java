@@ -49,11 +49,11 @@ public class CodeGenerator {
 
         // 数据源配置
         DataSourceConfig dsc = new DataSourceConfig();
-        dsc.setUrl("jdbc:mysql://47.100.1.173:3306/meike_test?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&tinyInt1isBit=false&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai");
+        dsc.setUrl("jdbc:mysql://wms.aiairy.com:3316/wms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&autoReconnect=true&tinyInt1isBit=false&timezone=utc&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true");
         // dsc.setSchemaName("public");
-        dsc.setDriverName("com.mysql.cj.jdbc.Driver");
-        dsc.setUsername("root");
-        dsc.setPassword("Wsad123456.");
+        dsc.setDriverName("com.zaxxer.hikari.HikariDataSource");
+        dsc.setUsername("wms");
+        dsc.setPassword("FpLSHCiY66KaMxz7");
         mpg.setDataSource(dsc);
 
         // 配置模板

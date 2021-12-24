@@ -27,4 +27,6 @@ public class JudgeConfig {
     private List<String> ShelfNotNullList = new ArrayList<>();
     //货位非空字段表
     private List<String> CargoSpaceNullList = new ArrayList<>();
+    //物料分类非空字段
+    private List<String> MeterialClassificationNullList = new ArrayList<>();
 }

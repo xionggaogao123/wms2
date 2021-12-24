@@ -4,13 +4,21 @@ spring:
   scheduling:
     enabled: false
   # DataSource Config
+#  datasource:
+#    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+#    type: com.zaxxer.hikari.HikariDataSource
+#    platform: mysql
+#    username: root
+#    password: Wsad123456.
+#    url: jdbc:p6spy:mysql://47.100.1.173:3306/meike_test?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&autoReconnect=true&tinyInt1isBit=false&timezone=utc&useSSL=false&serverTimezone=Asia/Shanghai
+  # DataSource Config
   datasource:
-    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.zaxxer.hikari.HikariDataSource
     platform: mysql
     username: wms
     password: FpLSHCiY66KaMxz7
-    url: jdbc:p6spy:mysql://wms.aiairy.com:3316/wms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&autoReconnect=true&tinyInt1isBit=false&timezone=utc&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://wms.aiairy.com:3316/wms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&autoReconnect=true&tinyInt1isBit=false&timezone=utc&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
 # Socket Config
 wss:
   server:

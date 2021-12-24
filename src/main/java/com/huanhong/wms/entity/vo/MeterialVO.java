@@ -19,6 +19,9 @@ public class MeterialVO {
     @ApiModelProperty(value = "俗称")
     private String slang;
 
+    @ApiModelProperty(value = "分类编码")
+    private String typeCode;
+
     @ApiModelProperty(value = "规格型号")
     private String specificationModel;
 
@@ -28,7 +31,7 @@ public class MeterialVO {
     @ApiModelProperty(value = "辅助单位")
     private String auxiliaryUnit;
 
-    @ApiModelProperty(value="品牌")
+    @ApiModelProperty(value = "品牌")
     private String brand;
 
     @ApiModelProperty(value = "材质")

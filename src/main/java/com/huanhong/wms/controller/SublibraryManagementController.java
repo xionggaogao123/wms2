@@ -1,5 +1,6 @@
 package com.huanhong.wms.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -13,6 +14,8 @@ import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
 import com.huanhong.wms.entity.SublibraryManagement;
+import com.huanhong.wms.entity.dto.AddSubliraryDTO;
+import com.huanhong.wms.entity.dto.UpdateSubliraryDTO;
 import com.huanhong.wms.entity.vo.SublibraryVO;
 import com.huanhong.wms.mapper.SublibraryManagementMapper;
 import com.huanhong.wms.service.ISublibraryManagementService;
@@ -69,7 +72,7 @@ public class SublibraryManagementController extends BaseController {
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "添加子库管理", notes = "生成代码")
     @PostMapping
-    public Result add(@Valid @RequestBody SublibraryManagement sublibraryMmanagement) {
+    public Result add(@Valid @RequestBody AddSubliraryDTO addSubliraryDTO) {
 
         /**
          * 判断是否有必填参数为空
@@ -78,7 +81,7 @@ public class SublibraryManagementController extends BaseController {
             /**
              * 实体类转为json
              */
-            String sublibraryManagementToJoStr = JSONObject.toJSONString(sublibraryMmanagement);
+            String sublibraryManagementToJoStr = JSONObject.toJSONString(addSubliraryDTO);
             JSONObject sublibraryManagementJo = JSONObject.parseObject(sublibraryManagementToJoStr);
             /**
              * 不能为空的参数list
@@ -102,12 +105,14 @@ public class SublibraryManagementController extends BaseController {
          * 在此处查重
          */
         try {
-            SublibraryManagement sublibrary = sublibraryManagementService.getSublibraryBySublibraryId(sublibraryMmanagement.getSublibraryId());
+            SublibraryManagement sublibrary = sublibraryManagementService.getSublibraryBySublibraryId(addSubliraryDTO.getSublibraryId());
             if (ObjectUtil.isNotEmpty(sublibrary)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "子库编号重复");
             }
             try {
-                int insert = sublibraryManagementMapper.insert(sublibraryMmanagement);
+                SublibraryManagement sublibraryManagement = new SublibraryManagement();
+                BeanUtil.copyProperties(addSubliraryDTO, sublibraryManagement);
+                int insert = sublibraryManagementMapper.insert(sublibraryManagement);
                 if (insert > 0) {
                     LOGGER.info("添加子库成功");
                 } else {
@@ -127,20 +132,19 @@ public class SublibraryManagementController extends BaseController {
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "更新子库管理", notes = "生成代码")
     @PutMapping
-    public Result update(@Valid @RequestBody SublibraryManagement sublibraryManagement) {
+    public Result update(@Valid @RequestBody UpdateSubliraryDTO updateSubliraryDTO) {
         UpdateWrapper updateWrapper = new UpdateWrapper<>();
         try {
-            if (StringUtils.isBlank(sublibraryManagement.getWarehouseId())) {
-                return Result.failure(ErrorCode.SYSTEM_ERROR, "库房编号为空");
-            } else if (StringUtils.isBlank(sublibraryManagement.getSublibraryId())) {
+            if (StringUtils.isBlank(updateSubliraryDTO.getSublibraryId())) {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "子库编号为空");
             }
-            SublibraryManagement sublibraryIsExist = sublibraryManagementService.getSublibraryBySublibraryId(sublibraryManagement.getSublibraryId());
+            SublibraryManagement sublibraryIsExist = sublibraryManagementService.getSublibraryBySublibraryId(updateSubliraryDTO.getSublibraryId());
             if (ObjectUtil.isEmpty(sublibraryIsExist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此子库编码");
             }
-            updateWrapper.eq("warehouse_id", sublibraryManagement.getWarehouseId());
-            updateWrapper.eq("sublibrary_id", sublibraryManagement.getSublibraryId());
+            SublibraryManagement sublibraryManagement = new SublibraryManagement();
+            BeanUtil.copyProperties(updateSubliraryDTO, sublibraryManagement);
+            updateWrapper.eq("sublibrary_id", updateSubliraryDTO.getSublibraryId());
             int update = sublibraryManagementMapper.update(sublibraryManagement, updateWrapper);
             return render(update > 0);
         } catch (Exception e) {

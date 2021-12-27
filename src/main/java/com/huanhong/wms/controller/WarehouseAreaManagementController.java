@@ -1,5 +1,6 @@
 package com.huanhong.wms.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -13,6 +14,8 @@ import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
 import com.huanhong.wms.entity.WarehouseAreaManagement;
+import com.huanhong.wms.entity.dto.AddWarehouseAreaDTO;
+import com.huanhong.wms.entity.dto.UpdateWarehouseAreaDTO;
 import com.huanhong.wms.entity.vo.WarehouseAreaVO;
 import com.huanhong.wms.mapper.WarehouseAreaManagementMapper;
 import com.huanhong.wms.service.IWarehouseAreaManagementService;
@@ -69,7 +72,7 @@ public class WarehouseAreaManagementController extends BaseController {
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "添加库房区域管理", notes = "生成代码")
     @PostMapping
-    public Result add(@Valid @RequestBody WarehouseAreaManagement warehouseAreaManagement) {
+    public Result add(@Valid @RequestBody AddWarehouseAreaDTO addWarehouseAreaDTO) {
 
         /**
          * 判断是否有必填参数为空
@@ -78,7 +81,7 @@ public class WarehouseAreaManagementController extends BaseController {
             /**
              * 实体类转为json
              */
-            String warehouseAreaManagementToJoStr = JSONObject.toJSONString(warehouseAreaManagement);
+            String warehouseAreaManagementToJoStr = JSONObject.toJSONString(addWarehouseAreaDTO);
             JSONObject warehouseAreaManagementJo = JSONObject.parseObject(warehouseAreaManagementToJoStr);
             /**
              * 不能为空的参数list
@@ -102,11 +105,13 @@ public class WarehouseAreaManagementController extends BaseController {
          * 在此处查重
          */
         try {
-            WarehouseAreaManagement warehouseAreaIsExist = warehouseAreaManagementService.getWarehouseAreaByWarehouseAreaId(warehouseAreaManagement.getWarehouseAreaId());
+            WarehouseAreaManagement warehouseAreaIsExist = warehouseAreaManagementService.getWarehouseAreaByWarehouseAreaId(addWarehouseAreaDTO.getWarehouseAreaId());
             if (ObjectUtil.isNotEmpty(warehouseAreaIsExist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "库区编号重复,库区已存在");
             }
             try {
+                WarehouseAreaManagement warehouseAreaManagement = new WarehouseAreaManagement();
+                BeanUtil.copyProperties(addWarehouseAreaDTO, warehouseAreaManagement);
                 int insert = warehouseAreaManagementMapper.insert(warehouseAreaManagement);
                 if (insert > 0) {
                     LOGGER.info("添加库区成功");
@@ -128,22 +133,21 @@ public class WarehouseAreaManagementController extends BaseController {
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "更新库房区域管理", notes = "生成代码")
     @PutMapping
-    public Result update(@Valid @RequestBody WarehouseAreaManagement warehouseAreaManagement) {
+    public Result update(@Valid @RequestBody UpdateWarehouseAreaDTO updateWarehouseAreaDTO) {
         UpdateWrapper updateWrapper = new UpdateWrapper<>();
         try {
             //防止传空值
-            if (StringUtils.isBlank(warehouseAreaManagement.getSublibraryId())) {
-                return Result.failure(ErrorCode.SYSTEM_ERROR, "子库编号为空");
-            } else if (StringUtils.isBlank(warehouseAreaManagement.getWarehouseAreaId())) {
+            if (StringUtils.isBlank(updateWarehouseAreaDTO.getWarehouseAreaId())) {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "库区为空");
             }
             //判断更新的库区是否存在
-            WarehouseAreaManagement warehouseAreaIsExist = warehouseAreaManagementService.getWarehouseAreaByWarehouseAreaId(warehouseAreaManagement.getWarehouseAreaId());
+            WarehouseAreaManagement warehouseAreaIsExist = warehouseAreaManagementService.getWarehouseAreaByWarehouseAreaId(updateWarehouseAreaDTO.getWarehouseAreaId());
             if (ObjectUtil.isEmpty(warehouseAreaIsExist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此库区编码，库区不存在");
             }
-            updateWrapper.eq("sublibrary_id", warehouseAreaManagement.getSublibraryId());
-            updateWrapper.eq("warehouse_area_id", warehouseAreaManagement.getWarehouseAreaId());
+            WarehouseAreaManagement warehouseAreaManagement = new WarehouseAreaManagement();
+            BeanUtil.copyProperties(updateWarehouseAreaDTO,warehouseAreaManagement);
+            updateWrapper.eq("warehouse_area_id", updateWarehouseAreaDTO.getWarehouseAreaId());
             int update = warehouseAreaManagementMapper.update(warehouseAreaManagement, updateWrapper);
             return render(update > 0);
         } catch (Exception e) {

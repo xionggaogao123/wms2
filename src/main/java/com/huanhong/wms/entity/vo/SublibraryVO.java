@@ -4,7 +4,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-
 @ApiModel(value = "sublibraryVO查询对象", description = "子库查询对象封装")
 @Data
 public class SublibraryVO {

@@ -15,6 +15,7 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
 import com.huanhong.wms.entity.ShelfManagement;
 import com.huanhong.wms.entity.WarehouseAreaManagement;
+import com.huanhong.wms.entity.dto.AddShelfDTO;
 import com.huanhong.wms.entity.dto.UpdateShelfDTO;
 import com.huanhong.wms.entity.vo.ShelfVO;
 import com.huanhong.wms.mapper.ShelfManagementMapper;
@@ -76,7 +77,7 @@ public class ShelfManagementController extends BaseController {
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "添加货架管理")
     @PostMapping
-    public Result add(@Valid @RequestBody ShelfManagement shelfManagement) {
+    public Result add(@Valid @RequestBody AddShelfDTO addShelfDTO) {
 
         /**
          * 判断是否有必填参数为空
@@ -85,7 +86,7 @@ public class ShelfManagementController extends BaseController {
             /**
              * 实体类转为json
              */
-            String shelfManagementToJoStr = JSONObject.toJSONString(shelfManagement);
+            String shelfManagementToJoStr = JSONObject.toJSONString(addShelfDTO);
             JSONObject shelfManagementJo = JSONObject.parseObject(shelfManagementToJoStr);
             /**
              * 不能为空的参数list
@@ -109,8 +110,8 @@ public class ShelfManagementController extends BaseController {
          * 在此处查重
          */
         try {
-            ShelfManagement shelfManagementIsExist = shelfManagementService.getShelfByShelfId(shelfManagement.getShelfId());
-            WarehouseAreaManagement warehouseAreaManagementIsExist = warehouseAreaManagementService.getWarehouseAreaByWarehouseAreaId(shelfManagement.getWarehouseAreaId());
+            ShelfManagement shelfManagementIsExist = shelfManagementService.getShelfByShelfId(addShelfDTO.getShelfId());
+            WarehouseAreaManagement warehouseAreaManagementIsExist = warehouseAreaManagementService.getWarehouseAreaByWarehouseAreaId(addShelfDTO.getWarehouseAreaId());
             //判断库区是否存在
             if (ObjectUtil.isEmpty(warehouseAreaManagementIsExist)) {
                 return Result.failure(ErrorCode.DATA_IS_NULL, "库区不存在,无法添加货架");
@@ -120,6 +121,8 @@ public class ShelfManagementController extends BaseController {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "货架编号重复,货架已存在");
             }
             try {
+                ShelfManagement shelfManagement = new ShelfManagement();
+                BeanUtil.copyProperties(addShelfDTO,shelfManagement);
                 int insert = shelfManagementMapper.insert(shelfManagement);
                 if (insert > 0) {
                     LOGGER.info("添加货架成功");

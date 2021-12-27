@@ -1,5 +1,6 @@
 package com.huanhong.wms.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -13,6 +14,8 @@ import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
 import com.huanhong.wms.entity.WarehouseManagement;
+import com.huanhong.wms.entity.dto.AddWarehouseDTO;
+import com.huanhong.wms.entity.dto.UpdateWarehouseDTO;
 import com.huanhong.wms.entity.vo.WarehouseVo;
 import com.huanhong.wms.mapper.WarehouseManagementMapper;
 import com.huanhong.wms.service.IWarehouseManagementService;
@@ -77,7 +80,7 @@ public class WarehouseManagementController extends BaseController {
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "添加仓库")
     @PostMapping
-    public Result add(@Valid @RequestBody WarehouseManagement warehouseManagement) {
+    public Result add(@Valid @RequestBody AddWarehouseDTO addWarehouseDTO) {
 
         /**
          * 判断是否有必填参数为空
@@ -86,7 +89,7 @@ public class WarehouseManagementController extends BaseController {
             /**
              * 实体类转为json
              */
-            String warehouseManagementToJoStr = JSONObject.toJSONString(warehouseManagement);
+            String warehouseManagementToJoStr = JSONObject.toJSONString(addWarehouseDTO);
             JSONObject warehouseManagementJo = JSONObject.parseObject(warehouseManagementToJoStr);
             /**
              * 不能为空的参数list
@@ -112,11 +115,13 @@ public class WarehouseManagementController extends BaseController {
          * 在此处查重
          */
         try {
-            WarehouseManagement warehouse = warehouseManagementService.getWarehouseByWarehouseId(warehouseManagement.getWarehouseId());
+            WarehouseManagement warehouse = warehouseManagementService.getWarehouseByWarehouseId(addWarehouseDTO.getWarehouseId());
             if (ObjectUtil.isNotEmpty(warehouse)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "库房编号重复");
             }
             try {
+                WarehouseManagement warehouseManagement = new WarehouseManagement();
+                BeanUtil.copyProperties(addWarehouseDTO, warehouseManagement);
                 int insert = warehouseManagementMapper.insert(warehouseManagement);
                 LOGGER.info("添加库房成功");
                 return render(insert > 0);
@@ -133,20 +138,21 @@ public class WarehouseManagementController extends BaseController {
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "更新仓库管理")
     @PutMapping
-    public Result update(@Valid @RequestBody WarehouseManagement warehouseManagement) {
+    public Result update(@Valid @RequestBody UpdateWarehouseDTO updateWarehouseDTO) {
         UpdateWrapper updateWrapper = new UpdateWrapper<>();
         try {
-            if (StringUtils.isBlank(warehouseManagement.getCompanyId())) {
-                return Result.failure(ErrorCode.SYSTEM_ERROR, "公司编号为空");
-            } else if (StringUtils.isBlank(warehouseManagement.getWarehouseId())) {
+
+            if (StringUtils.isBlank(updateWarehouseDTO.getWarehouseId())) {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "库房编号为空");
             }
-            WarehouseManagement warehouseManagementIsExist = warehouseManagementService.getWarehouseByWarehouseId(warehouseManagement.getWarehouseId());
+
+            WarehouseManagement warehouseManagementIsExist = warehouseManagementService.getWarehouseByWarehouseId(updateWarehouseDTO.getWarehouseId());
             if (ObjectUtil.isEmpty(warehouseManagementIsExist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此库房编码");
             }
-            updateWrapper.eq("company_id", warehouseManagement.getCompanyId());
-            updateWrapper.eq("warehouse_id", warehouseManagement.getWarehouseId());
+            WarehouseManagement warehouseManagement = new WarehouseManagement();
+            BeanUtil.copyProperties(updateWarehouseDTO,warehouseManagement);
+            updateWrapper.eq("warehouse_id", updateWarehouseDTO.getWarehouseId());
             int update = warehouseManagementMapper.update(warehouseManagement, updateWrapper);
             return render(update > 0);
         } catch (Exception e) {

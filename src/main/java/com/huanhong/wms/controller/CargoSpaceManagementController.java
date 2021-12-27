@@ -177,6 +177,5 @@ public class CargoSpaceManagementController extends BaseController {
         return render(i > 0);
     }
 
-
 }
 

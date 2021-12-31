@@ -59,6 +59,9 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         if (user == null) {
             return Result.failure(1024, "登录失败，请确认账号是否正确");
         }
+        if (!user.getState().equals(1)) {
+            return Result.failure(2003, "账号已禁用");
+        }
         if (login.getType().equals("account")) {
             if (!user.getPassword().equals(SecureUtil.md5(login.getPassword()))) {
                 return Result.failure(1025, "密码错误");
@@ -75,9 +78,6 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
             redisTemplate.delete(key);
         } else {
             return Result.failure("非法登陆");
-        }
-        if (!user.getState().equals(1)) {
-            return Result.failure(2003, "账号已禁用");
         }
         Company company = companyMapper.selectById(user.getCompanyId());
         if (!company.getState().equals(1)) {

@@ -59,6 +59,9 @@ public class User extends SuperBsEntity {
     @ApiModelProperty(value = "备注")
     private String remark;
 
+    @ApiModelProperty(value = "状态 0.禁用  1.启用")
+    private Integer state;
+
     @ApiModelProperty(value = "部门列表")
     @TableField(exist = false)
     private List<Map<String, Object>> depts;

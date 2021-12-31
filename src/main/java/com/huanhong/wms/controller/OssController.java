@@ -12,7 +12,6 @@ import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.common.units.OssUtil;
 import com.huanhong.wms.BaseController;
-import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.Oss;
@@ -72,10 +71,10 @@ public class OssController extends BaseController {
                                       @RequestParam(required = false) Integer objectId,
                                       @RequestParam(required = false, defaultValue = "1") Integer sort) {
         LoginUser loginUser = this.getLoginUser();
-        if (!file.getContentType().contains("image")) {
-            return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, "请上传正确的图片");
-        }
-        String md5, fileName = NanoId.randomNanoId(18) + ".jpg";
+//        if (!file.getContentType().contains("image")) {
+//            return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, "请上传正确的图片");
+//        }
+        String md5, fileName = NanoId.randomNanoId(18) + "." + FileUtil.extName(file.getOriginalFilename());
         String filePath = ossProperties.getPath() + type + "/";
         String fullPath = filePath + fileName;
         long fileSize = file.getSize();
@@ -85,19 +84,23 @@ public class OssController extends BaseController {
         try {
             FileUtil.mkdir(filePath);
             // 人脸压缩
-            if ("face".equals(type)) {
-                if (fileSize > fileMaxSize) {
-                    // 循环压缩
-                    commpressPicCycle(filePath, file.getInputStream(), fileMaxSize, 0.9);
+            if(file.getContentType().contains("image")){
+                if ("face".equals(type)) {
+                    if (fileSize > fileMaxSize) {
+                        // 循环压缩
+                        commpressPicCycle(filePath, file.getInputStream(), fileMaxSize, 0.9);
+                    } else {
+                        file.transferTo(Paths.get(fullPath));
+                    }
                 } else {
-                    file.transferTo(Paths.get(fullPath));
+                    Thumbnails.of(file.getInputStream())
+                            .scale(1f)
+                            .outputQuality(0.9f)
+                            .outputFormat("jpg")
+                            .toFile(fullPath);
                 }
-            } else {
-                Thumbnails.of(file.getInputStream())
-                        .scale(1f)
-                        .outputQuality(0.9f)
-                        .outputFormat("jpg")
-                        .toFile(fullPath);
+            }else{
+                file.transferTo(Paths.get(fullPath));
             }
             FileReader reader = new FileReader(fullPath);
             fileSize = reader.getFile().length();

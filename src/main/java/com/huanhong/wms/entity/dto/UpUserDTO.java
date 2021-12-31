@@ -52,4 +52,7 @@ public class UpUserDTO {
     @ApiModelProperty(value = "备注")
     private String remark;
 
+    @ApiModelProperty(value = "状态 0.禁用  1.启用")
+    private Integer state;
+
 }

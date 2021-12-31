@@ -76,9 +76,9 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         } else {
             return Result.failure("非法登陆");
         }
-//        if (!user.getState().equals(1)) {
-//            return Result.failure(2003, "账号已禁用");
-//        }
+        if (!user.getState().equals(1)) {
+            return Result.failure(2003, "账号已禁用");
+        }
         Company company = companyMapper.selectById(user.getCompanyId());
         if (!company.getState().equals(1)) {
             return Result.failure("公司账号已被禁用");
@@ -107,18 +107,21 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         }
         User addUser = new User();
         BeanUtil.copyProperties(dto, addUser);
-        addUser.setCompanyId(loginUser.getCompanyId());
-        addUser.setParentCompanyId(loginUser.getParentCompanyId());
-        Company company = companyMapper.selectById(addUser.getCompanyId());
-        if (company == null) {
-            return Result.failure("公司信息不存在或已删除");
-        }
+
         Dept dept = deptMapper.selectById(addUser.getDeptId());
         if (dept == null) {
             return Result.failure("部门信息不存在或已删除");
         }
-        addUser.setCompanyName(company.getName());
         addUser.setDeptName(dept.getName());
+        addUser.setCompanyId(dept.getCompanyId());
+        addUser.setParentCompanyId(dept.getParentCompanyId());
+
+        Company company = companyMapper.selectById(addUser.getCompanyId());
+        if (company == null) {
+            return Result.failure("公司信息不存在或已删除");
+        }
+        addUser.setCompanyName(company.getName());
+
         if (StrUtil.isNotEmpty(addUser.getPassword())) {
             addUser.setPassword(SecureUtil.md5(addUser.getPassword()));
         }

@@ -9,7 +9,7 @@ import lombok.Data;
 public class WarehouseVo {
 
     @ApiModelProperty(value = "所属公司ID")
-    private String companyId;
+    private Integer companyId;
 
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;

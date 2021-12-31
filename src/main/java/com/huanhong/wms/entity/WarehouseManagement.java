@@ -7,6 +7,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.time.LocalDateTime;
+
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ApiModel(description="仓库管理")
@@ -15,7 +17,7 @@ public class WarehouseManagement extends SuperEntity {
     private static final long serialVersionUID=1L;
 
     @ApiModelProperty(value = "所属公司ID")
-    private String companyId;
+    private Integer companyId;
 
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;
@@ -37,6 +39,9 @@ public class WarehouseManagement extends SuperEntity {
 
     @ApiModelProperty(value = "库房联系电话")
     private String warehouseContactNumber;
+
+    @ApiModelProperty(value = "创建时间")
+    private LocalDateTime createTime;
 
     @ApiModelProperty(value = "备注")
     private String remark;

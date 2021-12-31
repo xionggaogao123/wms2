@@ -4,11 +4,11 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.entity.WarehouseManagement;
 import com.huanhong.wms.entity.vo.WarehouseVo;
 import com.huanhong.wms.mapper.WarehouseManagementMapper;
 import com.huanhong.wms.service.IWarehouseManagementService;
-import com.huanhong.wms.SuperServiceImpl;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -64,7 +64,7 @@ public class WarehouseManagementServiceImpl extends SuperServiceImpl<WarehouseMa
         }
         //若Vo对象不为空，分别获取其中的字段，
         //并对其进行判断是否为空，这一步类似动态SQL的拼装
-        query.like(StringUtils.isNotBlank(warehouseVo.getCompanyId()), "company_id", warehouseVo.getCompanyId());
+        query.like(ObjectUtil.isNotEmpty(warehouseVo.getCompanyId()), "company_id", warehouseVo.getCompanyId());
 
         query.like(StringUtils.isNotBlank(warehouseVo.getWarehouseId()), "warehouse_id", warehouseVo.getWarehouseId());
 

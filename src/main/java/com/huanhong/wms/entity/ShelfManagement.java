@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.time.LocalDateTime;
+
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ApiModel(description="货架管理")
@@ -36,6 +38,9 @@ public class ShelfManagement extends SuperEntity {
 
     @ApiModelProperty(value = "货架层数-地堆即为一层")
     private String shelfLayer;
+
+    @ApiModelProperty(value = "创建时间")
+    private LocalDateTime createTime;
 
     @ApiModelProperty(value = "备注")
     private String remark;

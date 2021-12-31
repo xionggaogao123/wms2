@@ -1,12 +1,14 @@
 package com.huanhong.wms.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.entity.InventoryInformation;
-import com.huanhong.wms.entity.Meterial;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.service.IInventoryInformationService;
-import com.huanhong.wms.SuperServiceImpl;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * <p>
@@ -32,5 +34,13 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         updateWrapper.eq("Batch",inventoryInformation.getBatch());
         int i = inventoryInformationMapper.update(inventoryInformation,updateWrapper);
         return i;
+    }
+
+    @Override
+    public List<InventoryInformation> getInventoryInformationByCargoSpaceId(String cargoSpaceId) {
+        QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("cargo_space_id",cargoSpaceId);
+        List<InventoryInformation> inventoryInformationList = inventoryInformationMapper.selectList(queryWrapper);
+        return inventoryInformationList;
     }
 }

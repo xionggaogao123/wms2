@@ -86,5 +86,11 @@ public class CompanyServiceImpl extends SuperServiceImpl<CompanyMapper, Company>
         return delete > 0 ? Result.success() : Result.failure("删除失败");
     }
 
+    @Override
+    public Company getCompanyById(Integer id) {
+        Company Company = this.baseMapper.selectById(id);
+        return Company;
+    }
+
 
 }

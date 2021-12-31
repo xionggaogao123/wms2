@@ -1,9 +1,9 @@
 package com.huanhong.wms.service;
 
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.huanhong.wms.entity.InventoryInformation;
 import com.huanhong.wms.SuperService;
-import com.huanhong.wms.entity.Meterial;
+import com.huanhong.wms.entity.InventoryInformation;
+
+import java.util.List;
 
 /**
  * <p>
@@ -24,4 +24,9 @@ public interface IInventoryInformationService extends SuperService<InventoryInfo
     /**
      * 库存信息删除-下架
      */
+
+    /**
+     * 根据货位编码查询其中存储的物料信息
+     */
+    List<InventoryInformation>  getInventoryInformationByCargoSpaceId(String cargoSpaceId);
 }

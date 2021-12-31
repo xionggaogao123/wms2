@@ -13,11 +13,15 @@ import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
+import com.huanhong.wms.entity.Company;
+import com.huanhong.wms.entity.SublibraryManagement;
 import com.huanhong.wms.entity.WarehouseManagement;
 import com.huanhong.wms.entity.dto.AddWarehouseDTO;
 import com.huanhong.wms.entity.dto.UpdateWarehouseDTO;
 import com.huanhong.wms.entity.vo.WarehouseVo;
 import com.huanhong.wms.mapper.WarehouseManagementMapper;
+import com.huanhong.wms.service.ICompanyService;
+import com.huanhong.wms.service.ISublibraryManagementService;
 import com.huanhong.wms.service.IWarehouseManagementService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -44,6 +48,12 @@ public class WarehouseManagementController extends BaseController {
     @Resource
     private WarehouseManagementMapper warehouseManagementMapper;
 
+    @Resource
+    private ICompanyService companyService;
+
+    @Resource
+    private ISublibraryManagementService sublibraryManagementService;
+
 
     @Autowired
     private JudgeConfig judgeConfig;
@@ -62,7 +72,7 @@ public class WarehouseManagementController extends BaseController {
             @ApiImplicitParam(name = "size", value = "每页行数"),
     })
     @ApiOperationSupport(order = 1)
-    @ApiOperation(value = "分页查询组合库房")
+    @ApiOperation(value = "分页查询组合仓库")
     @GetMapping("/pagingFuzzyQuery")
     public Result<Page<WarehouseManagement>> page(@RequestParam(defaultValue = "1") Integer current,
                                                   @RequestParam(defaultValue = "10") Integer size,
@@ -79,13 +89,22 @@ public class WarehouseManagementController extends BaseController {
 
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "添加仓库")
-    @PostMapping
+    @PostMapping("/addWarehouse")
     public Result add(@Valid @RequestBody AddWarehouseDTO addWarehouseDTO) {
 
         /**
          * 判断是否有必填参数为空
          */
         try {
+
+            /**
+             * 查看公司是否存在
+             */
+            Company company = companyService.getCompanyById(addWarehouseDTO.getCompanyId());
+            if (ObjectUtil.isEmpty(company)) {
+                return Result.failure(ErrorCode.DATA_IS_NULL, "公司不存在，无法添加库房");
+            }
+
             /**
              * 实体类转为json
              */
@@ -102,12 +121,12 @@ public class WarehouseManagementController extends BaseController {
              */
             for (int i = 0; i < list.size(); i++) {
                 String key = list.get(i);
-                if (StringUtils.isBlank(warehouseManagementJo.getString(key)) || "null".equals(warehouseManagementJo.getString(key))) {
+                if (ObjectUtil.isEmpty(warehouseManagementJo.getString(key)) || "null".equals(warehouseManagementJo.getString(key))) {
                     return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, key + ": 不能为空");
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("添加库房失败--判断参数空值出错,异常：" + e);
+            LOGGER.error("添加仓库失败--判断参数空值出错,异常：" + e);
             return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--判空失败，请稍后再试或联系管理员");
         }
 
@@ -117,68 +136,99 @@ public class WarehouseManagementController extends BaseController {
         try {
             WarehouseManagement warehouse = warehouseManagementService.getWarehouseByWarehouseId(addWarehouseDTO.getWarehouseId());
             if (ObjectUtil.isNotEmpty(warehouse)) {
-                return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "库房编号重复");
+                return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "仓库编号重复");
             }
             try {
                 WarehouseManagement warehouseManagement = new WarehouseManagement();
                 BeanUtil.copyProperties(addWarehouseDTO, warehouseManagement);
                 int insert = warehouseManagementMapper.insert(warehouseManagement);
-                LOGGER.info("添加库房成功");
+                LOGGER.info("添加仓库成功");
                 return render(insert > 0);
             } catch (Exception e) {
-                LOGGER.error("添加库房错误--（插入数据）失败,异常：" + e);
+                LOGGER.error("添加仓库错误--（插入数据）失败,异常：" + e);
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--插入数据失败，请稍后再试或联系管理员");
             }
         } catch (Exception e) {
-            LOGGER.error("添加库房失败--处理（判断库房编码重复）失败,异常：" + e);
+            LOGGER.error("添加仓库失败--处理（判断库房编码重复）失败,异常：" + e);
             return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--判重失败，请稍后再试或联系管理员");
         }
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation(value = "更新仓库管理")
-    @PutMapping
+    @ApiOperation(value = "更新仓库")
+    @PutMapping("/updateWarehouse")
     public Result update(@Valid @RequestBody UpdateWarehouseDTO updateWarehouseDTO) {
         UpdateWrapper updateWrapper = new UpdateWrapper<>();
         try {
 
             if (StringUtils.isBlank(updateWarehouseDTO.getWarehouseId())) {
-                return Result.failure(ErrorCode.SYSTEM_ERROR, "库房编号为空");
+                return Result.failure(ErrorCode.SYSTEM_ERROR, "仓库编号为空");
             }
 
             WarehouseManagement warehouseManagementIsExist = warehouseManagementService.getWarehouseByWarehouseId(updateWarehouseDTO.getWarehouseId());
             if (ObjectUtil.isEmpty(warehouseManagementIsExist)) {
-                return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此库房编码");
+                return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此仓库编码");
             }
             WarehouseManagement warehouseManagement = new WarehouseManagement();
-            BeanUtil.copyProperties(updateWarehouseDTO,warehouseManagement);
+            BeanUtil.copyProperties(updateWarehouseDTO, warehouseManagement);
             updateWrapper.eq("warehouse_id", updateWarehouseDTO.getWarehouseId());
             int update = warehouseManagementMapper.update(warehouseManagement, updateWrapper);
             return render(update > 0);
         } catch (Exception e) {
             LOGGER.error("更新库房信息出错--更新失败，异常：" + e);
-            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常：库房更新失败，请稍后再试或联系管理员");
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常：仓库更新失败，请稍后再试或联系管理员");
         }
     }
 
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation(value = "删除仓库管理")
-    @DeleteMapping("/{warehouseId}")
+    @ApiOperation(value = "删除仓库")
+    @DeleteMapping("deleteWarehouseByWarehouseId/{warehouseId}")
     public Result delete(@PathVariable String warehouseId) {
         QueryWrapper<WarehouseManagement> queryWrapper = new QueryWrapper<>();
         try {
+            /**
+             * 查看是否有下属子库
+             */
+            List<SublibraryManagement> sublibraryManagementList = sublibraryManagementService.getSublibraryManagementByWarehouseId(warehouseId);
+            if (ObjectUtil.isNotEmpty(sublibraryManagementList)) {
+                return Result.failure(ErrorCode.SYSTEM_ERROR, "此仓库下存在子库，请先删除子库");
+            }
             queryWrapper.eq("warehouse_id", warehouseId);
             WarehouseManagement warehouseManagement = warehouseManagementMapper.selectOne(queryWrapper);
             if (ObjectUtil.isEmpty(warehouseManagement)) {
-                return Result.failure(ErrorCode.SYSTEM_ERROR, "操作失败：库房编号不存在");
+                return Result.failure(ErrorCode.SYSTEM_ERROR, "操作失败：仓库编号不存在");
             }
             int i = warehouseManagementMapper.delete(queryWrapper);
             LOGGER.info("库房:  " + warehouseId + "删除成功");
             return render(i > 0);
         } catch (Exception e) {
             LOGGER.error("删除库房信息出错--删除失败，异常：" + e);
-            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常：库房删除失败，请稍后再试或联系管理员");
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常：仓库删除失败，请稍后再试或联系管理员");
+        }
+    }
+
+    @ApiOperationSupport(order = 5)
+    @ApiOperation(value = "获取仓库详细信息")
+    @GetMapping("/getWarehouseByWarehouseId/{warehouseId}")
+    public Result getWarehouse(@PathVariable String warehouseId) {
+        try {
+            WarehouseManagement warehouseManagement = warehouseManagementService.getWarehouseByWarehouseId(warehouseId);
+            return Result.success(warehouseManagement);
+        } catch (Exception e) {
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "获取仓库信息失败");
+        }
+    }
+
+    @ApiOperationSupport(order = 6)
+    @ApiOperation(value = "获取对应仓库的所有子库")
+    @GetMapping("/getAllSublibraryByWarehouseId/{warehouseId}")
+    public Result getAllSublibrary(@PathVariable String warehouseId) {
+        try {
+            List<SublibraryManagement> sublibraryManagementList = sublibraryManagementService.getSublibraryManagementByWarehouseId(warehouseId);
+            return Result.success(sublibraryManagementList);
+        } catch (Exception e) {
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "获取子库信息失败");
         }
     }
 

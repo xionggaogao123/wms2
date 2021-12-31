@@ -19,4 +19,6 @@ public interface ICompanyService extends SuperService<Company> {
 
     Result<Integer> deleteCompany(Integer id);
 
+    Company getCompanyById(Integer id);
+
 }

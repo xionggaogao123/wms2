@@ -9,16 +9,21 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
+import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
 import com.huanhong.wms.entity.SublibraryManagement;
+import com.huanhong.wms.entity.WarehouseAreaManagement;
+import com.huanhong.wms.entity.WarehouseManagement;
 import com.huanhong.wms.entity.dto.AddSubliraryDTO;
 import com.huanhong.wms.entity.dto.UpdateSubliraryDTO;
 import com.huanhong.wms.entity.vo.SublibraryVO;
 import com.huanhong.wms.mapper.SublibraryManagementMapper;
 import com.huanhong.wms.service.ISublibraryManagementService;
+import com.huanhong.wms.service.IWarehouseAreaManagementService;
+import com.huanhong.wms.service.IWarehouseManagementService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -40,8 +45,15 @@ public class SublibraryManagementController extends BaseController {
 
     @Resource
     private ISublibraryManagementService sublibraryManagementService;
+
     @Resource
     private SublibraryManagementMapper sublibraryManagementMapper;
+
+    @Resource
+    private IWarehouseManagementService warehouseManagementService;
+
+    @Resource
+    private IWarehouseAreaManagementService warehouseAreaManagementService;
 
     @Autowired
     private JudgeConfig judgeConfig;
@@ -71,13 +83,34 @@ public class SublibraryManagementController extends BaseController {
 
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "添加子库管理", notes = "生成代码")
-    @PostMapping
+    @PostMapping("/add")
     public Result add(@Valid @RequestBody AddSubliraryDTO addSubliraryDTO) {
 
         /**
          * 判断是否有必填参数为空
          */
         try {
+
+            /**
+             * 查看仓库是否存在
+             */
+            WarehouseManagement warehouseManagement = warehouseManagementService.getWarehouseByWarehouseId(addSubliraryDTO.getWarehouseId());
+            if (ObjectUtil.isEmpty(warehouseManagement)) {
+                return Result.failure(ErrorCode.DATA_IS_NULL, "仓库不存在，无法添加子库");
+            }
+
+            /**
+             * 判断子库编号是否是两位数字
+             */
+            if (addSubliraryDTO.getSublibraryId().length() != 2 || !StrUtils.isNumeric(addSubliraryDTO.getSublibraryId())) {
+                return Result.failure(ErrorCode.DATA_IS_NULL, "子库号为两位数字!");
+            }
+
+            /**
+             *组合仓库编号和子库编号 为完整子库编号
+             */
+            addSubliraryDTO.setSublibraryId(addSubliraryDTO.getWarehouseId()+addSubliraryDTO.getSublibraryId());
+
             /**
              * 实体类转为json
              */
@@ -131,7 +164,7 @@ public class SublibraryManagementController extends BaseController {
 
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "更新子库管理", notes = "生成代码")
-    @PutMapping
+    @PutMapping("update/{sublibraryId}")
     public Result update(@Valid @RequestBody UpdateSubliraryDTO updateSubliraryDTO) {
         UpdateWrapper updateWrapper = new UpdateWrapper<>();
         try {
@@ -155,10 +188,15 @@ public class SublibraryManagementController extends BaseController {
 
     @ApiOperationSupport(order = 4)
     @ApiOperation(value = "删除子库管理", notes = "生成代码")
-    @DeleteMapping("/{sublibraryId}")
+    @DeleteMapping("delete/{sublibraryId}")
     public Result delete(@PathVariable String sublibraryId) {
         QueryWrapper<SublibraryManagement> queryWrapper = new QueryWrapper<>();
         try {
+            List<WarehouseAreaManagement> warehouseAreaManagementList = warehouseAreaManagementService.getWarehouseAreaListBySublibraryId(sublibraryId);
+            if (ObjectUtil.isNotEmpty(warehouseAreaManagementList)) {
+                return Result.failure(ErrorCode.SYSTEM_ERROR, "此子库下存在库区，请先删除库区");
+            }
+
             queryWrapper.eq("sublibrary_id", sublibraryId);
             SublibraryManagement sublibraryManagement = sublibraryManagementMapper.selectOne(queryWrapper);
             if (ObjectUtil.isEmpty(sublibraryManagement)) {
@@ -170,6 +208,30 @@ public class SublibraryManagementController extends BaseController {
         } catch (Exception e) {
             LOGGER.error("删除子库信息出错--删除失败，异常：" + e);
             return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常：子库删除失败，请稍后再试或联系管理员");
+        }
+    }
+
+    @ApiOperationSupport(order = 5)
+    @ApiOperation(value = "获取子库详细信息")
+    @GetMapping("/getSubliraryBySubliraryId/{subliraryId}")
+    public Result getSublirary(@PathVariable String subliraryId) {
+        try {
+            SublibraryManagement sublibraryManagement = sublibraryManagementService.getSublibraryBySublibraryId(subliraryId);
+            return Result.success(sublibraryManagement);
+        } catch (Exception e) {
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "获取子库信息失败");
+        }
+    }
+
+    @ApiOperationSupport(order = 6)
+    @ApiOperation(value = "获取对应子库的所有库区")
+    @GetMapping("/getWarehouseAreaBySubliraryId/{subliraryId}")
+    public Result getAllWarehouseArea(@PathVariable String subliraryId) {
+        try {
+            List<WarehouseAreaManagement> warehouseAreaManagementList = warehouseAreaManagementService.getWarehouseAreaListBySublibraryId(subliraryId);
+            return Result.success(warehouseAreaManagementList);
+        } catch (Exception e) {
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "获取库区信息失败");
         }
     }
 

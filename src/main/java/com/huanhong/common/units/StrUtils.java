@@ -130,4 +130,11 @@ public class StrUtils extends StrUtil {
         return p.matcher(str).matches();
     }
 
+    /**
+     * 判断是否是除I和O以外的大写字母
+     */
+    public static boolean isEnglish(String str){
+        Pattern p = Pattern.compile("[ABCDEFGHJKLMNPQRSTUVWXYZ]");
+        return p.matcher(str).matches();
+    }
 }

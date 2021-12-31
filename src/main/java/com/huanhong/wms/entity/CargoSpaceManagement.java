@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.time.LocalDateTime;
+
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ApiModel(description="货位管理")
@@ -38,8 +40,10 @@ public class CargoSpaceManagement extends SuperEntity {
     @ApiModelProperty(value = "货位承重(地堆无限大)")
     private String cargoSpaceBearing;
 
+    @ApiModelProperty(value = "创建时间")
+    private LocalDateTime createTime;
+
     @ApiModelProperty(value = "备注")
     private String remark;
-
 
 }

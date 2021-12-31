@@ -16,7 +16,7 @@ import java.util.List;
  * @since 2021-12-08
  */
 public interface ICargoSpaceManagementService extends SuperService<CargoSpaceManagement> {
-    //根据货架ID获取所属货架
+    //根据货架ID获取所属货位
     List<CargoSpaceManagement> getCargoSpaceListByShelfId(String shelfId);
 
     //根据货位ID获取货架信息

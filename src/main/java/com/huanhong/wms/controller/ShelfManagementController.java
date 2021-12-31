@@ -9,16 +9,19 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
+import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
+import com.huanhong.wms.entity.CargoSpaceManagement;
 import com.huanhong.wms.entity.ShelfManagement;
 import com.huanhong.wms.entity.WarehouseAreaManagement;
 import com.huanhong.wms.entity.dto.AddShelfDTO;
 import com.huanhong.wms.entity.dto.UpdateShelfDTO;
 import com.huanhong.wms.entity.vo.ShelfVO;
 import com.huanhong.wms.mapper.ShelfManagementMapper;
+import com.huanhong.wms.service.ICargoSpaceManagementService;
 import com.huanhong.wms.service.IShelfManagementService;
 import com.huanhong.wms.service.IWarehouseAreaManagementService;
 import io.swagger.annotations.Api;
@@ -49,6 +52,9 @@ public class ShelfManagementController extends BaseController {
     @Resource
     private ShelfManagementMapper shelfManagementMapper;
 
+    @Resource
+    private ICargoSpaceManagementService cargoSpaceManagementService;
+
     @Autowired
     private JudgeConfig judgeConfig;
 
@@ -76,7 +82,7 @@ public class ShelfManagementController extends BaseController {
 
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "添加货架管理")
-    @PostMapping
+    @PostMapping("/add")
     public Result add(@Valid @RequestBody AddShelfDTO addShelfDTO) {
 
         /**
@@ -110,12 +116,35 @@ public class ShelfManagementController extends BaseController {
          * 在此处查重
          */
         try {
+            /**
+             * 验证货架编码是否合法
+             */
+            //是否是三位字符
+            if (addShelfDTO.getShelfId().length()==3) {
+                String str = addShelfDTO.getShelfId();
+                //第一位是否大写且I和O以外的字母
+                if (StrUtils.isEnglish(String.valueOf(str.charAt(0)))){
+                         if (StrUtils.isNumeric(str.substring(1))){
+                           //符合规则 拼接库区编号和货架编号为完整货架编号
+                           addShelfDTO.setShelfId(addShelfDTO.getWarehouseAreaId()+addShelfDTO.getShelfId());
+                         }else {
+                                return Result.failure(ErrorCode.SYSTEM_ERROR, "货架编号是一位大写字母(I和O除外)加两位数字");
+                               }
+                    }else {
+                           return Result.failure(ErrorCode.SYSTEM_ERROR, "货架编号是一位大写字母(I和O除外)加两位数字");}
+             }else {
+                    return Result.failure(ErrorCode.SYSTEM_ERROR, "货架编号是一位大写字母(I和O除外)加两位数字");
+             }
+
+
             ShelfManagement shelfManagementIsExist = shelfManagementService.getShelfByShelfId(addShelfDTO.getShelfId());
             WarehouseAreaManagement warehouseAreaManagementIsExist = warehouseAreaManagementService.getWarehouseAreaByWarehouseAreaId(addShelfDTO.getWarehouseAreaId());
+
             //判断库区是否存在
             if (ObjectUtil.isEmpty(warehouseAreaManagementIsExist)) {
                 return Result.failure(ErrorCode.DATA_IS_NULL, "库区不存在,无法添加货架");
             }
+
             //货架编号重复判定
             if (ObjectUtil.isNotEmpty(shelfManagementIsExist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "货架编号重复,货架已存在");
@@ -142,7 +171,7 @@ public class ShelfManagementController extends BaseController {
 
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "更新货架管理", notes = "生成代码")
-    @PutMapping
+    @PutMapping("/update")
     public Result updateShelfByShelfId(@Valid @RequestBody UpdateShelfDTO updateShelfDTO) {
         UpdateWrapper<ShelfManagement> updateWrapper = new UpdateWrapper<>();
         try {
@@ -168,13 +197,20 @@ public class ShelfManagementController extends BaseController {
 
     @ApiOperationSupport(order = 4)
     @ApiOperation(value = "删除货架管理", notes = "生成代码")
-    @DeleteMapping("/{shelfId}")
+    @DeleteMapping("/delete/{shelfId}")
     public Result delete(@PathVariable String shelfId) {
         try {
             ShelfManagement shelfIsExist = shelfManagementService.getShelfByShelfId(shelfId);
             if (ObjectUtil.isEmpty(shelfIsExist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此货架编码");
             }
+
+            //检查此货架下是否有货位存在
+            List<CargoSpaceManagement> cargoSpaceManagementsList = cargoSpaceManagementService.getCargoSpaceListByShelfId(shelfId);
+            if (ObjectUtil.isNotEmpty(cargoSpaceManagementsList)){
+                return Result.failure(ErrorCode.DATA_EXISTS_ERROR,"此货架仍有货位存在,请先删除货位");
+            }
+
             QueryWrapper<ShelfManagement> wrapper = new QueryWrapper<>();
             wrapper.eq("shelf_id", shelfId);
             int i = shelfManagementMapper.delete(wrapper);
@@ -185,5 +221,30 @@ public class ShelfManagementController extends BaseController {
             return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常：货架删除失败，请稍后再试或联系管理员");
         }
     }
+
+    @ApiOperationSupport(order = 5)
+    @ApiOperation(value = "获取货架详细信息")
+    @GetMapping("/getShelfByShelfId/{shelfId}")
+    public Result getShelf(@PathVariable String shelfId) {
+        try {
+            ShelfManagement shelfManagement = shelfManagementService.getShelfByShelfId(shelfId);
+            return Result.success(shelfManagement);
+        } catch (Exception e) {
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "获取货架信息失败");
+        }
+    }
+
+    @ApiOperationSupport(order = 6)
+    @ApiOperation(value = "获取对应货架的所有货位")
+    @GetMapping("/getCargoSpaceByShelfId/{shelfId}")
+    public Result getAllCargoSpace(@PathVariable String shelfId) {
+        try {
+            List<CargoSpaceManagement> cargoSpaceManagementList = cargoSpaceManagementService.getCargoSpaceListByShelfId(shelfId);
+            return Result.success(cargoSpaceManagementList);
+        } catch (Exception e) {
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "获取货位信息失败");
+        }
+    }
+
 }
 

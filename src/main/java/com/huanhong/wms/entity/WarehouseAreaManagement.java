@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.time.LocalDateTime;
+
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ApiModel(description="库房区域管理")
@@ -44,6 +46,8 @@ public class WarehouseAreaManagement extends SuperEntity {
     @ApiModelProperty(value = "库区联系电话")
     private String warehouseAreaContactNumber;
 
+    @ApiModelProperty(value = "创建时间")
+    private LocalDateTime createTime;
 
     @ApiModelProperty(value = "备注")
     private String remark;

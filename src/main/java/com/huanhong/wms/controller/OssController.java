@@ -5,9 +5,12 @@ import cn.hutool.core.io.file.FileReader;
 import cn.hutool.core.lang.id.NanoId;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
+import com.alibaba.fastjson.JSON;
+import com.aliyun.oss.model.PutObjectResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
+import com.huanhong.common.units.OssUtil;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.LoginUser;
@@ -41,7 +44,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/oss")
+@RequestMapping("/v1/oss")
 @ApiSort(4)
 @Api(tags = "资源存储 💾")
 public class OssController extends BaseController {
@@ -73,31 +76,35 @@ public class OssController extends BaseController {
             return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, "请上传正确的图片");
         }
         String md5, fileName = NanoId.randomNanoId(18) + ".jpg";
-        String filePath = ossProperties.getPath() + type + "/" + fileName;
+        String filePath = ossProperties.getPath() + type + "/";
+        String fullPath = filePath + fileName;
         long fileSize = file.getSize();
 
         int fileMaxSize = 102400;
         // 上传文件流
         try {
+            FileUtil.mkdir(filePath);
             // 人脸压缩
             if ("face".equals(type)) {
                 if (fileSize > fileMaxSize) {
                     // 循环压缩
                     commpressPicCycle(filePath, file.getInputStream(), fileMaxSize, 0.9);
                 } else {
-                    file.transferTo(Paths.get(filePath));
+                    file.transferTo(Paths.get(fullPath));
                 }
             } else {
                 Thumbnails.of(file.getInputStream())
                         .scale(1f)
                         .outputQuality(0.9f)
                         .outputFormat("jpg")
-                        .toFile(filePath);
+                        .toFile(fullPath);
             }
-            FileReader reader = new FileReader(filePath);
+            FileReader reader = new FileReader(fullPath);
             fileSize = reader.getFile().length();
             // 设置上传MD5校验
             md5 = SecureUtil.md5(reader.getInputStream());
+            PutObjectResult putResult = OssUtil.putObject(reader.getInputStream(), type + "/" + fileName);
+            log.info("oss上传报文 ==> {}", JSON.toJSONString(putResult.getETag()));
             // 关闭释放
             file.getInputStream().close();
             reader.getInputStream().close();
@@ -123,7 +130,7 @@ public class OssController extends BaseController {
         ossMapper.insert(oss);
         UploadOssVo data = new UploadOssVo();
         data.setId(oss.getId());
-        data.setFileName(fileName);
+        data.setFileName(oss.getUrl());
         data.setFileUrl(ossProperties.getYunUrl() + oss.getUrl());
         data.setObjectId(objectId);
         return Result.success(data);

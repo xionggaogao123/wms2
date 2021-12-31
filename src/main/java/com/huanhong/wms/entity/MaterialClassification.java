@@ -1,0 +1,35 @@
+package com.huanhong.wms.entity;
+
+import com.huanhong.wms.SuperEntity;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import java.time.LocalDateTime;
+
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ApiModel(description = "物料分类")
+public class MaterialClassification extends SuperEntity {
+
+    private static final long serialVersionUID = 1L;
+
+    @ApiModelProperty(value = "0-大类、1-中类、2-小类")
+    private Integer levelType;
+
+    @ApiModelProperty(value = "类型编码")
+    private String typeCode;
+
+    @ApiModelProperty(value = "父类编码-大类父类编码默认为0,中、小类须填写")
+    private String parentCode;
+
+    @ApiModelProperty(value = "类型名称")
+    private String typeName;
+
+    @ApiModelProperty(value = "创建时间")
+    private LocalDateTime createTime;
+
+    @ApiModelProperty(value = "备注")
+    private String remark;
+}

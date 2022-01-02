@@ -6,7 +6,6 @@ import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 
 @Data
 @ApiModel(description = "新增货架")
@@ -45,10 +44,6 @@ public class AddShelfDTO {
     @NotEmpty
     @ApiModelProperty(value = "货架层数-地堆即为一层")
     private String shelfLayer;
-
-    @NotNull
-    @ApiModelProperty(value = "创建时间")
-    private LocalDateTime createTime;
 
     @ApiModelProperty(value = "备注")
     private String remark;

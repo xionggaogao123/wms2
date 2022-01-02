@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.common.units.TreeUtils;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.entity.MaterialClassification;
-import com.huanhong.wms.entity.vo.MeterialClassficationVO;
+import com.huanhong.wms.entity.vo.MaterialClassficationVO;
 import com.huanhong.wms.mapper.MaterialClassificationMapper;
 import com.huanhong.wms.service.IMaterialClassificationService;
 import org.springframework.stereotype.Service;
@@ -42,7 +42,7 @@ public class MaterialClassificationServiceImpl extends SuperServiceImpl<Material
      * @return
      */
     @Override
-    public Page<MaterialClassification> pageFuzzyQuery(Page<MaterialClassification> materialClassificationPage, MeterialClassficationVO materialClassificationVO) {
+    public Page<MaterialClassification> pageFuzzyQuery(Page<MaterialClassification> materialClassificationPage, MaterialClassficationVO materialClassificationVO) {
         //新建QueryWrapper对象
         QueryWrapper<MaterialClassification> query = new QueryWrapper<>();
         //根据id排序

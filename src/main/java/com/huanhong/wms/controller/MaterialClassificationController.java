@@ -13,14 +13,14 @@ import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
+import com.huanhong.wms.entity.Material;
 import com.huanhong.wms.entity.MaterialClassification;
-import com.huanhong.wms.entity.Meterial;
 import com.huanhong.wms.entity.dto.AddMaterialClassificationDTO;
-import com.huanhong.wms.entity.dto.UpdateMeterialClassificationDTO;
-import com.huanhong.wms.entity.vo.MeterialClassficationVO;
+import com.huanhong.wms.entity.dto.UpdateMaterialClassificationDTO;
+import com.huanhong.wms.entity.vo.MaterialClassficationVO;
 import com.huanhong.wms.mapper.MaterialClassificationMapper;
 import com.huanhong.wms.service.IMaterialClassificationService;
-import com.huanhong.wms.service.IMeterialService;
+import com.huanhong.wms.service.IMaterialService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -44,7 +44,7 @@ public class MaterialClassificationController extends BaseController {
     private IMaterialClassificationService materialClassificationServicel;
 
     @Resource
-    private IMeterialService materialService;
+    private IMaterialService materialService;
 
     @Resource
     private MaterialClassificationMapper materialClassificationMapper;
@@ -52,7 +52,7 @@ public class MaterialClassificationController extends BaseController {
     @Resource
     private JudgeConfig judgeConfig;
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(MeterialController.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(MaterialController.class);
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -63,11 +63,11 @@ public class MaterialClassificationController extends BaseController {
     @GetMapping("/pagingFuzzyQuery")
     public Result<Page<MaterialClassification>> page(@RequestParam(defaultValue = "1") Integer current,
                                                      @RequestParam(defaultValue = "10") Integer size,
-                                                     MeterialClassficationVO meterialClassficationVO
+                                                     MaterialClassficationVO materialClassficationVO
     ) {
         try {
             //调用服务层方法，传入page对象和查询条件对象
-            Page<MaterialClassification> pageResult = materialClassificationServicel.pageFuzzyQuery(new Page<>(current, size), meterialClassficationVO);
+            Page<MaterialClassification> pageResult = materialClassificationServicel.pageFuzzyQuery(new Page<>(current, size), materialClassficationVO);
             return Result.success(pageResult);
         } catch (Exception e) {
             return Result.failure("查询失败--异常：" + e);
@@ -218,24 +218,24 @@ public class MaterialClassificationController extends BaseController {
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "更新物料分类")
     @PutMapping("/updateByTyCode")
-    public Result update(@Valid @RequestBody UpdateMeterialClassificationDTO updateMeterialClassificationDTO) {
+    public Result update(@Valid @RequestBody UpdateMaterialClassificationDTO updateMaterialClassificationDTO) {
 
         //更新物料分类只能更新物料分类名称
         try {
-            if (StringUtils.isBlank(updateMeterialClassificationDTO.getTypeCode())) {
+            if (StringUtils.isBlank(updateMaterialClassificationDTO.getTypeCode())) {
                 return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, "类别编码为空");
             }
             //判断此物料分类是否存在
-            MaterialClassification meterialClassification_exist = materialClassificationServicel.getMaterialClassificationByTypeCode(updateMeterialClassificationDTO.getTypeCode());
+            MaterialClassification meterialClassification_exist = materialClassificationServicel.getMaterialClassificationByTypeCode(updateMaterialClassificationDTO.getTypeCode());
             if (meterialClassification_exist == null) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此物料分类");
             }
             UpdateWrapper<MaterialClassification> updateWrapper = new UpdateWrapper<>();
             MaterialClassification updateMaterialClassification = new MaterialClassification();
-            BeanUtil.copyProperties(updateMeterialClassificationDTO, updateMaterialClassification);
-            updateWrapper.eq("type_code", updateMeterialClassificationDTO.getTypeCode());
+            BeanUtil.copyProperties(updateMaterialClassificationDTO, updateMaterialClassification);
+            updateWrapper.eq("type_code", updateMaterialClassificationDTO.getTypeCode());
             int update = materialClassificationMapper.update(updateMaterialClassification, updateWrapper);
-            LOGGER.info("物料分类" + updateMeterialClassificationDTO.getTypeCode() + " 更新成功");
+            LOGGER.info("物料分类" + updateMaterialClassificationDTO.getTypeCode() + " 更新成功");
             return render(update > 0);
         } catch (Exception e) {
             LOGGER.error("更新物料信息出错--更新失败，异常：" + e);
@@ -254,7 +254,7 @@ public class MaterialClassificationController extends BaseController {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此物料分类");
             }
             //检查此物料分类是否已被物料基础信息使用
-            List<Meterial> listMaterial = materialService.listFuzzyQuery(typeCode);
+            List<Material> listMaterial = materialService.listFuzzyQuery(typeCode);
             if (ObjectUtil.isNotEmpty(listMaterial)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "此分类已被使用,无法删除");
             }

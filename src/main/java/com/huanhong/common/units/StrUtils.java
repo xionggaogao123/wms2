@@ -137,4 +137,21 @@ public class StrUtils extends StrUtil {
         Pattern p = Pattern.compile("[ABCDEFGHJKLMNPQRSTUVWXYZ]");
         return p.matcher(str).matches();
     }
+
+
+    /**
+     * 截取str字符串
+     * @param str
+     * @param start
+     * @return
+     */
+    public static String subStr(String str, int start) {
+        if (str == null || str.equals("") || str.length() == 0)
+            return "";
+        if (start < str.length()) {
+            return str.substring(start);
+        } else {
+            return "";
+        }
+    }
 }

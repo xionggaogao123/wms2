@@ -9,18 +9,19 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
+import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
+import com.huanhong.wms.entity.Material;
 import com.huanhong.wms.entity.MaterialClassification;
-import com.huanhong.wms.entity.Meterial;
-import com.huanhong.wms.entity.dto.AddMeterialDTO;
-import com.huanhong.wms.entity.dto.UpdateMeterialDTO;
-import com.huanhong.wms.entity.vo.MeterialVO;
-import com.huanhong.wms.mapper.MeterialMapper;
+import com.huanhong.wms.entity.dto.AddMaterialDTO;
+import com.huanhong.wms.entity.dto.UpdateMaterialDTO;
+import com.huanhong.wms.entity.vo.MaterialVO;
+import com.huanhong.wms.mapper.MaterialMapper;
 import com.huanhong.wms.service.IMaterialClassificationService;
-import com.huanhong.wms.service.IMeterialService;
+import com.huanhong.wms.service.IMaterialService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -38,21 +39,22 @@ import java.util.List;
 @RequestMapping("/v1/meterial")
 @ApiSort()
 @Api(tags = "物料基础信息")
-public class MeterialController extends BaseController {
+public class MaterialController extends BaseController {
 
     @Resource
-    private IMeterialService meterialService;
+    private IMaterialService materialService;
 
     @Resource
-    private MeterialMapper meterialMapper;
+    private MaterialMapper materialMapper;
 
     @Resource
     private IMaterialClassificationService materialClassificationService;
 
+
     @Autowired
     private JudgeConfig judgeConfig;
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(MeterialController.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(MaterialController.class);
 
 
     /**
@@ -69,13 +71,16 @@ public class MeterialController extends BaseController {
     @ApiOperationSupport(order = 1)
     @ApiOperation(value = "分页查询组合物料")
     @GetMapping("/pagingFuzzyQuery")
-    public Result<Page<Meterial>> page(@RequestParam(defaultValue = "1") Integer current,
+    public Result<Page<Material>> page(@RequestParam(defaultValue = "1") Integer current,
                                        @RequestParam(defaultValue = "10") Integer size,
-                                       MeterialVO meterialVO//查询条件封装的对象
+                                       MaterialVO materialVO//查询条件封装的对象
     ) {
         try {
             //调用服务层方法，传入page对象和查询条件对象
-            Page<Meterial> pageResult = meterialService.pageFuzzyQuery(new Page<>(current, size), meterialVO);
+            Page<Material> pageResult = materialService.pageFuzzyQuery(new Page<>(current, size), materialVO);
+            if (ObjectUtil.isEmpty(pageResult)){
+                return Result.success(pageResult,"未查询到相关物料信息");
+            }
             return Result.success(pageResult);
         } catch (Exception e) {
             return Result.failure("查询失败--异常：" + e);
@@ -85,13 +90,13 @@ public class MeterialController extends BaseController {
     /**
      * 添加物料
      *
-     * @param addMeterialDTO
+     * @param addMaterialDTO
      * @return
      */
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "添加物料")
     @PostMapping("/add")
-    public Result add(@Valid @RequestBody AddMeterialDTO addMeterialDTO) {
+    public Result add(@Valid @RequestBody AddMaterialDTO addMaterialDTO) {
 
         /**
          * 判断是否有必填参数为空
@@ -100,7 +105,7 @@ public class MeterialController extends BaseController {
             /**
              * 实体类转为json
              */
-            String meterialToJoStr = JSONObject.toJSONString(addMeterialDTO);
+            String meterialToJoStr = JSONObject.toJSONString(addMaterialDTO);
             JSONObject meterialJo = JSONObject.parseObject(meterialToJoStr);
             /**
              * 不能为空的参数list
@@ -119,39 +124,61 @@ public class MeterialController extends BaseController {
             }
 
             /**
-             * 判断物料分类编码是否为空
+             * 查询物料分类是否存在
              */
-            MaterialClassification materialClassification = materialClassificationService.getMaterialClassificationByTypeCode(addMeterialDTO.getTypeCode());
+            MaterialClassification materialClassification = materialClassificationService.getMaterialClassificationByTypeCode(addMaterialDTO.getTypeCode());
             if (ObjectUtil.isEmpty(materialClassification)){
-                return Result.failure(ErrorCode.PARAM_FORMAT_ERROR,  "分类编码: "+addMeterialDTO.getTypeCode()+" 不能为空");
+                return Result.failure(ErrorCode.DATA_IS_NULL, "物料编码不存在");
             }
 
-        } catch (Exception e) {
-            LOGGER.error("添加物料失败--判断参数空值出错,异常：" + e);
-            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--判空失败，请稍后再试或联系管理员");
-        }
+            /**
+             * 生成物料编码（分类编码+五位流水号）
+             * 1.获取物料分类编码，根据分类编码检索出所有此分类的物料编码
+             * 2.截取物料编码的后五位流水号，将流水号+1得到新的物料编码
+             */
+             QueryWrapper<Material> queryWrapper = new QueryWrapper<>();
+             queryWrapper.eq("type_code", addMaterialDTO.getTypeCode());
+             Material maxMaterial = materialMapper.selectOne(queryWrapper.orderByDesc("id").last("limit 1"));
+             //目前最大的本分类物料编码
+             String maxMaterialCode = null;
+             if (ObjectUtil.isNotEmpty(maxMaterial)){
+                 maxMaterialCode = maxMaterial.getMaterialCoding();
+             }
+             String orderNo = null;
+             //物料编码前缀-类型编码
+             String code_pfix = addMaterialDTO.getTypeCode();
+             if (maxMaterialCode != null && maxMaterial.getMaterialCoding().contains(code_pfix)){
+                 String code_end = maxMaterialCode.substring(6,11);
+                 int endNum = Integer.parseInt(code_end);
+                 int tmpNum = 100000 + endNum +1;
+                 orderNo = code_pfix + StrUtils.subStr(""+tmpNum,1);
+             }else {
+                 orderNo = code_pfix + "00001";
+             }
 
-        /**
-         * 在此处查重
-         */
-        try {
-            Meterial meterial_exist = meterialService.getMeterialByMeterialCode(addMeterialDTO.getMaterialCoding());
-            if (ObjectUtil.isNotEmpty(meterial_exist)) {
-                return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "物料编码重复");
-            }
+
+            /**
+             * 新增物料
+             */
             try {
-                Meterial meterial = new Meterial();
-                BeanUtil.copyProperties(addMeterialDTO, meterial);
-                int insert = meterialMapper.insert(meterial);
+                Material material = new Material();
+                BeanUtil.copyProperties(addMaterialDTO, material);
+                material.setMaterialCoding(orderNo);
+                int insert = materialMapper.insert(material);
                 LOGGER.info("添加物料成功");
-                return render(insert > 0);
+                if (insert>0){
+                    return Result.success(materialService.getMeterialByMeterialCode(material.getMaterialCoding()),"新增成功");
+                }else {
+                    return Result.failure(ErrorCode.SYSTEM_ERROR,"新增失败！");
+                }
             } catch (Exception e) {
                 LOGGER.error("添加物料错误--（插入数据）失败,异常：" + e);
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--插入数据失败，请稍后再试或联系管理员");
             }
+
         } catch (Exception e) {
-            LOGGER.error("添加物料失败--处理（判断物料编码重复）失败,异常：" + e);
-            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--判重失败，请稍后再试或联系管理员");
+            LOGGER.error("生成新物料编码出错: "+e);
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--物料编码生成失败，请稍后再试或联系管理员");
         }
     }
 
@@ -159,33 +186,33 @@ public class MeterialController extends BaseController {
     /**
      * 过物料编码更新物料信息
      *
-     * @param updateMeterialDTO
+     * @param updateMaterialDTO
      * @return
      */
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "更新物料")
     @PutMapping("/updateByMaterialCoding")
-    public Result updateByMaterialCoding(@Valid @RequestBody UpdateMeterialDTO updateMeterialDTO) {
+    public Result updateByMaterialCoding(@Valid @RequestBody UpdateMaterialDTO updateMaterialDTO) {
 
         /**
          * 物料编码不能为空，为更新依据
          */
         try {
-            if (StringUtils.isBlank(updateMeterialDTO.getMaterialCoding())) {
+            if (StringUtils.isBlank(updateMaterialDTO.getMaterialCoding())) {
                 return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, "物料编码为空");
             }
             //判断此物料是否存在
-            Meterial meterial_exist = meterialService.getMeterialByMeterialCode(updateMeterialDTO.getMaterialCoding());
-            if (meterial_exist == null) {
+            Material material_exist = materialService.getMeterialByMeterialCode(updateMaterialDTO.getMaterialCoding());
+            if (ObjectUtil.isEmpty(material_exist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此物料编码");
             }
 
-            UpdateWrapper<Meterial> updateWrapper = new UpdateWrapper<>();
-            Meterial updateMeterial = new Meterial();
-            BeanUtil.copyProperties(updateMeterialDTO, updateMeterial);
-            updateWrapper.eq("material_coding", updateMeterialDTO.getMaterialCoding());
-            int i = meterialMapper.update(updateMeterial, updateWrapper);
-            LOGGER.info("物料: " + updateMeterialDTO.getMaterialCoding() + " 更新成功");
+            UpdateWrapper<Material> updateWrapper = new UpdateWrapper<>();
+            Material updateMaterial = new Material();
+            BeanUtil.copyProperties(updateMaterialDTO, updateMaterial);
+            updateWrapper.eq("material_coding", updateMaterialDTO.getMaterialCoding());
+            int i = materialMapper.update(updateMaterial, updateWrapper);
+            LOGGER.info("物料: " + updateMaterialDTO.getMaterialCoding() + " 更新成功");
             return render(i > 0);
         } catch (Exception e) {
             LOGGER.error("更新物料信息出错--更新失败，异常：" + e);
@@ -205,14 +232,16 @@ public class MeterialController extends BaseController {
     public Result delete(@PathVariable String meterialCode) {
 
         try {
-            Meterial meterial_exist = meterialService.getMeterialByMeterialCode(meterialCode);
-            if (ObjectUtil.isEmpty(meterial_exist)) {
+            Material material_exist = materialService.getMeterialByMeterialCode(meterialCode);
+            if (ObjectUtil.isEmpty(material_exist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此物料编码");
             }
-            QueryWrapper<Meterial> wrapper = new QueryWrapper<>();
+            QueryWrapper<Material> wrapper = new QueryWrapper<>();
             wrapper.eq("material_coding", meterialCode);
-            int i = meterialMapper.delete(wrapper);
-            LOGGER.info("物料: " + meterialCode + " 删除成功");
+            int i = materialMapper.delete(wrapper);
+            if (i>0){
+                LOGGER.info("物料: " + meterialCode + " 删除成功");
+            }
             return render(i > 0);
         } catch (Exception e) {
             LOGGER.error("删除物料信息出错--删除失败，异常：" + e);
@@ -229,12 +258,15 @@ public class MeterialController extends BaseController {
     @ApiOperation(value = "根据物料编码查询物料信息")
     @GetMapping("/getMeterialByMeterialCode/{meterialCode}")
     public Result getMeterialByMeterialCode(@PathVariable("meterialCode") String meterialCode) {
-        Meterial meterial = meterialService.getMeterialByMeterialCode(meterialCode);
-        if (meterial != null) {
-            return Result.success(meterial, "查询成功");
+        Material material = materialService.getMeterialByMeterialCode(meterialCode);
+        if (ObjectUtil.isNotEmpty(material)) {
+            return Result.success(material, "查询成功");
         }
         return Result.noDataError();
     }
+
+
+
 
 //    /**
 //     * 根据物料名称查询物料信息

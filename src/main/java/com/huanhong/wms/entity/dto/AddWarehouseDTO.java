@@ -6,7 +6,6 @@ import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 
 @Data
 @ApiModel(description = "添加仓库DTO")
@@ -45,11 +44,6 @@ public class AddWarehouseDTO {
     @NotEmpty
     @ApiModelProperty(value = "仓库联系电话")
     private String warehouseContactNumber;
-
-    @NotNull
-    @ApiModelProperty(value = "创建时间")
-    private LocalDateTime createTime;
-
 
     @ApiModelProperty(value = "备注")
     private String remark;

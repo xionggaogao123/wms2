@@ -1,11 +1,8 @@
 package com.huanhong.wms.service;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.huanhong.wms.entity.Meterial;
-import com.huanhong.wms.entity.WarehouseManagement;
 import com.huanhong.wms.SuperService;
-import com.huanhong.wms.entity.vo.MeterialVO;
+import com.huanhong.wms.entity.WarehouseManagement;
 import com.huanhong.wms.entity.vo.WarehouseVo;
 
 import java.util.List;

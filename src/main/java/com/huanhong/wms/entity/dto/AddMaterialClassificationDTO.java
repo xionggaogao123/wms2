@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 
 
 @Data
@@ -28,10 +27,6 @@ public class AddMaterialClassificationDTO {
     @NotNull
     @ApiModelProperty(value = "0-大类、1-中类、2-小类")
     private Integer levelType;
-
-    @NotNull
-    @ApiModelProperty(value = "创建时间")
-    private LocalDateTime createTime;
 
     @ApiModelProperty(value = "备注")
     private String remark;

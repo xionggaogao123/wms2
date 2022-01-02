@@ -7,7 +7,6 @@ import lombok.Data;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 
 @Data
 @ApiModel(description = "新增货位")
@@ -48,10 +47,6 @@ public class AddCargoSpacedDTO {
     @NotNull
     @ApiModelProperty(value = "货位承重(地堆无限大)")
     private String cargoSpaceBearing;
-
-    @NotNull
-    @ApiModelProperty(value = "创建时间")
-    private LocalDateTime createTime;
 
     @ApiModelProperty(value = "备注")
     private String remark;

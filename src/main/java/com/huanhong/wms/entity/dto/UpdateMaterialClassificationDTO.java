@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @ApiModel(description = "更新物料分类")
-public class UpdateMeterialClassificationDTO {
+public class UpdateMaterialClassificationDTO {
 
     private static final long serialVersionUID = 1L;
 

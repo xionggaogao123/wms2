@@ -6,7 +6,6 @@ import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 
 @Data
 @ApiModel(description = "新增子库")
@@ -53,10 +52,6 @@ public class AddSubliraryDTO {
     @NotEmpty
     @ApiModelProperty(value = "子库联系电话")
     private String sublibraryContactNumber;
-
-    @NotNull
-    @ApiModelProperty(value = "创建时间")
-    private LocalDateTime createTime;
 
     @ApiModelProperty(value = "备注")
     private String remark;

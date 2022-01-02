@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @ApiModel(value = "MeterialClassficationVO查询对象", description = "物料分类对象封装")
-public class MeterialClassficationVO {
+public class MaterialClassficationVO {
 
     @ApiModelProperty(value = "0-大类、1-中类、2-小类")
     private Integer levelType;

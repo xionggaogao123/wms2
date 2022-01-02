@@ -2,17 +2,18 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
+import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
 import com.huanhong.wms.entity.InventoryInformation;
-import com.huanhong.wms.entity.Meterial;
+import com.huanhong.wms.mapper.InventoryInformationMapper;
+import com.huanhong.wms.service.IInventoryInformationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -21,10 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import com.huanhong.wms.BaseController;
-import com.huanhong.wms.mapper.InventoryInformationMapper;
-import com.huanhong.wms.service.IInventoryInformationService;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -46,7 +43,7 @@ public class InventoryInformationController extends BaseController {
     @Autowired
     private JudgeConfig judgeConfig;
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(MeterialController.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(MaterialController.class);
 
     /**
      * 分页查询

@@ -1,5 +1,7 @@
 package com.huanhong.wms.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.huanhong.wms.SuperEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -40,6 +42,7 @@ public class CargoSpaceManagement extends SuperEntity {
     @ApiModelProperty(value = "货位承重(地堆无限大)")
     private String cargoSpaceBearing;
 
+    @TableField(value = "create_time" ,fill = FieldFill.INSERT)
     @ApiModelProperty(value = "创建时间")
     private LocalDateTime createTime;
 

@@ -1,5 +1,7 @@
 package com.huanhong.wms.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.huanhong.wms.SuperEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -39,6 +41,7 @@ public class ShelfManagement extends SuperEntity {
     @ApiModelProperty(value = "货架层数-地堆即为一层")
     private String shelfLayer;
 
+    @TableField(value = "create_time" ,fill = FieldFill.INSERT)
     @ApiModelProperty(value = "创建时间")
     private LocalDateTime createTime;
 

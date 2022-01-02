@@ -87,11 +87,6 @@ public class AddInventoryInformation {
     private String priorityStorageLocation;
 
 
-    @NotNull
-    @ApiModelProperty(value = "创建时间")
-    private LocalDateTime createTime;
-
-
     @ApiModelProperty(value = "备注")
     private String remark;
 

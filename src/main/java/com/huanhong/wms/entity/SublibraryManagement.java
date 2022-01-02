@@ -1,5 +1,7 @@
 package com.huanhong.wms.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.huanhong.wms.SuperEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -46,6 +48,7 @@ public class SublibraryManagement extends SuperEntity {
     @ApiModelProperty(value = "子库联系电话")
     private String sublibraryContactNumber;
 
+    @TableField(value = "create_time" ,fill = FieldFill.INSERT)
     @ApiModelProperty(value = "创建时间")
     private LocalDateTime createTime;
 

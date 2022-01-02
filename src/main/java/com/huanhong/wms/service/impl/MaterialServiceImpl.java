@@ -5,10 +5,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperServiceImpl;
-import com.huanhong.wms.entity.Meterial;
-import com.huanhong.wms.entity.vo.MeterialVO;
-import com.huanhong.wms.mapper.MeterialMapper;
-import com.huanhong.wms.service.IMeterialService;
+import com.huanhong.wms.entity.Material;
+import com.huanhong.wms.entity.vo.MaterialVO;
+import com.huanhong.wms.mapper.MaterialMapper;
+import com.huanhong.wms.service.IMaterialService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -23,21 +23,23 @@ import java.util.List;
  * @since 2021-11-22
  */
 @Service
-public class MeterialServiceImpl extends SuperServiceImpl<MeterialMapper, Meterial> implements IMeterialService {
+public class MaterialServiceImpl extends SuperServiceImpl<MaterialMapper, Material> implements IMaterialService {
 
     @Resource
-    private MeterialMapper meterialMapper;
+    private MaterialMapper materialMapper;
 
     /**
      * 通过物料编码获取物料信息
      *
-     * @param meterialCode
+     * @param materialCode
      * @return
      */
     @Override
-    public Meterial getMeterialByMeterialCode(String meterialCode) {
-        Meterial meterial = meterialMapper.getMeterialByMeterialCode(meterialCode);
-        return meterial;
+    public Material getMeterialByMeterialCode(String materialCode) {
+        QueryWrapper<Material> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("material_coding",materialCode);
+        Material material = materialMapper.selectOne(queryWrapper);
+        return material;
     }
 
 //    /**
@@ -53,9 +55,9 @@ public class MeterialServiceImpl extends SuperServiceImpl<MeterialMapper, Meteri
 //    }
 
     @Override
-    public List<Meterial> listFuzzyQuery(String typeCode) {
+    public List<Material> listFuzzyQuery(String typeCode) {
         //新建QueryWrapper对象
-        QueryWrapper<Meterial> query = new QueryWrapper<>();
+        QueryWrapper<Material> query = new QueryWrapper<>();
         //根据id排序
         query.orderByDesc("id");
 
@@ -72,10 +74,10 @@ public class MeterialServiceImpl extends SuperServiceImpl<MeterialMapper, Meteri
      * @return
      */
     @Override
-    public Page pageFuzzyQuery(Page meterialPage, MeterialVO materialVO) {
+    public Page pageFuzzyQuery(Page meterialPage, MaterialVO materialVO) {
 
         //新建QueryWrapper对象
-        QueryWrapper<Meterial> query = new QueryWrapper<>();
+        QueryWrapper<Material> query = new QueryWrapper<>();
         //根据id排序
         query.orderByDesc("id");
         //判断此时的条件对象Vo是否等于空，若等于空，

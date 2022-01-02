@@ -3,7 +3,7 @@ package com.huanhong.wms.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.entity.MaterialClassification;
-import com.huanhong.wms.entity.vo.MeterialClassficationVO;
+import com.huanhong.wms.entity.vo.MaterialClassficationVO;
 
 import java.util.List;
 import java.util.Map;
@@ -19,7 +19,7 @@ import java.util.Map;
 public interface IMaterialClassificationService extends SuperService<MaterialClassification> {
 
     //组合分页模糊查询
-    Page<MaterialClassification> pageFuzzyQuery(Page<MaterialClassification> materialClassificationPage, MeterialClassficationVO materialClassificationVO);
+    Page<MaterialClassification> pageFuzzyQuery(Page<MaterialClassification> materialClassificationPage, MaterialClassficationVO materialClassificationVO);
 
     //根据类型编码获取详细信息
     MaterialClassification getMaterialClassificationByTypeCode(String typeCode);

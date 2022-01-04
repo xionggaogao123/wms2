@@ -68,6 +68,9 @@ public class MaterialClassificationController extends BaseController {
         try {
             //调用服务层方法，传入page对象和查询条件对象
             Page<MaterialClassification> pageResult = materialClassificationServicel.pageFuzzyQuery(new Page<>(current, size), materialClassficationVO);
+            if (ObjectUtil.isEmpty(pageResult.getRecords())) {
+                return Result.success(pageResult, "未查询到相关物料分类信息");
+            }
             return Result.success(pageResult);
         } catch (Exception e) {
             return Result.failure("查询失败--异常：" + e);
@@ -283,7 +286,10 @@ public class MaterialClassificationController extends BaseController {
     public Result getMaterialClassificationByTypeCode(@PathVariable String typeCode) {
         try {
             MaterialClassification materialClassification = materialClassificationServicel.getMaterialClassificationByTypeCode(typeCode);
-            return Result.success(materialClassification);
+            if (ObjectUtil.isNotEmpty(materialClassification)) {
+                return Result.success(materialClassification);
+            }
+            return Result.noDataError();
         } catch (Exception e) {
             LOGGER.error("获取物料分类详细信息出错,异常：" + e);
             return Result.failure(ErrorCode.SYSTEM_ERROR, "查询失败,系统异常：" + e);

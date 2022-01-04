@@ -33,7 +33,7 @@ public class AddMaterialDTO {
     @ApiModelProperty(value = "计量单位")
     private String measurementUnit;
 
-    @NotNull
+
     @ApiModelProperty(value = "辅助单位")
     private String auxiliaryUnit;
 
@@ -45,11 +45,9 @@ public class AddMaterialDTO {
     @ApiModelProperty(value = "执行标准")
     private String executiveStandard;
 
-    @NotNull
     @ApiModelProperty(value = "技术要求")
     private String skillsRequiremen;
 
-    @NotNull
     @ApiModelProperty(value = "图号")
     private String drawingNumber;
 
@@ -57,7 +55,7 @@ public class AddMaterialDTO {
     @ApiModelProperty(value = "安全质量标准")
     private String safetyQualityStandards;
 
-    @NotNull
+
     @ApiModelProperty(value = "生产厂家")
     private String supplier;
 
@@ -77,10 +75,9 @@ public class AddMaterialDTO {
     @ApiModelProperty(value = "物料单位重量-kg/千克")
     private String materialWeight;
 
-
+    @NotNull
     @ApiModelProperty(value = "品牌")
     private String brand;
-
 
     @ApiModelProperty(value = "备注")
     private String remark;

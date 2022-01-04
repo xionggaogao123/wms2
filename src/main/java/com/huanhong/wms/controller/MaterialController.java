@@ -82,12 +82,13 @@ public class MaterialController extends BaseController {
         try {
             //调用服务层方法，传入page对象和查询条件对象
             Page<Material> pageResult = materialService.pageFuzzyQuery(new Page<>(current, size), materialVO);
-            if (ObjectUtil.isEmpty(pageResult)) {
+            if (ObjectUtil.isEmpty(pageResult.getRecords())) {
                 return Result.success(pageResult, "未查询到相关物料信息");
             }
             return Result.success(pageResult);
         } catch (Exception e) {
-            return Result.failure("查询失败--异常：" + e);
+            LOGGER.error("分页查询异常"+e);
+            return Result.failure("查询失败--系统异常，请联系管理员");
         }
     }
 

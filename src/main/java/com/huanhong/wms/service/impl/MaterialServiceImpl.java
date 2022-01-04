@@ -87,11 +87,15 @@ public class MaterialServiceImpl extends SuperServiceImpl<MaterialMapper, Materi
         }
         //若Vo对象不为空，分别获取其中的字段，
         //并对其进行判断是否为空，这一步类似动态SQL的拼装
+
         //物料编码
         query.like(StringUtils.isNotBlank(materialVO.getMaterialCoding()), "material_coding", materialVO.getMaterialCoding());
-        //物料名称
 
+        //物料名称
         query.like(StringUtils.isNotBlank(materialVO.getMaterialName()), "material_name", materialVO.getMaterialName());
+
+        //分类编码
+        query.likeRight(StringUtils.isNotBlank(materialVO.getTypeCode()),"type_code",materialVO.getTypeCode());
 
         //物料俗称
         query.like(StringUtils.isNotBlank(materialVO.getSlang()), "slang", materialVO.getSlang());

@@ -19,6 +19,7 @@ import com.huanhong.wms.entity.MaterialClassification;
 import com.huanhong.wms.entity.dto.AddMaterialDTO;
 import com.huanhong.wms.entity.dto.UpdateMaterialDTO;
 import com.huanhong.wms.entity.vo.MaterialVO;
+import com.huanhong.wms.mapper.MaterialClassificationMapper;
 import com.huanhong.wms.mapper.MaterialMapper;
 import com.huanhong.wms.service.IMaterialClassificationService;
 import com.huanhong.wms.service.IMaterialService;
@@ -46,6 +47,9 @@ public class MaterialController extends BaseController {
 
     @Resource
     private MaterialMapper materialMapper;
+
+    @Resource
+    private MaterialClassificationMapper materialClassificationMapper;
 
     @Resource
     private IMaterialClassificationService materialClassificationService;
@@ -78,8 +82,8 @@ public class MaterialController extends BaseController {
         try {
             //调用服务层方法，传入page对象和查询条件对象
             Page<Material> pageResult = materialService.pageFuzzyQuery(new Page<>(current, size), materialVO);
-            if (ObjectUtil.isEmpty(pageResult)){
-                return Result.success(pageResult,"未查询到相关物料信息");
+            if (ObjectUtil.isEmpty(pageResult)) {
+                return Result.success(pageResult, "未查询到相关物料信息");
             }
             return Result.success(pageResult);
         } catch (Exception e) {
@@ -126,9 +130,12 @@ public class MaterialController extends BaseController {
             /**
              * 查询物料分类是否存在
              */
-            MaterialClassification materialClassification = materialClassificationService.getMaterialClassificationByTypeCode(addMaterialDTO.getTypeCode());
-            if (ObjectUtil.isEmpty(materialClassification)){
-                return Result.failure(ErrorCode.DATA_IS_NULL, "分类编码不存在");
+            QueryWrapper<MaterialClassification> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("type_code", addMaterialDTO.getTypeCode());
+            queryWrapper.eq("level_type", "2");
+            MaterialClassification materialClassification = materialClassificationMapper.selectOne(queryWrapper);
+            if (ObjectUtil.isEmpty(materialClassification)) {
+                return Result.failure(ErrorCode.DATA_IS_NULL, "分类编码不存在或不符合规范（请使用小类编码）");
             }
 
             /**
@@ -136,25 +143,25 @@ public class MaterialController extends BaseController {
              * 1.获取物料分类编码，根据分类编码检索出所有此分类的物料编码
              * 2.截取物料编码的后五位流水号，将流水号+1得到新的物料编码
              */
-             QueryWrapper<Material> queryWrapper = new QueryWrapper<>();
-             queryWrapper.eq("type_code", addMaterialDTO.getTypeCode());
-             Material maxMaterial = materialMapper.selectOne(queryWrapper.orderByDesc("id").last("limit 1"));
-             //目前最大的本分类物料编码
-             String maxMaterialCode = null;
-             if (ObjectUtil.isNotEmpty(maxMaterial)){
-                 maxMaterialCode = maxMaterial.getMaterialCoding();
-             }
-             String orderNo = null;
-             //物料编码前缀-类型编码
-             String code_pfix = addMaterialDTO.getTypeCode();
-             if (maxMaterialCode != null && maxMaterial.getMaterialCoding().contains(code_pfix)){
-                 String code_end = maxMaterialCode.substring(6,11);
-                 int endNum = Integer.parseInt(code_end);
-                 int tmpNum = 100000 + endNum +1;
-                 orderNo = code_pfix + StrUtils.subStr(""+tmpNum,1);
-             }else {
-                 orderNo = code_pfix + "00001";
-             }
+            QueryWrapper<Material> queryWrapperMaterial = new QueryWrapper<>();
+            queryWrapperMaterial.eq("type_code", addMaterialDTO.getTypeCode());
+            Material maxMaterial = materialMapper.selectOne(queryWrapperMaterial.orderByDesc("id").last("limit 1"));
+            //目前最大的本分类物料编码
+            String maxMaterialCode = null;
+            if (ObjectUtil.isNotEmpty(maxMaterial)) {
+                maxMaterialCode = maxMaterial.getMaterialCoding();
+            }
+            String orderNo = null;
+            //物料编码前缀-类型编码
+            String code_pfix = addMaterialDTO.getTypeCode();
+            if (maxMaterialCode != null && maxMaterial.getMaterialCoding().contains(code_pfix)) {
+                String code_end = maxMaterialCode.substring(6, 11);
+                int endNum = Integer.parseInt(code_end);
+                int tmpNum = 100000 + endNum + 1;
+                orderNo = code_pfix + StrUtils.subStr("" + tmpNum, 1);
+            } else {
+                orderNo = code_pfix + "00001";
+            }
 
 
             /**
@@ -166,10 +173,10 @@ public class MaterialController extends BaseController {
                 material.setMaterialCoding(orderNo);
                 int insert = materialMapper.insert(material);
                 LOGGER.info("添加物料成功");
-                if (insert>0){
-                    return Result.success(materialService.getMeterialByMeterialCode(material.getMaterialCoding()),"新增成功");
-                }else {
-                    return Result.failure(ErrorCode.SYSTEM_ERROR,"新增失败！");
+                if (insert > 0) {
+                    return Result.success(materialService.getMeterialByMeterialCode(material.getMaterialCoding()), "新增成功");
+                } else {
+                    return Result.failure(ErrorCode.SYSTEM_ERROR, "新增失败！");
                 }
             } catch (Exception e) {
                 LOGGER.error("添加物料错误--（插入数据）失败,异常：" + e);
@@ -177,7 +184,7 @@ public class MaterialController extends BaseController {
             }
 
         } catch (Exception e) {
-            LOGGER.error("生成新物料编码出错: "+e);
+            LOGGER.error("生成新物料编码出错: " + e);
             return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--物料编码生成失败，请稍后再试或联系管理员");
         }
     }
@@ -239,7 +246,7 @@ public class MaterialController extends BaseController {
             QueryWrapper<Material> wrapper = new QueryWrapper<>();
             wrapper.eq("material_coding", meterialCode);
             int i = materialMapper.delete(wrapper);
-            if (i>0){
+            if (i > 0) {
                 LOGGER.info("物料: " + meterialCode + " 删除成功");
             }
             return render(i > 0);
@@ -264,8 +271,6 @@ public class MaterialController extends BaseController {
         }
         return Result.noDataError();
     }
-
-
 
 
 //    /**

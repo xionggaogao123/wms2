@@ -128,7 +128,7 @@ public class MaterialController extends BaseController {
              */
             MaterialClassification materialClassification = materialClassificationService.getMaterialClassificationByTypeCode(addMaterialDTO.getTypeCode());
             if (ObjectUtil.isEmpty(materialClassification)){
-                return Result.failure(ErrorCode.DATA_IS_NULL, "物料编码不存在");
+                return Result.failure(ErrorCode.DATA_IS_NULL, "分类编码不存在");
             }
 
             /**

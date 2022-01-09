@@ -57,16 +57,16 @@ public class Material extends SuperEntity {
     private String supplier;
 
     @ApiModelProperty(value = "物料单位长度-米/M")
-    private String materialLength;
+    private Double materialLength;
 
     @ApiModelProperty(value = "物料单位宽-米/M")
-    private String materialWidth;
+    private Double  materialWidth;
 
     @ApiModelProperty(value = "物料单位高度-米/M")
-    private String materialHeight;
+    private Double  materialHeight;
 
     @ApiModelProperty(value = "物料单位重量-kg/千克")
-    private String materialWeight;
+    private Double  materialWeight;
 
     @ApiModelProperty(value = "品牌")
     private String brand;

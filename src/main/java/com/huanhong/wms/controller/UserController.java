@@ -1,6 +1,7 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.lang.Validator;
+import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -94,6 +95,26 @@ public class UserController extends BaseController {
         if (StrUtil.isNotEmpty(dto.getMail())) {
             Validator.validateEmail(dto.getMail(), "请输入正确的Email");
         }
+
+
+        /**
+         * 账号-大小写字母及数字
+         */
+        Boolean flagLoginName =  ReUtil.isMatch("^[A-Za-z0-9]+$",dto.getLoginName());
+        if (!flagLoginName){
+            return Result.failure(ErrorCode.SYSTEM_ERROR,"请输入正确的账号");
+        }
+        
+        /**
+         * 密码-大小写字母及数字
+         */
+        if (dto.getPassword()!=null){
+            Boolean flagPasswd =  ReUtil.isMatch("^[A-Za-z0-9]+$",dto.getPassword());
+            if (!flagPasswd){
+                return Result.failure(ErrorCode.SYSTEM_ERROR,"请输入正确的密码");
+            }
+        }
+
         LoginUser loginUser = this.getLoginUser();
         return userService.addUser(loginUser, dto);
     }
@@ -111,6 +132,17 @@ public class UserController extends BaseController {
         if (StrUtil.isNotEmpty(dto.getMail())) {
             Validator.validateEmail(dto.getMail(), "请输入正确的Email");
         }
+
+        /**
+         * 密码-大小写字母及数字
+         */
+        if (dto.getPassword()!=null){
+            Boolean flagPasswd =  ReUtil.isMatch("^[A-Za-z0-9]+$",dto.getPassword());
+            if (!flagPasswd){
+                return Result.failure(ErrorCode.SYSTEM_ERROR,"请输入正确的密码");
+            }
+        }
+
         LoginUser loginUser = this.getLoginUser();
         if (dto.getId() == null) {
             dto.setId(loginUser.getId());

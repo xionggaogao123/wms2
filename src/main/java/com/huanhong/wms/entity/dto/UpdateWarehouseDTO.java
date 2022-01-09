@@ -13,7 +13,7 @@ import javax.validation.constraints.NotEmpty;
 @ApiModel(value = "仓库更新对象", description = "仓库更新对象封装")
 @Data
 public class UpdateWarehouseDTO {
-
+    private static final long serialVersionUID = 1L;
     @NotEmpty
     @ApiModelProperty(value = "仓库编号")
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)

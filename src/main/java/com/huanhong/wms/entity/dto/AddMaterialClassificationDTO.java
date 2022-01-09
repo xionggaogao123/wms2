@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 
@@ -24,6 +26,8 @@ public class AddMaterialClassificationDTO {
     @ApiModelProperty(value = "父类编码-大类无父类编码，中、小类须填写")
     private String parentCode;
 
+    @Min(0)
+    @Max(2)
     @NotNull
     @ApiModelProperty(value = "0-大类、1-中类、2-小类")
     private Integer levelType;

@@ -7,11 +7,13 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 
 @Data
 @ApiModel(description = "更新子库")
 public class UpdateSubliraryDTO {
+    private static final long serialVersionUID = 1L;
 
     @NotEmpty
     @ApiModelProperty(value = "子库编号")
@@ -34,14 +36,17 @@ public class UpdateSubliraryDTO {
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     private String sublibraryPrincipal;
 
+    @Min(0)
     @ApiModelProperty(value = "长(m：米)")
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     private Double sublibraryLength;
 
+    @Min(0)
     @ApiModelProperty(value = "宽(m：米)")
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     private Double sublibraryWidth;
 
+    @Min(0)
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "高(m：米)")
     private Double sublibraryHeight;

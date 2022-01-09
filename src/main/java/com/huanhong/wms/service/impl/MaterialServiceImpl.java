@@ -130,6 +130,9 @@ public class MaterialServiceImpl extends SuperServiceImpl<MaterialMapper, Materi
         //品牌
         query.like(StringUtils.isNotBlank(materialVO.getBrand()), "brand", materialVO.getBrand());
 
+        //停用
+        query.eq(StringUtils.isNotBlank(String.valueOf(materialVO.getStopUsing())),"stop_using",materialVO.getStopUsing());
+
         return baseMapper.selectPage(meterialPage, query);
     }
 }

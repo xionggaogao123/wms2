@@ -43,7 +43,7 @@ public class InventoryInformation extends SuperEntity {
     private String batch;
 
     @ApiModelProperty(value = "货主")
-    private String consignor;
+    private Integer consignor;
 
     @ApiModelProperty(value = "有效日期")
     private LocalDateTime effectiveDate;

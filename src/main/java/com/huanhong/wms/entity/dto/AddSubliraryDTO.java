@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -37,14 +38,17 @@ public class AddSubliraryDTO {
     @NotEmpty
     private String sublibraryPrincipal;
 
+    @Min(0)
     @ApiModelProperty(value = "长(m：米)")
     @NotNull
     private Double sublibraryLength;
 
+    @Min(0)
     @ApiModelProperty(value = "宽(m：米)")
     @NotNull
     private Double sublibraryWidth;
 
+    @Min(0)
     @NotNull
     @ApiModelProperty(value = "高(m：米)")
     private Double sublibraryHeight;

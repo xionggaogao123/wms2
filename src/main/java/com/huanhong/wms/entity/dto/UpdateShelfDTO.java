@@ -7,37 +7,56 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
 @ApiModel(value = "UpdateShelfVO更新对象", description = "货架更新对象封装")
 @Data
 public class UpdateShelfDTO {
+
+    private static final long serialVersionUID = 1L;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "货架编号")
     private String shelfId;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @Min(0)
+    @Max(1)
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "货架类型- 0-货架、1-地堆")
-    private String shelfType;
+    private Integer shelfType;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "货架承重(地堆无限大)")
-    private String shelfLoadBearing;
+    @Min(0)
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "货架承重(kg:千克 地堆0)")
+    private Double shelfLoadBearing;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @Min(0)
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "底长(m：米)")
     private Double shelfBottomLength;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @Min(0)
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "底宽(m：米)")
     private Double shelfBottomWidth;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "高(m：米 地堆无限高)")
+    @Min(0)
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "高(m：米 地堆0)")
     private Double shelfHeight;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @Min(0)
+    @Max(9)
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "货架层数-地堆即为一层")
-    private String shelfLayer;
+    private Integer shelfLayer;
+
+    @Min(0)
+    @Max(9)
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "每层单元格数")
+    private Integer cellNumber;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "备注")

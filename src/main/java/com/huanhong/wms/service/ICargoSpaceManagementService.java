@@ -3,6 +3,7 @@ package com.huanhong.wms.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.entity.CargoSpaceManagement;
+import com.huanhong.wms.entity.dto.AddCargoSpacedDTO;
 import com.huanhong.wms.entity.vo.CargoSpaceVO;
 
 import java.util.List;
@@ -16,6 +17,9 @@ import java.util.List;
  * @since 2021-12-08
  */
 public interface ICargoSpaceManagementService extends SuperService<CargoSpaceManagement> {
+    //批量新增货位
+    int addCargoSpace(AddCargoSpacedDTO addCargoSpacedDTO);
+
     //根据货架ID获取所属货位
     List<CargoSpaceManagement> getCargoSpaceListByShelfId(String shelfId);
 

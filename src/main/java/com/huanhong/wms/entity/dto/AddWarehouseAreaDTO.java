@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -26,14 +27,17 @@ public class AddWarehouseAreaDTO {
     @ApiModelProperty(value = "库区名称")
     private String warehouseAreaName;
 
+    @Min(0)
     @NotNull
     @ApiModelProperty(value = "长(m：米)")
     private Double warehouseAreaLength;
 
+    @Min(0)
     @NotNull
     @ApiModelProperty(value = "宽(m：米)")
     private Double warehouseAreaWidth;
 
+    @Min(0)
     @NotNull
     @ApiModelProperty(value = "高(m：米)")
     private Double warehouseAreaHeight;

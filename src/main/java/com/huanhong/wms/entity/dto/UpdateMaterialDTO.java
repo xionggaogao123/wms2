@@ -7,9 +7,14 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
 @ApiModel(value = "Meterial更新对象", description = "Meterial更新对象封装")
 @Data
 public class UpdateMaterialDTO {
+
+    private static final long serialVersionUID = 1L;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "物料编码")
@@ -59,26 +64,36 @@ public class UpdateMaterialDTO {
     @ApiModelProperty(value = "生产厂家")
     private String supplier;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @Min(0)
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "物料单位长度-米/M")
-    private String materialLength;
+    private Double materialLength;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @Min(0)
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "物料单位宽-米/M")
-    private String materialWidth;
+    private Double  materialWidth;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @Min(0)
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "物料单位高度-米/M")
-    private String materialHeight;
+    private Double  materialHeight;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @Min(0)
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "物料单位重量-kg/千克")
-    private String materialWeight;
+    private Double  materialWeight;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "备注")
     private String remark;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "品牌")
+    private String brand;
+
+    @Min(0)
+    @Max(1)
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "停用")
     private Integer stopUsing;

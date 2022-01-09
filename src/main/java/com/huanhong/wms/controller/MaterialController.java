@@ -173,8 +173,8 @@ public class MaterialController extends BaseController {
                 BeanUtil.copyProperties(addMaterialDTO, material);
                 material.setMaterialCoding(orderNo);
                 int insert = materialMapper.insert(material);
-                LOGGER.info("添加物料成功");
                 if (insert > 0) {
+                    LOGGER.info("添加物料成功");
                     return Result.success(materialService.getMeterialByMeterialCode(material.getMaterialCoding()), "新增成功");
                 } else {
                     return Result.failure(ErrorCode.SYSTEM_ERROR, "新增失败！");
@@ -193,7 +193,6 @@ public class MaterialController extends BaseController {
 
     /**
      * 过物料编码更新物料信息
-     *
      * @param updateMaterialDTO
      * @return
      */

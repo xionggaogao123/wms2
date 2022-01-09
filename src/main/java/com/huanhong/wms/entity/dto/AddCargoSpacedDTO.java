@@ -18,35 +18,41 @@ public class AddCargoSpacedDTO {
     @ApiModelProperty(value = "货架编号")
     private String shelfId;
 
-    @NotNull
     @ApiModelProperty(value = "货位编号")
     private String cargoSpaceId;
 
+    @Min(0)
+    @Max(9)
     @NotNull
     @ApiModelProperty(value = "货位所在层")
-    private String cargoSpaceFloor;
+    private Integer cargoSpaceFloor;
 
     @NotNull
     @Min(0)
-    @Max(2)
-    @ApiModelProperty(value = "货位类型-0-货架、1-室外地堆、2-室内地堆")
-    private String cargoSpaceType;
+    @Max(1)
+    @ApiModelProperty(value = "货位类型-0-货架、1-地堆")
+    private Integer cargoSpaceType;
 
+    @Min(0)
     @NotNull
     @ApiModelProperty(value = "底长(m：米)")
     private Double cargoSpaceLength;
 
+    @Min(0)
     @NotNull
     @ApiModelProperty(value = "底宽(m：米)")
     private Double cargoSpaceWidth;
 
+    @Min(0)
     @NotNull
     @ApiModelProperty(value = "高（m: 米 地堆无限高）")
     private Double cargoSpaceHeight;
 
-    @NotNull
-    @ApiModelProperty(value = "货位承重(地堆无限大)")
-    private String cargoSpaceBearing;
+//    @Min(0)
+//    @NotNull
+//    @ApiModelProperty(value = "货位承重(地堆无限大)--现阶段隐藏不显示")
+//    private String cargoSpaceBearing;
+
 
     @ApiModelProperty(value = "备注")
     private String remark;

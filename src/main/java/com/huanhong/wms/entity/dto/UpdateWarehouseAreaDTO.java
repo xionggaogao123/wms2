@@ -7,14 +7,14 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 
 
 @Data
 @ApiModel(description = "更新库区")
 public class UpdateWarehouseAreaDTO {
-
-
+    private static final long serialVersionUID = 1L;
     @NotEmpty
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "库区编号")
@@ -24,14 +24,17 @@ public class UpdateWarehouseAreaDTO {
     @ApiModelProperty(value = "库区名称")
     private String warehouseAreaName;
 
+    @Min(0)
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "长(m：米)")
     private Double warehouseAreaLength;
 
+    @Min(0)
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "宽(m：米)")
     private Double warehouseAreaWidth;
 
+    @Min(0)
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "高(m：米)")
     private Double warehouseAreaHeight;

@@ -2,7 +2,6 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -82,44 +81,10 @@ public class CargoSpaceManagementController extends BaseController {
     }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation(value = "添加货位管理", notes = "生成代码")
+    @ApiOperation(value = "添加货位管理")
     @PostMapping("/add")
     public Result add(@Valid @RequestBody AddCargoSpacedDTO addCargoSpacedDTO) {
-
-
-        /**
-         * 判断是否有必填参数为空
-         */
         try {
-            /**
-             * 实体类转为json
-             */
-            String addCargoSpacedDTOToJoStr = JSONObject.toJSONString(addCargoSpacedDTO);
-            JSONObject addCargoSpacedDTOJo = JSONObject.parseObject(addCargoSpacedDTOToJoStr);
-            /**
-             * 不能为空的参数list
-             * 配置于judge.properties
-             */
-            List<String> list = judgeConfig.getCargoSpaceNullList();
-            /**
-             * 将NotNullList中的值当作key判断value是否为空
-             */
-            for (int i = 0; i < list.size(); i++) {
-                String key = list.get(i);
-                if (StringUtils.isBlank(addCargoSpacedDTOJo.getString(key)) || "null".equals(addCargoSpacedDTOJo.getString(key))) {
-                    return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, key + ": 不能为空");
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.error("添加货位失败--判断参数空值出错,异常：" + e);
-            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--判空失败，请稍后再试或联系管理员");
-        }
-
-        /**
-         * 在此处查重
-         */
-        try {
-
             /**
              * 检查货位编码是否合法
              */
@@ -128,8 +93,6 @@ public class CargoSpaceManagementController extends BaseController {
             }
 
             addCargoSpacedDTO.setCargoSpaceId(addCargoSpacedDTO.getShelfId() + addCargoSpacedDTO.getCargoSpaceId());
-
-
             CargoSpaceManagement cargoSpaceManagementIsExist = cargoSpaceManagementService.getCargoSpaceByCargoSpaceId(addCargoSpacedDTO.getCargoSpaceId());
             ShelfManagement shelfManagementIsExist = shelfManagementService.getShelfByShelfId(addCargoSpacedDTO.getShelfId());
 
@@ -151,7 +114,7 @@ public class CargoSpaceManagementController extends BaseController {
                 } else {
                     LOGGER.error("添加货位失败");
                 }
-                return render(insert > 0);
+                return render(insert>0);
             } catch (Exception e) {
                 LOGGER.error("添加货位错误--（插入数据）失败,异常：" + e);
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--插入数据失败，请稍后再试或联系管理员");
@@ -163,7 +126,7 @@ public class CargoSpaceManagementController extends BaseController {
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation(value = "更新货位管理", notes = "生成代码")
+    @ApiOperation(value = "更新货位管理")
     @PutMapping("/update")
     public Result updateByCargoSpaceId(@Valid @RequestBody UpdateCargoSpaceDTO updateCargoSpaceDTO) {
         UpdateWrapper<CargoSpaceManagement> updateWrapper = new UpdateWrapper<>();
@@ -175,7 +138,7 @@ public class CargoSpaceManagementController extends BaseController {
             //判断更新的货架是否存在
             CargoSpaceManagement cargoSpaceDTOIsExist = cargoSpaceManagementService.getCargoSpaceByCargoSpaceId(updateCargoSpaceDTO.getCargoSpaceId());
             if (ObjectUtil.isEmpty(cargoSpaceDTOIsExist)) {
-                return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此货架编码，货架不存在");
+                return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此货位编码，货架不存在");
             }
             updateWrapper.eq("cargo_space_id", updateCargoSpaceDTO.getCargoSpaceId());
             CargoSpaceManagement updateCargoSpace = new CargoSpaceManagement();
@@ -183,8 +146,8 @@ public class CargoSpaceManagementController extends BaseController {
             int update = cargoSpaceManagementMapper.update(updateCargoSpace, updateWrapper);
             return render(update > 0);
         } catch (Exception e) {
-            LOGGER.error("更新库区信息出错--更新失败，异常：" + e);
-            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常：库区更新失败，请稍后再试或联系管理员");
+            LOGGER.error("更新货位信息出错--更新失败，异常：" + e);
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常：货位更新失败，请稍后再试或联系管理员");
         }
     }
 

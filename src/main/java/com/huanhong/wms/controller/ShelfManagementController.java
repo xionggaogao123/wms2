@@ -17,6 +17,7 @@ import com.huanhong.wms.config.JudgeConfig;
 import com.huanhong.wms.entity.CargoSpaceManagement;
 import com.huanhong.wms.entity.ShelfManagement;
 import com.huanhong.wms.entity.WarehouseAreaManagement;
+import com.huanhong.wms.entity.dto.AddCargoSpacedDTO;
 import com.huanhong.wms.entity.dto.AddShelfDTO;
 import com.huanhong.wms.entity.dto.UpdateShelfDTO;
 import com.huanhong.wms.entity.vo.ShelfVO;
@@ -153,12 +154,26 @@ public class ShelfManagementController extends BaseController {
                 ShelfManagement shelfManagement = new ShelfManagement();
                 BeanUtil.copyProperties(addShelfDTO,shelfManagement);
                 int insert = shelfManagementMapper.insert(shelfManagement);
+                int i = 0;
                 if (insert > 0) {
                     LOGGER.info("添加货架成功");
+                    //自动创建货位
+                    AddCargoSpacedDTO addCargoSpacedDTO = new AddCargoSpacedDTO();
+                    addCargoSpacedDTO.setShelfId(shelfManagement.getShelfId());
+                    try{
+                       i = cargoSpaceManagementService.addCargoSpace(addCargoSpacedDTO);
+                    }catch (Exception e){
+                        LOGGER.error("自动生成货位失败--异常",e);
+                    }
+                    if (i>0){
+                        return Result.success("货架创建成功,货位自动生成");
+                    }else {
+                        return Result.success("货架创建成功,货位自动生成出错");
+                    }
                 } else {
                     LOGGER.error("添加货架失败");
+                    return render(insert>0);
                 }
-                return render(insert > 0);
             } catch (Exception e) {
                 LOGGER.error("添加货架错误--（插入数据）失败,异常：" + e);
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--插入数据失败，请稍后再试或联系管理员");
@@ -244,6 +259,34 @@ public class ShelfManagementController extends BaseController {
         } catch (Exception e) {
             return Result.failure(ErrorCode.SYSTEM_ERROR, "获取货位信息失败");
         }
+    }
+
+    @ApiOperationSupport(order = 7)
+    @ApiOperation(value = "自动新增所有货位")
+    @GetMapping("/addAuto/{shelfId}")
+    public Result addAuto(@PathVariable String shelfId){
+
+        /**
+         * 如果货架里已有货位不能再使用自动生成
+         */
+        List<CargoSpaceManagement> cargoSpaceManagements = cargoSpaceManagementService.getCargoSpaceListByShelfId(shelfId);
+        if (ObjectUtil.isNotEmpty(cargoSpaceManagements)){
+            return Result.failure(ErrorCode.DATA_EXISTS_ERROR,"此货架有货位，无法自动生成货位");
+        }
+        ShelfManagement shelfManagement = shelfManagementService.getShelfByShelfId(shelfId);
+        AddCargoSpacedDTO addCargoSpacedDTO = new AddCargoSpacedDTO();
+        addCargoSpacedDTO.setShelfId(shelfId);
+        if (ObjectUtil.isEmpty(shelfManagement)){
+            return Result.failure(ErrorCode.DATA_IS_NULL,"货架不存在");
+        }
+        //自动创建货位
+        int i = 0;
+        try{
+            i = cargoSpaceManagementService.addCargoSpace(addCargoSpacedDTO);
+        }catch (Exception e){
+            LOGGER.error("自动生成货位失败--异常",e);
+        }
+        return render(i>0);
     }
 
 }

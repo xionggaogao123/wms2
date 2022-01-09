@@ -1,6 +1,6 @@
 package com.huanhong.wms.controller;
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -11,8 +11,12 @@ import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
+import com.huanhong.wms.entity.CargoSpaceManagement;
 import com.huanhong.wms.entity.InventoryInformation;
+import com.huanhong.wms.entity.dto.AddInventoryInformationDTO;
+import com.huanhong.wms.entity.vo.InventoryInformationVO;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
+import com.huanhong.wms.service.ICargoSpaceManagementService;
 import com.huanhong.wms.service.IInventoryInformationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -20,22 +24,25 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping("/inventory-information")
+@RequestMapping("/v1/inventory-information")
 @ApiSort()
 @Api(tags = "库存表")
 public class InventoryInformationController extends BaseController {
 
     @Resource
     private IInventoryInformationService inventoryInformationService;
+
+    @Resource
+    private ICargoSpaceManagementService cargoSpaceManagementService;
 
     @Resource
     private InventoryInformationMapper inventoryInformationMapper;
@@ -47,45 +54,45 @@ public class InventoryInformationController extends BaseController {
 
     /**
      * 分页查询
-     *
      * @param current
      * @param size
-     * @param search
+     * @param inventoryInformationVO
      * @return
      */
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
             @ApiImplicitParam(name = "size", value = "每页行数"),
-            @ApiImplicitParam(name = "search", value = "聚合搜索（标题）"),
     })
     @ApiOperationSupport(order = 1)
     @ApiOperation(value = "分页查询库存表", notes = "生成代码")
-    @GetMapping("/page")
-    public Result<Page<InventoryInformation>> page(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size,
-                                                   @RequestParam Map<String, Object> search) {
-        QueryWrapper<InventoryInformation> query = new QueryWrapper<>();
-        query.orderByDesc("id");
-        if (search.containsKey("search")) {
-            String text = search.get("search").toString();
-            if (StrUtil.isNotEmpty(text)) {
-                query.and(qw -> qw.like("title", text).or()
-                        .like("user_name", text)
-                );
+    @GetMapping("/pagingFuzzyQuery")
+    public Result<Page<InventoryInformation>> page(@RequestParam(defaultValue = "1") Integer current,
+                                                   @RequestParam(defaultValue = "10") Integer size,
+                                                   InventoryInformationVO inventoryInformationVO) {
+        try {
+            //调用服务层方法，传入page对象和查询条件对象
+            Page<InventoryInformation> pageResult = inventoryInformationService.pageFuzzyQuery(new Page<>(current, size), inventoryInformationVO);
+            if (ObjectUtil.isEmpty(pageResult.getRecords())) {
+                return Result.success(pageResult, "未查询到库存信息");
             }
+            return Result.success(pageResult);
+        } catch (Exception e) {
+            LOGGER.error("分页查询异常"+e);
+            return Result.failure("查询失败--系统异常，请联系管理员");
         }
-        return Result.success(inventoryInformationMapper.selectPage(new Page<>(current, size), query));
+
     }
 
     /**
      * 库存新增--因入库发生变动
      *
-     * @param inventoryInformation
+     * @param addInventoryInformationDTO
      * @return
      */
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "库存新增", notes = "生成代码")
     @PostMapping("/add")
-    public Result add(@Valid @RequestBody InventoryInformation inventoryInformation) {
+    public Result add(@Valid @RequestBody AddInventoryInformationDTO addInventoryInformationDTO) {
 
         /**
          * 判断是否有必填参数为空
@@ -94,7 +101,7 @@ public class InventoryInformationController extends BaseController {
             /**
              * 实体类转为json
              */
-            String inventoryInformationToJoStr = JSONObject.toJSONString(inventoryInformation);
+            String inventoryInformationToJoStr = JSONObject.toJSONString(addInventoryInformationDTO);
             JSONObject inventoryInformationJo = JSONObject.parseObject(inventoryInformationToJoStr);
             /**
              * 不能为空的参数list
@@ -111,16 +118,43 @@ public class InventoryInformationController extends BaseController {
                     return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, key + ": 不能为空");
                 }
             }
+            /**
+             * 判断货位是否存在
+             */
+            CargoSpaceManagement cargoSpaceManagement = cargoSpaceManagementService.getCargoSpaceByCargoSpaceId(addInventoryInformationDTO.getCargoSpaceId());
+            if (ObjectUtil.isEmpty(cargoSpaceManagement)){
+                return Result.failure(ErrorCode.DATA_IS_NULL, "货位不存在！");
+            }
+            /**
+             * 批次可以从到货检验单获取-暂定
+             */
+
+            /**
+             * 新增库存时应给予最大的自由度,库存应当是基于现实的映射，若系统过多限制，则与实际脱节，降低实用度
+             * 1.必填字段不能为空
+             */
+            try {
+                InventoryInformation inventoryInformation = new InventoryInformation();
+                BeanUtils.copyProperties(addInventoryInformationDTO,inventoryInformation);
+                int insert = inventoryInformationMapper.insert(inventoryInformation);
+                if (insert > 0) {
+                    return Result.success();
+                } else {
+                    return Result.failure(ErrorCode.SYSTEM_ERROR, "新增失败！");
+                }
+            }catch (Exception e){
+                LOGGER.error("添加物料错误--（插入数据）失败,异常：" + e);
+                return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--插入数据失败，请稍后再试或联系管理员");
+            }
+
         } catch (Exception e) {
             LOGGER.error("新增库存失败--判断参数空值出错,异常：" + e);
-            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--判空失败，请稍后再试或联系管理员");
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常，请稍后再试或联系管理员");
         }
-        /**
-         * 新增库存时应给予最大的自由度,库存应当是基于现实的映射，若系统过多限制，则与实际脱节，降低实用度
-         * 1.必填字段不能为空
-         */
-        int insert = inventoryInformationMapper.insert(inventoryInformation);
-        return render(insert > 0);
+
+
+
+
     }
 
     /**

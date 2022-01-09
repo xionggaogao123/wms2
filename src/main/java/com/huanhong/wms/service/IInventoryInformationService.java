@@ -1,7 +1,9 @@
 package com.huanhong.wms.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.entity.InventoryInformation;
+import com.huanhong.wms.entity.vo.InventoryInformationVO;
 
 import java.util.List;
 
@@ -15,18 +17,20 @@ import java.util.List;
  */
 public interface IInventoryInformationService extends SuperService<InventoryInformation> {
 
+    /**
+     * 分页查询
+     */
+    Page<InventoryInformation> pageFuzzyQuery(Page<InventoryInformation> inventoryInformationPage, InventoryInformationVO inventoryInformationVO);
 
     /**
      * 库存信息更新
      */
     int updateInventoryInformation(InventoryInformation inventoryInformation);
 
-    /**
-     * 库存信息删除-下架
-     */
 
     /**
      * 根据货位编码查询其中存储的物料信息
      */
     List<InventoryInformation>  getInventoryInformationByCargoSpaceId(String cargoSpaceId);
+
 }

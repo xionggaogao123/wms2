@@ -16,11 +16,11 @@ public class AddUserDTO {
     private static final long serialVersionUID = 1L;
 
     @NotNull
-    @Length(max = 32, min = 4, message = "账号长度在4～32位之间")
+    @Length(max = 14, min = 5, message = "账号长度在5～14位之间")
     @ApiModelProperty(value = "登录账号", required = true)
     private String loginName;
 
-    @Length(max = 32, min = 5, message = "密码长度在5～32位之间")
+    @Length(max = 16, min = 8, message = "密码长度在8～16位之间")
     @ApiModelProperty(value = "登录密码")
     private String password;
 

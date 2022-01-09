@@ -21,7 +21,7 @@ public interface IMaterialService extends SuperService<Material> {
 
 //    Meterial getMeterialByMeterialName(String meterialName);
 
-    Page<Material> pageFuzzyQuery(Page<Material> materialPage, MaterialVO addMaterialDTO);
+    Page<Material> pageFuzzyQuery(Page<Material> materialPage, MaterialVO materialVO);
 
     List<Material> listFuzzyQuery(String typeCode);
 }

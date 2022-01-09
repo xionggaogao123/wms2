@@ -1,17 +1,19 @@
 package com.huanhong.wms.entity.dto;
 
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@ApiModel(description = "更新库存")
-public class UpdateInventoryInformation {
+@ApiModel(description = "新增库存")
+public class AddInventoryInformationDTO {
 
     private static final long serialVersionUID = 1L;
 
@@ -19,17 +21,31 @@ public class UpdateInventoryInformation {
     @ApiModelProperty(value = "物料编码")
     private String materialCoding;
 
+    @NotEmpty
+    @ApiModelProperty(value = "物料名称")
+    private String materialName;
 
     @NotEmpty
-    @ApiModelProperty(value = "货位")
-    private String cargoSpace;
+    @ApiModelProperty(value = "计量单位")
+    private String measurementUnit;
 
 
+    @ApiModelProperty(value = "辅助单位")
+    private String auxiliaryUnit;
+
+
+    @NotNull
+    @ApiModelProperty(value = "货位编码")
+    private String cargoSpaceId;
+
+
+    @Min(0)
     @NotNull
     @ApiModelProperty(value = "库存数量")
     private Double inventoryCredit;
 
 
+    @Min(0)
     @NotNull
     @ApiModelProperty(value = "安全数量")
     private Double safeQuantity;
@@ -42,7 +58,7 @@ public class UpdateInventoryInformation {
 
     @NotNull
     @ApiModelProperty(value = "货主")
-    private Integer consignor;
+    private String consignor;
 
 
     @NotEmpty
@@ -50,16 +66,19 @@ public class UpdateInventoryInformation {
     private LocalDateTime effectiveDate;
 
 
+    @Min(0)
     @NotNull
     @ApiModelProperty(value = "单价(泰丰盛和)")
     private BigDecimal unitPrice;
 
 
+    @Min(0)
     @NotNull
     @ApiModelProperty(value = "管理费率(默认1.1)")
     private Double managementFeeRate;
 
 
+    @Min(0)
     @NotNull
     @ApiModelProperty(value = "单价(使用单位)")
     private BigDecimal salesUnitPrice;

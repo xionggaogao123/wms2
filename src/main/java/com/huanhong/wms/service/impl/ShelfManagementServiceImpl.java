@@ -2,6 +2,7 @@ package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperServiceImpl;
@@ -66,5 +67,39 @@ public class ShelfManagementServiceImpl extends SuperServiceImpl<ShelfManagement
         query.like(StringUtils.isNotBlank(shelfVO.getShelfId()), "shelf_id", shelfVO.getShelfId());
 
         return baseMapper.selectPage(shelfManagementPage, query);
+    }
+
+    /**
+     * 查询某货架是否停用 0- 使用中  1- 停用
+     * @param shelfId
+     * @return
+     */
+    @Override
+    public int isStopUsing(String shelfId) {
+        ShelfManagement shelfManagement = getShelfByShelfId(shelfId);
+        return shelfManagement.getStopUsing();
+    }
+
+    /**
+     *
+     * @param parentCode
+     * @param enable true = 随父级启用  false = 随父级停用
+     * @return
+     */
+    @Override
+    public int stopUsingByParentCode(String parentCode, boolean enable) {
+        UpdateWrapper updateWrapper= new UpdateWrapper();
+        ShelfManagement shelfManagement = new ShelfManagement();
+        if (enable){
+            //启用所有子级
+            shelfManagement.setStopUsing(0);
+        }else {
+            //停用所有子级
+            shelfManagement.setStopUsing(1);
+        }
+        //更新所有库区编号模糊匹配的货架
+        //从库区开始 有2级及以上父级所以需要likeRight 自己的父编码
+        updateWrapper.likeRight("warehouse_area_id", parentCode);
+        return shelfManagementMapper.update(shelfManagement, updateWrapper);
     }
 }

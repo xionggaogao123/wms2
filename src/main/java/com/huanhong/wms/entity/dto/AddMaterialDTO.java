@@ -4,6 +4,7 @@ package com.huanhong.wms.entity.dto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -15,10 +16,12 @@ public class AddMaterialDTO {
     private static final long serialVersionUID = 1L;
 
 
+    @Length(max = 20, min = 1, message = "物料名称长度在1～20位之间")
     @NotNull
     @ApiModelProperty(value = "物料名称")
     private String materialName;
 
+    @Length(max = 20, min = 0, message = "俗称长度在0～20位之间")
     @ApiModelProperty(value = "俗称")
     private String slang;
 

@@ -34,5 +34,7 @@ public interface IUserService extends SuperService<User> {
 
     Result<Integer> updateUser(LoginUser loginUser, UpUserDTO dto);
 
+    //查询用户是否停用
+    int isStopUsing(Integer userId);
 
 }

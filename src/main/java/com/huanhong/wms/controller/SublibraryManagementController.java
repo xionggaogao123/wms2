@@ -21,9 +21,7 @@ import com.huanhong.wms.entity.dto.AddSubliraryDTO;
 import com.huanhong.wms.entity.dto.UpdateSubliraryDTO;
 import com.huanhong.wms.entity.vo.SublibraryVO;
 import com.huanhong.wms.mapper.SublibraryManagementMapper;
-import com.huanhong.wms.service.ISublibraryManagementService;
-import com.huanhong.wms.service.IWarehouseAreaManagementService;
-import com.huanhong.wms.service.IWarehouseManagementService;
+import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -54,6 +52,12 @@ public class SublibraryManagementController extends BaseController {
 
     @Resource
     private IWarehouseAreaManagementService warehouseAreaManagementService;
+
+    @Resource
+    private IShelfManagementService shelfManagementService;
+
+    @Resource
+    private ICargoSpaceManagementService cargoSpaceManagementService;
 
     @Autowired
     private JudgeConfig judgeConfig;
@@ -92,11 +96,18 @@ public class SublibraryManagementController extends BaseController {
         try {
 
             /**
-             * 查看仓库是否存在
+             * 查看子库是否存在
              */
             WarehouseManagement warehouseManagement = warehouseManagementService.getWarehouseByWarehouseId(addSubliraryDTO.getWarehouseId());
             if (ObjectUtil.isEmpty(warehouseManagement)) {
                 return Result.failure(ErrorCode.DATA_IS_NULL, "仓库不存在，无法添加子库");
+            }
+
+            /**
+             * 查看子库是否停用
+             */
+            if (warehouseManagementService.isStopUsing(addSubliraryDTO.getWarehouseId())!=0){
+                return Result.failure(ErrorCode.DATA_IS_NULL, "仓库停用，无法添加子库");
             }
 
             /**
@@ -164,7 +175,7 @@ public class SublibraryManagementController extends BaseController {
 
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "更新子库管理", notes = "生成代码")
-    @PutMapping("update/{sublibraryId}")
+    @PutMapping("/update")
     public Result update(@Valid @RequestBody UpdateSubliraryDTO updateSubliraryDTO) {
         UpdateWrapper updateWrapper = new UpdateWrapper<>();
         try {
@@ -175,11 +186,45 @@ public class SublibraryManagementController extends BaseController {
             if (ObjectUtil.isEmpty(sublibraryIsExist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此子库编码");
             }
+
+            /**
+             * 查询库区是否停用 0-使用中  1-单独停用
+             * 若改为0则允许更新  反之则拒绝
+             */
+            //父级停用无法手动单独启用
+            SublibraryManagement querySub = sublibraryManagementService.getSublibraryBySublibraryId(updateSubliraryDTO.getSublibraryId());
+            if (warehouseManagementService.isStopUsing(querySub.getWarehouseId())==1){
+                return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "仓库已停用,子库无法编辑！");
+            }
+
+            //父级可用可以手动修改更新为启用状态
+            if (sublibraryManagementService.isStopUsing(updateSubliraryDTO.getSublibraryId())==1){
+                if (updateSubliraryDTO.getStopUsing()!=0){
+                    return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "子库已停用,无法编辑！");
+                }
+            }
+
+
             SublibraryManagement sublibraryManagement = new SublibraryManagement();
             BeanUtil.copyProperties(updateSubliraryDTO, sublibraryManagement);
             updateWrapper.eq("sublibrary_id", updateSubliraryDTO.getSublibraryId());
             int update = sublibraryManagementMapper.update(sublibraryManagement, updateWrapper);
-            return render(update > 0);
+            String parentCode = sublibraryManagement.getSublibraryId();
+            if (update > 0) {
+                //如果子库更新成功 判断此次更新子库是否处于启用状态
+                if (sublibraryManagement.getStopUsing()==0){
+                warehouseAreaManagementService.stopUsingByParentCode(parentCode,true);
+                shelfManagementService.stopUsingByParentCode(parentCode,true);
+                cargoSpaceManagementService.stopUsingByParentCode(parentCode,true);
+                } else {
+                //若是停用状态 则将停用状态为 0-启用 的子级全部停用
+                warehouseAreaManagementService.stopUsingByParentCode(parentCode,false);
+                shelfManagementService.stopUsingByParentCode(parentCode,false);
+                cargoSpaceManagementService.stopUsingByParentCode(parentCode,false);
+               }
+                return Result.success("操作成功");
+            }
+            return Result.failure("操作失败");
         } catch (Exception e) {
             LOGGER.error("更新子库信息出错--更新失败，异常：" + e);
             return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常：子库更新失败，请稍后再试或联系管理员");
@@ -192,6 +237,7 @@ public class SublibraryManagementController extends BaseController {
     public Result delete(@PathVariable String sublibraryId) {
         QueryWrapper<SublibraryManagement> queryWrapper = new QueryWrapper<>();
         try {
+
             List<WarehouseAreaManagement> warehouseAreaManagementList = warehouseAreaManagementService.getWarehouseAreaListBySublibraryId(sublibraryId);
             if (ObjectUtil.isNotEmpty(warehouseAreaManagementList)) {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "此子库下存在库区，请先删除库区");
@@ -202,6 +248,15 @@ public class SublibraryManagementController extends BaseController {
             if (ObjectUtil.isEmpty(sublibraryManagement)) {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "操作失败：子库编号不存在");
             }
+
+            /**
+             * 判断子库是否停用 若停用是否已经将stopUsing字段改为 0 -使用中
+             * 若改为0则允许更新  反之则拒绝
+             */
+            if (sublibraryManagementService.isStopUsing(sublibraryId)!=0){
+                    return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "子库已停用,无法删除！");
+            }
+
             int i = sublibraryManagementMapper.delete(queryWrapper);
             LOGGER.info("子库:  " + sublibraryId + "删除成功");
             return render(i > 0);

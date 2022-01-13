@@ -146,6 +146,11 @@ public class ShelfManagementController extends BaseController {
                 return Result.failure(ErrorCode.DATA_IS_NULL, "库区不存在,无法添加货架");
             }
 
+            //查看库区是否停用
+            if (warehouseAreaManagementService.isStopUsing(addShelfDTO.getWarehouseAreaId())!=0){
+                return Result.failure(ErrorCode.DATA_IS_NULL, "库区停用中,无法添加货架");
+            }
+
             //货架编号重复判定
             if (ObjectUtil.isNotEmpty(shelfManagementIsExist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "货架编号重复,货架已存在");
@@ -194,16 +199,46 @@ public class ShelfManagementController extends BaseController {
             if (StringUtils.isBlank(updateShelfDTO.getShelfId())) {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "货架编码不能为空");
             }
+
             //判断更新的货架是否存在
             ShelfManagement shelfManagementIsExist = shelfManagementService.getShelfByShelfId(updateShelfDTO.getShelfId());
             if (ObjectUtil.isEmpty(shelfManagementIsExist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此货架编码，货架不存在");
             }
+
+            /**
+             * 查询货架是否停用 0-使用中  1-单独停用
+             *
+             */
+            //父级停用无法手动单独启用
+            ShelfManagement shelfManagement = shelfManagementService.getShelfByShelfId(updateShelfDTO.getShelfId());
+            if (warehouseAreaManagementService.isStopUsing(shelfManagement.getWarehouseAreaId())==1){
+                    return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "库区已停用,货架无法编辑!");
+            }
+
+            //单独停用可以手动修改更新为启用状态
+            if (shelfManagementService.isStopUsing(updateShelfDTO.getShelfId())==1){
+                if (updateShelfDTO.getStopUsing()!=0) {
+                    return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "货架已停用,无法编辑！");
+                }
+            }
+
             updateWrapper.eq("shelf_id", updateShelfDTO.getShelfId());
             ShelfManagement updateShlef = new ShelfManagement();
             BeanUtil.copyProperties(updateShelfDTO, updateShlef);
             int update = shelfManagementMapper.update(updateShlef, updateWrapper);
-            return render(update > 0);
+            String parentCode = updateShlef.getShelfId();
+            if (update > 0) {
+                //如果货架更新成功 判断此次更新货架是否处于启用状态
+                if (updateShlef.getStopUsing()==0){
+                        cargoSpaceManagementService.stopUsingByParentCode(parentCode,true);
+                } else {
+                    //若是停用状态 则将停用状态为 0-启用 的子级全部停用
+                        cargoSpaceManagementService.stopUsingByParentCode(parentCode,false);
+                }
+                return Result.success("操作成功");
+            }
+            return Result.failure("操作失败");
         } catch (Exception e) {
             LOGGER.error("更新库区信息出错--更新失败，异常：" + e);
             return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常：库区更新失败，请稍后再试或联系管理员");
@@ -214,10 +249,15 @@ public class ShelfManagementController extends BaseController {
     @ApiOperation(value = "删除货架管理", notes = "生成代码")
     @DeleteMapping("/delete/{shelfId}")
     public Result delete(@PathVariable String shelfId) {
+
         try {
             ShelfManagement shelfIsExist = shelfManagementService.getShelfByShelfId(shelfId);
             if (ObjectUtil.isEmpty(shelfIsExist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此货架编码");
+            }
+
+            if (shelfManagementService.isStopUsing(shelfId)!=0){
+                return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "货架已停用,无法删除！");
             }
 
             //检查此货架下是否有货位存在

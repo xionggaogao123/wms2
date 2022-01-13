@@ -1,9 +1,7 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
@@ -14,6 +12,7 @@ import com.huanhong.wms.config.JudgeConfig;
 import com.huanhong.wms.entity.CargoSpaceManagement;
 import com.huanhong.wms.entity.InventoryInformation;
 import com.huanhong.wms.entity.dto.AddInventoryInformationDTO;
+import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
 import com.huanhong.wms.entity.vo.InventoryInformationVO;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.service.ICargoSpaceManagementService;
@@ -30,7 +29,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping("/v1/inventory-information")
@@ -94,30 +92,31 @@ public class InventoryInformationController extends BaseController {
     @PostMapping("/add")
     public Result add(@Valid @RequestBody AddInventoryInformationDTO addInventoryInformationDTO) {
 
-        /**
-         * 判断是否有必填参数为空
-         */
-        try {
-            /**
-             * 实体类转为json
-             */
-            String inventoryInformationToJoStr = JSONObject.toJSONString(addInventoryInformationDTO);
-            JSONObject inventoryInformationJo = JSONObject.parseObject(inventoryInformationToJoStr);
-            /**
-             * 不能为空的参数list
-             * 配置于judge.properties
-             */
-            List<String> list = judgeConfig.getInventoryNotNullList();
 
-            /**
-             * 将InventoryNotNullList中的值当作key判断value是否为空
-             */
-            for (int i = 0; i < list.size(); i++) {
-                String key = list.get(i);
-                if (StringUtils.isBlank(inventoryInformationJo.getString(key)) || "null".equals(inventoryInformationJo.getString(key))) {
-                    return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, key + ": 不能为空");
-                }
-            }
+        try {
+//            /**
+//             * 判断是否有必填参数为空
+//             */
+//            /**
+//             * 实体类转为json
+//             */
+//            String inventoryInformationToJoStr = JSONObject.toJSONString(addInventoryInformationDTO);
+//            JSONObject inventoryInformationJo = JSONObject.parseObject(inventoryInformationToJoStr);
+//            /**
+//             * 不能为空的参数list
+//             * 配置于judge.properties
+//             */
+//            List<String> list = judgeConfig.getInventoryNotNullList();
+//
+//            /**
+//             * 将InventoryNotNullList中的值当作key判断value是否为空
+//             */
+//            for (int i = 0; i < list.size(); i++) {
+//                String key = list.get(i);
+//                if (StringUtils.isBlank(inventoryInformationJo.getString(key)) || "null".equals(inventoryInformationJo.getString(key))) {
+//                    return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, key + ": 不能为空");
+//                }
+//            }
             /**
              * 判断货位是否存在
              */
@@ -157,16 +156,16 @@ public class InventoryInformationController extends BaseController {
 
     }
 
+
     /**
      * 库存更新
-     *
-     * @param inventoryInformation
+     * @param updateInventoryInformationDTO
      * @return
      */
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "库存更新", notes = "生成代码")
     @PutMapping
-    public Result update(@Valid @RequestBody InventoryInformation inventoryInformation) {
+    public Result update(@Valid @RequestBody UpdateInventoryInformationDTO updateInventoryInformationDTO) {
 
         /**
          * 这里的库存更新接口用于非正常状态的库存变动，并没有通过线上出库流程。
@@ -174,6 +173,8 @@ public class InventoryInformationController extends BaseController {
          * 2.或因税率浮动导致单价变动等因素
          * 3.通过物料编码和批次操作
          */
+        InventoryInformation inventoryInformation = new InventoryInformation();
+        BeanUtils.copyProperties(updateInventoryInformationDTO,inventoryInformation);
         int update = inventoryInformationService.updateInventoryInformation(inventoryInformation);
         return render(update > 0);
     }

@@ -17,7 +17,6 @@ public class UpUserDTO {
     @ApiModelProperty(value = "用户ID", required = true)
     private Integer id;
 
-    @Length(max = 16, min = 8, message = "密码长度在8～16位之间")
     @ApiModelProperty(value = "登录密码")
     private String password;
 

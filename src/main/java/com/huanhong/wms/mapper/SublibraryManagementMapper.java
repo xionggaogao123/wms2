@@ -1,10 +1,7 @@
 package com.huanhong.wms.mapper;
 
-import com.huanhong.wms.entity.SublibraryManagement;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.apache.ibatis.annotations.Select;
-
-import java.util.List;
+import com.huanhong.wms.entity.SublibraryManagement;
 
 /**
  * <p>
@@ -15,7 +12,5 @@ import java.util.List;
  * @since 2021-12-08
  */
 public interface SublibraryManagementMapper extends BaseMapper<SublibraryManagement> {
-
-
 
 }

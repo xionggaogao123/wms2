@@ -3,6 +3,7 @@ package com.huanhong.wms.entity.dto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -20,6 +21,7 @@ public class AddMaterialClassificationDTO {
     private String typeCode;
 
     @NotNull
+    @Length(max = 20, min = 1, message = "类型名称长度在1～20位之间")
     @ApiModelProperty(value = "类型名称")
     private String typeName;
 

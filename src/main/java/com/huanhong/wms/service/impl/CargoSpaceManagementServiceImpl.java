@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperServiceImpl;
@@ -102,6 +103,40 @@ public class CargoSpaceManagementServiceImpl extends SuperServiceImpl<CargoSpace
         query.like(StringUtils.isNotBlank(cargoSpaceVO.getCargoSpaceId()), "cargo_space_id", cargoSpaceVO.getCargoSpaceId());
 
         return baseMapper.selectPage(cargoSpaceManagementPage, query);
+    }
+
+    /***
+     * 查询某货位是否停用 0-使用中 1-停用
+     * @param cargoSpaceId
+     * @return
+     */
+    @Override
+    public int isStopUsing(String cargoSpaceId) {
+        CargoSpaceManagement cargoSpaceManagement = getCargoSpaceByCargoSpaceId(cargoSpaceId);
+        return cargoSpaceManagement.getStopUsing();
+    }
+
+    /**
+     *
+     * @param parentCode
+     * @param enable true = 随父级启用  false = 随父级停用
+     * @return
+     */
+    @Override
+    public int stopUsingByParentCode(String parentCode, boolean enable) {
+        UpdateWrapper updateWrapper= new UpdateWrapper();
+        CargoSpaceManagement cargoSpaceManagement = new CargoSpaceManagement();
+        if (enable){
+            //启用所有子级
+            cargoSpaceManagement.setStopUsing(0);
+        }else {
+            //停用所有子级
+            cargoSpaceManagement.setStopUsing(1);
+        }
+        //更新所有库区编号模糊匹配的货架
+        //从库区开始 有2级及以上父级所以需要likeRight 自己的父编码
+        updateWrapper.likeRight("shelf_id", parentCode);
+        return cargoSpaceManagementMapper.update(cargoSpaceManagement, updateWrapper);
     }
 }
 

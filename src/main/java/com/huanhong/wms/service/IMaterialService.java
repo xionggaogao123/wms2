@@ -24,4 +24,12 @@ public interface IMaterialService extends SuperService<Material> {
     Page<Material> pageFuzzyQuery(Page<Material> materialPage, MaterialVO materialVO);
 
     List<Material> listFuzzyQuery(String typeCode);
+
+
+    /**
+     * 查询某物料是否停用  0-使用中  1-停用
+     * @param materialCode
+     * @return
+     */
+   int isStopUsing(String materialCode);
 }

@@ -27,4 +27,14 @@ public interface ISublibraryManagementService extends SuperService<SublibraryMan
     //组合分页模糊查询
     Page<SublibraryManagement> pageFuzzyQuery(Page<SublibraryManagement> SublibraryManagementPage, SublibraryVO sublibraryVO);
 
+    //查询某子库是否停用
+    int isStopUsing(String sublibraryId);
+
+    /**
+     *
+     * @param parentCode
+     * @param enable true = 随父级启用  false = 随父级停用
+     * @return
+     */
+    int stopUsingByParentCode(String parentCode,boolean enable);
 }

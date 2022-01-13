@@ -66,6 +66,20 @@ public class MaterialServiceImpl extends SuperServiceImpl<MaterialMapper, Materi
         return baseMapper.selectList(query);
     }
 
+    /**
+     * 查询某物料是否停用  0-使用中  1-停用
+     * @param materialCode
+     * @return
+     */
+    @Override
+    public int isStopUsing(String materialCode) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("material_coding",materialCode);
+        queryWrapper.eq("stop_using",1);
+        int count = materialMapper.selectCount(queryWrapper);
+        return count;
+    }
+
 
     /**
      * 条件组合模糊分页查询
@@ -78,36 +92,32 @@ public class MaterialServiceImpl extends SuperServiceImpl<MaterialMapper, Materi
 
         //新建QueryWrapper对象
         QueryWrapper<Material> query = new QueryWrapper<>();
+
         //根据id排序
         query.orderByDesc("id");
+
         //判断此时的条件对象Vo是否等于空，若等于空，
         //直接进行selectPage查询
         if (ObjectUtil.isEmpty(materialVO)) {
             return baseMapper.selectPage(meterialPage, query);
         }
+
         //若Vo对象不为空，分别获取其中的字段，
         //并对其进行判断是否为空，这一步类似动态SQL的拼装
-
         //物料编码
         query.like(StringUtils.isNotBlank(materialVO.getMaterialCoding()), "material_coding", materialVO.getMaterialCoding());
 
         //物料名称
         query.like(StringUtils.isNotBlank(materialVO.getMaterialName()), "material_name", materialVO.getMaterialName());
 
+        //俗称
+        query.like(StringUtils.isNotBlank(materialVO.getSlang()), "slang", materialVO.getSlang());
+
         //分类编码
         query.likeRight(StringUtils.isNotBlank(materialVO.getTypeCode()),"type_code",materialVO.getTypeCode());
 
-        //物料俗称
-        query.like(StringUtils.isNotBlank(materialVO.getSlang()), "slang", materialVO.getSlang());
-
         //规格型号
         query.like(StringUtils.isNotBlank(materialVO.getSpecificationModel()), "specification_model", materialVO.getSpecificationModel());
-
-        //物料材质
-        query.like(StringUtils.isNotBlank(materialVO.getMaterial()), "material", materialVO.getMaterial());
-
-        //物料图号
-        query.like(StringUtils.isNotBlank(materialVO.getDrawingNumber()), "drawing_number", materialVO.getMeasurementUnit());
 
         //计量单位
         query.like(StringUtils.isNotBlank(materialVO.getMeasurementUnit()), "measurement_unit", materialVO.getMeasurementUnit());
@@ -115,20 +125,26 @@ public class MaterialServiceImpl extends SuperServiceImpl<MaterialMapper, Materi
         //辅助单位
         query.like(StringUtils.isNotBlank(materialVO.getAuxiliaryUnit()), "auxiliary_unit", materialVO.getAuxiliaryUnit());
 
+        //品牌
+        query.like(StringUtils.isNotBlank(materialVO.getBrand()), "brand", materialVO.getBrand());
+
+        //物料材质
+        query.like(StringUtils.isNotBlank(materialVO.getMaterial()), "material", materialVO.getMaterial());
+
         //执行标准
         query.like(StringUtils.isNotBlank(materialVO.getExecutiveStandard()), "executive_standard", materialVO.getExecutiveStandard());
 
         //技术要求
         query.like(StringUtils.isNotBlank(materialVO.getSkillsRequiremen()), "skills_requiremen", materialVO.getSkillsRequiremen());
 
-        //图号
-        query.like(StringUtils.isNotBlank(materialVO.getDrawingNumber()), "drawing_number", materialVO.getDrawingNumber());
+        //物料图号
+        query.like(StringUtils.isNotBlank(materialVO.getDrawingNumber()), "drawing_number", materialVO.getMeasurementUnit());
+
+        //生产厂家
+        query.like(StringUtils.isNotBlank(materialVO.getSupplier()), "supplier", materialVO.getSupplier());
 
         //安全质量标准
         query.like(StringUtils.isNotBlank(materialVO.getSafetyQualityStandards()), "safety_quality_standards", materialVO.getSafetyQualityStandards());
-
-        //品牌
-        query.like(StringUtils.isNotBlank(materialVO.getBrand()), "brand", materialVO.getBrand());
 
         //停用
         query.eq(StringUtils.isNotBlank(String.valueOf(materialVO.getStopUsing())),"stop_using",materialVO.getStopUsing());

@@ -5,6 +5,7 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
@@ -51,6 +52,9 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
     private CompanyMapper companyMapper;
     @Resource
     private DeptMapper deptMapper;
+
+    @Resource
+    private UserMapper userMapper;
 
     @Override
     public Result<User> checkLogin(LoginDTO login) {
@@ -124,6 +128,7 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
 
         if (StrUtil.isNotEmpty(addUser.getPassword())) {
             addUser.setPassword(SecureUtil.md5(addUser.getPassword()));
+
         }
         int insert = 0;
         try {
@@ -143,11 +148,21 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         if (dto.getId() == null) {
             dto.setId(loginUser.getId());
         }
+
+        /**
+         * 查看用户是否停用
+         */
+        if (isStopUsing(dto.getId())==1){
+                return Result.failure("用户禁用中,不能更新数据");
+        }
+
+
         User updateUser = new User();
         BeanUtil.copyProperties(dto, updateUser);
         if (StrUtil.isNotEmpty(dto.getPassword())) {
             updateUser.setPassword(SecureUtil.md5(dto.getPassword()));
         }
+
         if (updateUser.getDeptId() != null) {
             Dept dept = deptMapper.selectById(updateUser.getDeptId());
             if (dept == null) {
@@ -164,6 +179,20 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         return update > 0 ? Result.success(updateUser.getId()) : Result.failure("更新失败");
     }
 
+    /**
+     * 查询用户 是否停用 0-禁用 1-启用
+     * @param userId
+     * @return
+     */
+    @Override
+    public int isStopUsing(Integer userId) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("id",userId);
+        queryWrapper.eq("state",0);
+        int count = userMapper.selectCount(queryWrapper);
+        return count;
+    }
+
     private void getDeptUp(List<Map<String, Object>> depts, Integer deptId) {
         Map<String, Object> dept = deptMapper.getDeptById(deptId);
         if (ObjectUtil.isNotEmpty(dept)) {
@@ -173,5 +202,7 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
             }
         }
     }
+
+
 
 }

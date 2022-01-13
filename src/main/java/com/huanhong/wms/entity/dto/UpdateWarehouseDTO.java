@@ -1,12 +1,12 @@
 package com.huanhong.wms.entity.dto;
 
 
-import com.baomidou.mybatisplus.annotation.FieldStrategy;
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 
 
@@ -14,44 +14,41 @@ import javax.validation.constraints.NotEmpty;
 @Data
 public class UpdateWarehouseDTO {
     private static final long serialVersionUID = 1L;
+
     @NotEmpty
     @ApiModelProperty(value = "仓库编号")
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     private String warehouseId;
 
 
     @ApiModelProperty(value = "仓库名称")
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     private String warehouseName;
 
 
     @ApiModelProperty(value = "仓库面积")
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     private String warehouseAcreage;
 
 
     @ApiModelProperty(value = "仓库层数")
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     private String warehouseLayers;
 
 
     @ApiModelProperty(value = "仓库地址")
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     private String warehouseAdress;
 
 
     @ApiModelProperty(value = "仓库负责人")
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     private String warehousePrincipal;
 
 
     @ApiModelProperty(value = "仓库联系电话")
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     private String warehouseContactNumber;
 
+    @Min(0)
+    @Max(1)
+    @ApiModelProperty(value = "停用")
+    private Integer stopUsing;
 
 
     @ApiModelProperty(value = "备注")
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     private String remark;
 }

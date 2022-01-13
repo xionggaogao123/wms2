@@ -21,6 +21,7 @@ import com.huanhong.wms.entity.dto.AddWarehouseAreaDTO;
 import com.huanhong.wms.entity.dto.UpdateWarehouseAreaDTO;
 import com.huanhong.wms.entity.vo.WarehouseAreaVO;
 import com.huanhong.wms.mapper.WarehouseAreaManagementMapper;
+import com.huanhong.wms.service.ICargoSpaceManagementService;
 import com.huanhong.wms.service.IShelfManagementService;
 import com.huanhong.wms.service.ISublibraryManagementService;
 import com.huanhong.wms.service.IWarehouseAreaManagementService;
@@ -53,7 +54,10 @@ public class WarehouseAreaManagementController extends BaseController {
     private ISublibraryManagementService sublibraryManagementService;
 
     @Resource
-    private IShelfManagementService shelfManagementServicel;
+    private IShelfManagementService shelfManagementService;
+
+    @Resource
+    private ICargoSpaceManagementService cargoSpaceManagementService;
 
     @Autowired
     private JudgeConfig judgeConfig;
@@ -96,6 +100,12 @@ public class WarehouseAreaManagementController extends BaseController {
             SublibraryManagement sublibraryManagement = sublibraryManagementService.getSublibraryBySublibraryId(addWarehouseAreaDTO.getSublibraryId());
             if (ObjectUtil.isEmpty(sublibraryManagement)) {
                 return Result.failure(ErrorCode.DATA_IS_NULL, "子库不存在");
+            }
+            /**
+             * 查询子库是否停用
+             */
+            if (sublibraryManagementService.isStopUsing(addWarehouseAreaDTO.getSublibraryId())!=0){
+                return Result.failure(ErrorCode.SYSTEM_ERROR,"子库停用中,无法新增库区");
             }
 
             /**
@@ -177,11 +187,43 @@ public class WarehouseAreaManagementController extends BaseController {
             if (ObjectUtil.isEmpty(warehouseAreaIsExist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此库区编码，库区不存在");
             }
+
+
+            /**
+             * 查询库区是否停用 0-使用中  1-单独停用
+             *
+             */
+            //父级停用无法手动单独启用
+            WarehouseAreaManagement queryWwa = warehouseAreaManagementService.getWarehouseAreaByWarehouseAreaId(updateWarehouseAreaDTO.getWarehouseAreaId());
+            if (sublibraryManagementService.isStopUsing(queryWwa.getSublibraryId())==1){
+                    return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "子库已停用,库区无法编辑！");
+            }
+
+            //单独停用可以手动修改更新为启用状态
+            if (warehouseAreaManagementService.isStopUsing(updateWarehouseAreaDTO.getWarehouseAreaId())==1){
+                if (updateWarehouseAreaDTO.getStopUsing()!=0){
+                    return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "库区已停用,无法编辑！");
+                }
+            }
+
             WarehouseAreaManagement warehouseAreaManagement = new WarehouseAreaManagement();
             BeanUtil.copyProperties(updateWarehouseAreaDTO,warehouseAreaManagement);
             updateWrapper.eq("warehouse_area_id", updateWarehouseAreaDTO.getWarehouseAreaId());
             int update = warehouseAreaManagementMapper.update(warehouseAreaManagement, updateWrapper);
-            return render(update > 0);
+            String parentCode = warehouseAreaManagement.getWarehouseAreaId();
+            if (update > 0) {
+                //如果库区更新成功 判断此次更新库区是否处于启用状态
+                if (warehouseAreaManagement.getStopUsing()==0){
+                       shelfManagementService.stopUsingByParentCode(parentCode,true);
+                       cargoSpaceManagementService.stopUsingByParentCode(parentCode,true);
+                } else {
+                        //若是停用状态 则将停用状态为 0-启用 的子级全部停用
+                       shelfManagementService.stopUsingByParentCode(parentCode,false);
+                       cargoSpaceManagementService.stopUsingByParentCode(parentCode,false);
+                }
+                return Result.success("操作成功");
+            }
+            return Result.failure("操作失败");
         } catch (Exception e) {
             LOGGER.error("更新库区信息出错--更新失败，异常：" + e);
             return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常：库区更新失败，请稍后再试或联系管理员");
@@ -194,19 +236,24 @@ public class WarehouseAreaManagementController extends BaseController {
     public Result delete(@PathVariable String warehouseAreaId) {
         QueryWrapper<WarehouseAreaManagement> queryWrapper = new QueryWrapper<>();
         try {
+
             queryWrapper.eq("warehouse_area_id", warehouseAreaId);
             WarehouseAreaManagement warehouseAreaManagement = warehouseAreaManagementMapper.selectOne(queryWrapper);
             if (ObjectUtil.isEmpty(warehouseAreaManagement)) {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "操作失败：库区编号不存在");
             }
+
+            if (warehouseAreaManagementService.isStopUsing(warehouseAreaId)!=0){
+                    return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "库区已停用,禁止更新！");
+            }
+
             /**
              * 检查此库区下是否有货架
              */
-            List<ShelfManagement> shelfManagementList =  shelfManagementServicel.getShelfListByWarehouseAreaId(warehouseAreaId);
+            List<ShelfManagement> shelfManagementList =  shelfManagementService.getShelfListByWarehouseAreaId(warehouseAreaId);
             if (ObjectUtil.isNotEmpty(shelfManagementList)){
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "此库区下存在货架，请先删除货架");
             }
-
             int i = warehouseAreaManagementMapper.delete(queryWrapper);
             LOGGER.info("库区:  " + warehouseAreaId + "删除成功");
             return render(i > 0);
@@ -233,7 +280,7 @@ public class WarehouseAreaManagementController extends BaseController {
     @GetMapping("/getShelfByWarehouseId/{warehouseAreaId}")
     public Result getAllShelf(@PathVariable String warehouseAreaId) {
         try {
-            List<ShelfManagement> ShelfManagementList = shelfManagementServicel.getShelfListByWarehouseAreaId(warehouseAreaId);
+            List<ShelfManagement> ShelfManagementList = shelfManagementService.getShelfListByWarehouseAreaId(warehouseAreaId);
             return Result.success(ShelfManagementList);
         } catch (Exception e) {
             return Result.failure(ErrorCode.SYSTEM_ERROR, "获取货架信息失败");

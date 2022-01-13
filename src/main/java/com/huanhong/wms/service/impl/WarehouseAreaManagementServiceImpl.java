@@ -2,15 +2,14 @@ package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.huanhong.wms.entity.SublibraryManagement;
+import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.entity.WarehouseAreaManagement;
 import com.huanhong.wms.entity.vo.WarehouseAreaVO;
 import com.huanhong.wms.mapper.WarehouseAreaManagementMapper;
-import com.huanhong.wms.mapper.WarehouseManagementMapper;
 import com.huanhong.wms.service.IWarehouseAreaManagementService;
-import com.huanhong.wms.SuperServiceImpl;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -68,5 +67,39 @@ public class WarehouseAreaManagementServiceImpl extends SuperServiceImpl<Warehou
         query.like(StringUtils.isNotBlank(warehouseAreaVO.getWarehouseAreaName()), "warehouse_area_name", warehouseAreaVO.getWarehouseAreaName());
 
         return baseMapper.selectPage(WarehouseAreaManagementPage, query);
+    }
+
+    /**
+     * 查询某库区是否停用 0- 使用中  1- 停用
+     * @param warehouseAreaId
+     * @return
+     */
+    @Override
+    public int isStopUsing(String warehouseAreaId) {
+        WarehouseAreaManagement warehouseAreaManagement = getWarehouseAreaByWarehouseAreaId(warehouseAreaId);
+        return warehouseAreaManagement.getStopUsing();
+    }
+
+    /**
+     *
+     * @param parentCode
+     * @param enable enable true = 随父级启用  false = 随父级停用
+     * @return
+     */
+    @Override
+    public int stopUsingByParentCode(String parentCode,boolean enable) {
+        UpdateWrapper updateWrapper= new UpdateWrapper();
+        WarehouseAreaManagement warehouseAreaManagement = new WarehouseAreaManagement();
+        if (enable){
+            //启用所有子级
+            warehouseAreaManagement.setStopUsing(0);
+        }else {
+            //停用所有子级
+            warehouseAreaManagement.setStopUsing(1);
+        }
+        //更新所有子库编号模糊匹配的库区
+        //从库区开始 有2级及以上父级所以需要likeRight 自己的父编码
+        updateWrapper.likeRight("sublibrary_id", parentCode);
+        return warehouseAreaManagementMapper.update(warehouseAreaManagement, updateWrapper);
     }
 }

@@ -25,6 +25,15 @@ public interface IShelfManagementService extends SuperService<ShelfManagement> {
 
     //组合分页模糊查询
     Page<ShelfManagement> pageFuzzyQuery(Page<ShelfManagement> shelfManagementPage, ShelfVO shelfVO);
+    
+    //查询某库区是否停用 0- 使用中  1- 停用
+    int isStopUsing(String shelfId);
 
-
+    /**
+     *
+     * @param parentCode
+     * @param enable true = 随父级启用  false = 随父级停用
+     * @return
+     */
+    int stopUsingByParentCode(String parentCode,boolean enable);
 }

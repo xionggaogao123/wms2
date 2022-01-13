@@ -2,15 +2,14 @@ package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.entity.SublibraryManagement;
-import com.huanhong.wms.entity.WarehouseManagement;
 import com.huanhong.wms.entity.vo.SublibraryVO;
 import com.huanhong.wms.mapper.SublibraryManagementMapper;
-import com.huanhong.wms.mapper.WarehouseManagementMapper;
 import com.huanhong.wms.service.ISublibraryManagementService;
-import com.huanhong.wms.SuperServiceImpl;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -67,5 +66,38 @@ public class SublibraryManagementServiceImpl extends SuperServiceImpl<Sublibrary
         query.like(StringUtils.isNotBlank(sublibraryVO.getSublibraryName()), "sublibrary_name", sublibraryVO.getSublibraryName());
 
         return baseMapper.selectPage(SublibraryManagementPage, query);
+    }
+
+    /**
+     * 查询子库是否停用 0-使用中 1-停用
+     *
+     * @param sublibraryId
+     * @return
+     */
+    @Override
+    public int isStopUsing(String sublibraryId) {
+        SublibraryManagement sublibraryManagement = getSublibraryBySublibraryId(sublibraryId);
+        return sublibraryManagement.getStopUsing();
+    }
+
+    /**
+     *
+     * @param parentCode
+     * @param enable enable true = 随父级启用  false = 随父级停用
+     * @return
+     */
+    @Override
+    public int stopUsingByParentCode(String parentCode,boolean enable) {
+        UpdateWrapper updateWrapper= new UpdateWrapper();
+        SublibraryManagement sublibraryManagement = new SublibraryManagement();
+        if (enable){
+            //启用所有子级
+            sublibraryManagement.setStopUsing(0);
+        }else {
+            //停用所有子级
+            sublibraryManagement.setStopUsing(1);
+        }
+        updateWrapper.likeRight("warehouse_id", parentCode);
+        return sublibraryManagementMapper.update(sublibraryManagement, updateWrapper);
     }
 }

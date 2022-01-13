@@ -83,7 +83,8 @@ public class CargoSpaceManagementController extends BaseController {
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "添加货位管理")
     @PostMapping("/add")
-    public Result add(@Valid @RequestBody AddCargoSpacedDTO addCargoSpacedDTO) {
+    public Result add(@Valid @RequestBody AddCargoSpacedDTO addCargoSpacedDTO
+    ) {
         try {
             /**
              * 检查货位编码是否合法
@@ -99,6 +100,11 @@ public class CargoSpaceManagementController extends BaseController {
             //判断货架是否存在
             if (ObjectUtil.isEmpty(shelfManagementIsExist)) {
                 return Result.failure(ErrorCode.DATA_IS_NULL, "货架不存在,无法添加货位");
+            }
+
+            //判断货架是否停用
+            if(shelfManagementService.isStopUsing(addCargoSpacedDTO.getShelfId())!=0){
+                return Result.failure(ErrorCode.SYSTEM_ERROR,"货架停用中,无法新增货位");
             }
 
             //货位编号重复判定
@@ -140,6 +146,24 @@ public class CargoSpaceManagementController extends BaseController {
             if (ObjectUtil.isEmpty(cargoSpaceDTOIsExist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此货位编码，货架不存在");
             }
+
+            /**
+             * 查询货位是否停用 0-使用中  1-单独停用
+             *
+             */
+            //父级停用无法手动单独启用
+            CargoSpaceManagement cargoSpaceManagement = cargoSpaceManagementService.getCargoSpaceByCargoSpaceId(updateCargoSpaceDTO.getCargoSpaceId());
+            if(shelfManagementService.isStopUsing(cargoSpaceManagement.getShelfId())==1){
+                return Result.failure(ErrorCode.SYSTEM_ERROR,"货架停用中,货位无法编辑！");
+            }
+
+            //单独停用可以手动修改更新为启用状态
+            if(cargoSpaceManagementService.isStopUsing(updateCargoSpaceDTO.getCargoSpaceId())==1){
+                if (updateCargoSpaceDTO.getStopUsing()!=0) {
+                    return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "货位已停用,禁止编辑！");
+                }
+            }
+
             updateWrapper.eq("cargo_space_id", updateCargoSpaceDTO.getCargoSpaceId());
             CargoSpaceManagement updateCargoSpace = new CargoSpaceManagement();
             BeanUtil.copyProperties(updateCargoSpaceDTO, updateCargoSpace);
@@ -163,6 +187,10 @@ public class CargoSpaceManagementController extends BaseController {
             CargoSpaceManagement cargoSpaceManagement = cargoSpaceManagementMapper.selectOne(queryWrapper);
             if (ObjectUtil.isEmpty(cargoSpaceManagement)) {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "操作失败：货位不存在");
+            }
+
+            if(cargoSpaceManagementService.isStopUsing(cargoId)!=0){
+                    return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "货位已停用,无法删除！");
             }
 
             /**

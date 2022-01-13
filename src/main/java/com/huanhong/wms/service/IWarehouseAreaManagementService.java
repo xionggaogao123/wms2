@@ -1,11 +1,9 @@
 package com.huanhong.wms.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.huanhong.wms.entity.WarehouseAreaManagement;
 import com.huanhong.wms.SuperService;
-import com.huanhong.wms.entity.WarehouseManagement;
+import com.huanhong.wms.entity.WarehouseAreaManagement;
 import com.huanhong.wms.entity.vo.WarehouseAreaVO;
-import com.huanhong.wms.entity.vo.WarehouseVo;
 
 import java.util.List;
 
@@ -28,5 +26,14 @@ public interface IWarehouseAreaManagementService extends SuperService<WarehouseA
     //组合分页模糊查询
     Page<WarehouseAreaManagement> pageFuzzyQuery(Page<WarehouseAreaManagement> WarehouseAreaManagementPage, WarehouseAreaVO warehouseAreaVO);
 
+    //查询某库区是否停用 0- 使用中  1- 停用
+    int isStopUsing(String warehouseAreaId);
 
+    /**
+     *
+     * @param parentCode
+     * @param enable true = 随父级启用  false = 随父级停用
+     * @return
+     */
+    int stopUsingByParentCode(String parentCode,boolean enable);
 }

@@ -58,10 +58,10 @@ public class AddInventoryInformationDTO {
 
     @NotNull
     @ApiModelProperty(value = "货主")
-    private String consignor;
+    private Integer consignor;
 
 
-    @NotEmpty
+    @NotNull
     @ApiModelProperty(value = "有效日期")
     private LocalDateTime effectiveDate;
 

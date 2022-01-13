@@ -72,4 +72,15 @@ public class WarehouseManagementServiceImpl extends SuperServiceImpl<WarehouseMa
 
         return baseMapper.selectPage(warehouseManagementPage, query);
     }
+
+    /**
+     * 查询仓库是否停用 0-使用中 1-停用
+     * @param warehouseId
+     * @return
+     */
+    @Override
+    public int isStopUsing(String warehouseId) {
+        WarehouseManagement warehouseManagement = getWarehouseByWarehouseId(warehouseId);
+        return warehouseManagement.getStopUsing();
+    }
 }

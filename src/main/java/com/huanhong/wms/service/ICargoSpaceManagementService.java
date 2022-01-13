@@ -28,4 +28,16 @@ public interface ICargoSpaceManagementService extends SuperService<CargoSpaceMan
 
     //组合分页模糊查询
     Page<CargoSpaceManagement> pageFuzzyQuery(Page<CargoSpaceManagement> cargoSpaceManagementPage, CargoSpaceVO cargoSpaceVO);
+
+    //查询某货位是否停用
+    int isStopUsing(String cargoSpaceId);
+
+
+    /**
+     *
+     * @param parentCode
+     * @param enable true = 随父级启用  false = 随父级停用
+     * @return
+     */
+    int stopUsingByParentCode(String parentCode,boolean enable);
 }

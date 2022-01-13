@@ -30,4 +30,11 @@ public interface IWarehouseManagementService extends SuperService<WarehouseManag
     //组合分页模糊查询
     Page<WarehouseManagement> pageFuzzyQuery(Page<WarehouseManagement> warehouseManagementPage, WarehouseVo warehouseVo);
 
+    /**
+     * 查询某仓库是否停用
+     * @param warehouseId
+     * @return
+     */
+    int isStopUsing(String warehouseId);
+
 }

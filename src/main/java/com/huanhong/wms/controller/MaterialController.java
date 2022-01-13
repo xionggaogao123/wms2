@@ -19,8 +19,10 @@ import com.huanhong.wms.entity.MaterialClassification;
 import com.huanhong.wms.entity.dto.AddMaterialDTO;
 import com.huanhong.wms.entity.dto.UpdateMaterialDTO;
 import com.huanhong.wms.entity.vo.MaterialVO;
+import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.mapper.MaterialClassificationMapper;
 import com.huanhong.wms.mapper.MaterialMapper;
+import com.huanhong.wms.service.IInventoryInformationService;
 import com.huanhong.wms.service.IMaterialClassificationService;
 import com.huanhong.wms.service.IMaterialService;
 import io.swagger.annotations.Api;
@@ -53,6 +55,12 @@ public class MaterialController extends BaseController {
 
     @Resource
     private IMaterialClassificationService materialClassificationService;
+
+    @Resource
+    private IInventoryInformationService inventoryInformationService;
+
+    @Resource
+    private InventoryInformationMapper inventoryInformationMapper;
 
 
     @Autowired
@@ -214,6 +222,16 @@ public class MaterialController extends BaseController {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此物料编码");
             }
 
+            /**
+             * 判断物料是否停用 若停用是否已经将stopUsing字段改为 0 -使用中
+             * 若改为0则允许更新  反之则拒绝
+             */
+            if (materialService.isStopUsing(updateMaterialDTO.getMaterialCoding())==1){
+                if (updateMaterialDTO.getStopUsing()!=0){
+                    return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "物料编码已停用禁止更新");
+                }
+            }
+
             UpdateWrapper<Material> updateWrapper = new UpdateWrapper<>();
             Material updateMaterial = new Material();
             BeanUtil.copyProperties(updateMaterialDTO, updateMaterial);
@@ -243,6 +261,17 @@ public class MaterialController extends BaseController {
             if (ObjectUtil.isEmpty(material_exist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此物料编码");
             }
+
+            /**
+             * 如果物料被使用则不能删除-库存
+             */
+            QueryWrapper queryWrapper = new QueryWrapper();
+            queryWrapper.eq("material_coding",meterialCode);
+            Integer count = inventoryInformationMapper.selectCount(queryWrapper);
+            if (count>0){
+                return Result.failure(ErrorCode.DATA_EXISTS_ERROR,"物料使用中，无法删除");
+            }
+
             QueryWrapper<Material> wrapper = new QueryWrapper<>();
             wrapper.eq("material_coding", meterialCode);
             int i = materialMapper.delete(wrapper);
@@ -271,6 +300,8 @@ public class MaterialController extends BaseController {
         }
         return Result.noDataError();
     }
+
+
 
 
 //    /**

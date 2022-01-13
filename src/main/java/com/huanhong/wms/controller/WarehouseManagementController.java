@@ -20,9 +20,7 @@ import com.huanhong.wms.entity.dto.AddWarehouseDTO;
 import com.huanhong.wms.entity.dto.UpdateWarehouseDTO;
 import com.huanhong.wms.entity.vo.WarehouseVo;
 import com.huanhong.wms.mapper.WarehouseManagementMapper;
-import com.huanhong.wms.service.ICompanyService;
-import com.huanhong.wms.service.ISublibraryManagementService;
-import com.huanhong.wms.service.IWarehouseManagementService;
+import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -35,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.List;
+
 
 @RestController
 @RequestMapping("/v1/warehouse-management")
@@ -53,6 +52,15 @@ public class WarehouseManagementController extends BaseController {
 
     @Resource
     private ISublibraryManagementService sublibraryManagementService;
+
+    @Resource
+    private IWarehouseAreaManagementService warehouseAreaManagementService;
+
+    @Resource
+    private IShelfManagementService shelfManagementService;
+
+    @Resource
+    private ICargoSpaceManagementService cargoSpaceManagementService;
 
 
     @Autowired
@@ -110,6 +118,7 @@ public class WarehouseManagementController extends BaseController {
              */
             String warehouseManagementToJoStr = JSONObject.toJSONString(addWarehouseDTO);
             JSONObject warehouseManagementJo = JSONObject.parseObject(warehouseManagementToJoStr);
+
             /**
              * 不能为空的参数list
              * 配置于judge.properties
@@ -165,15 +174,43 @@ public class WarehouseManagementController extends BaseController {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "仓库编号为空");
             }
 
+
             WarehouseManagement warehouseManagementIsExist = warehouseManagementService.getWarehouseByWarehouseId(updateWarehouseDTO.getWarehouseId());
             if (ObjectUtil.isEmpty(warehouseManagementIsExist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "无此仓库编码");
+            }
+            /**
+             * 判断仓库是否停用 若停用是否已经将stopUsing字段改为 0 -使用中
+             * 若改为0则允许更新  反之则拒绝
+             */
+            if (warehouseManagementService.isStopUsing(updateWarehouseDTO.getWarehouseId()) != 0) {
+                //若仓库处于停用中 判断用户是和否将停用改为启用
+                if (updateWarehouseDTO.getStopUsing() != 0) {
+                    return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "仓库已停用,禁止更新！");
+                }
             }
             WarehouseManagement warehouseManagement = new WarehouseManagement();
             BeanUtil.copyProperties(updateWarehouseDTO, warehouseManagement);
             updateWrapper.eq("warehouse_id", updateWarehouseDTO.getWarehouseId());
             int update = warehouseManagementMapper.update(warehouseManagement, updateWrapper);
-            return render(update > 0);
+            String parentCode = updateWarehouseDTO.getWarehouseId();
+            if (update > 0) {
+                //如果仓库更新成功 判断此次更新仓库是否处于启用状态
+                //若是启用状态  则将停用状态为 2-父级停用的子级全部启用
+                if (warehouseManagement.getStopUsing() == 0) {
+                      sublibraryManagementService.stopUsingByParentCode(parentCode,true);
+                      warehouseAreaManagementService.stopUsingByParentCode(parentCode,true);
+                      shelfManagementService.stopUsingByParentCode(parentCode,true);
+                      cargoSpaceManagementService.stopUsingByParentCode(parentCode,true);
+                   }else {
+                      //若是停用状态 则将停用状态为 0-启用 的子级全部停用
+                      sublibraryManagementService.stopUsingByParentCode(parentCode,false);
+                      warehouseAreaManagementService.stopUsingByParentCode(parentCode,false);
+                      shelfManagementService.stopUsingByParentCode(parentCode,false);
+                      cargoSpaceManagementService.stopUsingByParentCode(parentCode,false);
+                 }
+            }
+                return Result.success("操作成功");
         } catch (Exception e) {
             LOGGER.error("更新库房信息出错--更新失败，异常：" + e);
             return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常：仓库更新失败，请稍后再试或联系管理员");
@@ -198,6 +235,14 @@ public class WarehouseManagementController extends BaseController {
             WarehouseManagement warehouseManagement = warehouseManagementMapper.selectOne(queryWrapper);
             if (ObjectUtil.isEmpty(warehouseManagement)) {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "操作失败：仓库编号不存在");
+            }
+
+            /**
+             * 判断仓库是否停用 若停用是否已经将stopUsing字段改为 0 -使用中
+             * 若改为0则允许更新  反之则拒绝
+             */
+            if (warehouseManagementService.isStopUsing(warehouseId) == 1) {
+                return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "仓库已停用,无法删除!");
             }
             int i = warehouseManagementMapper.delete(queryWrapper);
             LOGGER.info("库房:  " + warehouseId + "删除成功");

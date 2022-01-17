@@ -2,7 +2,8 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileReader;
-import cn.hutool.core.lang.id.NanoId;
+import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.alibaba.fastjson.JSON;
@@ -18,13 +19,10 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.Oss;
 import com.huanhong.wms.entity.vo.UploadOssVo;
 import com.huanhong.wms.mapper.OssMapper;
-import com.huanhong.wms.mapper.UserMapper;
 import com.huanhong.wms.properties.OssProperties;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -51,68 +49,58 @@ import java.util.Map;
 @Api(tags = "资源存储 💾")
 public class OssController extends BaseController {
 
+    private static final Map<Object, Object> ossTypeMap = MapUtil.of(new String[][]{
+            {"material", "image,sheet,document"},
+    });
+
     @Resource
     private OssProperties ossProperties;
 
     @Resource
     private OssMapper ossMapper;
 
-    @Resource
-    private UserMapper userMapper;
-
-    public static final Logger LOGGER = LoggerFactory.getLogger(MaterialController.class);
-
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "type", value = "目录", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "objectType", value = "资源对象类型", required = true, paramType = "form"),
             @ApiImplicitParam(name = "file", value = "资源对象", required = true, paramType = "file"),
             @ApiImplicitParam(name = "objectId", value = "对象ID", paramType = "form"),
             @ApiImplicitParam(name = "sort", value = "排序", paramType = "form"),
-            @ApiImplicitParam(name = "objectType",value="对象表名",paramType = "form")
     })
     @ApiOperationSupport(order = 1)
-    @ApiOperation(value = "上传文件", notes = "请用form表单上传 type in（avatar、face、feedback、repair）")
+    @ApiOperation(value = "上传文件", notes = "请用form表单上传 objectType in（avatar、material）")
     @PostMapping("/upload")
     public Result<UploadOssVo> upload(@RequestParam String objectType,
                                       @RequestParam MultipartFile file,
                                       @RequestParam(required = false) Integer objectId,
                                       @RequestParam(required = false, defaultValue = "1") Integer sort) {
-        LoginUser loginUser = this.getLoginUser();
-//        if (!file.getContentType().contains("image")) {
-//            return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, "请上传正确的图片");
-//        }
-        String md5, fileName = NanoId.randomNanoId(18) + "." + FileUtil.extName(file.getOriginalFilename());
-        String filePath = ossProperties.getPath() + objectType + "/";
-        String fullPath = filePath + fileName;
-        long fileSize = file.getSize();
-
-        int fileMaxSize = 102400;
+        String contentType = file.getContentType();
+        assert contentType != null;
+        Result check = checkOssType(objectType, contentType);
+        if (!check.isOk()) {
+            return check;
+        }
+        String md5, fileName = IdUtil.nanoId(18) + "." + FileUtil.extName(file.getOriginalFilename());
+        String storagePath = ossProperties.getPath() + objectType + "/";
+        String subPath = objectType + StrUtil.SLASH + fileName;
+        String filePath = storagePath + fileName;
+        long fileSize;
         // 上传文件流
         try {
-            FileUtil.mkdir(filePath);
-            // 人脸压缩
-            if(file.getContentType().contains("image")){
-                if ("face".equals(objectType)) {
-                    if (fileSize > fileMaxSize) {
-                        // 循环压缩
-                        commpressPicCycle(filePath, file.getInputStream(), fileMaxSize, 0.9);
-                    } else {
-                        file.transferTo(Paths.get(fullPath));
-                    }
-                } else {
-                    Thumbnails.of(file.getInputStream())
-                            .scale(1f)
-                            .outputQuality(0.9f)
-                            .outputFormat("jpg")
-                            .toFile(fullPath);
-                }
-            }else{
-                file.transferTo(Paths.get(fullPath));
+            FileUtil.mkdir(storagePath);
+            // 图片压缩
+            if ("image".contains(file.getContentType())) {
+                Thumbnails.of(file.getInputStream())
+                        .scale(1f)
+                        .outputQuality(0.9f)
+                        .outputFormat("jpg")
+                        .toFile(filePath);
+            } else {
+                file.transferTo(Paths.get(filePath));
             }
-            FileReader reader = new FileReader(fullPath);
+            FileReader reader = new FileReader(filePath);
             fileSize = reader.getFile().length();
             // 设置上传MD5校验
             md5 = SecureUtil.md5(reader.getInputStream());
-            PutObjectResult putResult = OssUtil.putObject(reader.getInputStream(), objectType + "/" + fileName);
+            PutObjectResult putResult = OssUtil.putObject(reader.getInputStream(), subPath);
             log.info("oss上传报文 ==> {}", JSON.toJSONString(putResult.getETag()));
             // 关闭释放
             file.getInputStream().close();
@@ -121,6 +109,7 @@ public class OssController extends BaseController {
             log.error("文件上传失败", e);
             return Result.failure(500, "上传失败,请稍后再试");
         }
+        LoginUser loginUser = this.getLoginUser();
         Oss oss = new Oss();
         oss.setMd5(md5);
         oss.setName(fileName);
@@ -132,7 +121,7 @@ public class OssController extends BaseController {
             oss.setObjectId(loginUser.getId());
         }
         oss.setObjectType(objectType);
-        oss.setUrl(objectType + "/" + fileName);
+        oss.setUrl(subPath);
         oss.setUserId(loginUser.getId());
         oss.setSort(sort);
         oss.setState(2);
@@ -152,7 +141,7 @@ public class OssController extends BaseController {
                                                        @ApiParam(name = "objectId", value = "资源所属对象id") Integer objectId) {
         QueryWrapper<Oss> query = new QueryWrapper<>();
         query.select("id,size,type,oss_host(url) url,state,create_time")
-                .eq("object_id",objectId)
+                .eq("object_id", objectId)
                 .orderByDesc("id").last("limit 10");
         if (StrUtil.isNotEmpty(objectType)) {
             query.eq("object_type", objectType);
@@ -165,15 +154,37 @@ public class OssController extends BaseController {
      */
     @ApiOperationSupport(order = 4)
     @ApiOperation(value = "删除附件", notes = "根据附件ID删除附件")
-    @DeleteMapping("/delete/{Id}")
-    public Result delete(@PathVariable Integer Id){
-        int i = ossMapper.deleteById(Id);
-        if (i>0){
-            LOGGER.info("附件: " + Id + " 删除成功");
-        }else {
-            return Result.failure(ErrorCode.SYSTEM_ERROR,"删除失败,文件异常或不存在");
-        }
+    @DeleteMapping("/delete/{id}")
+    public Result delete(@PathVariable Integer id) {
+        int i = ossMapper.deleteById(id);
         return render(i > 0);
+    }
+
+    /**
+     * 验证Oss类型是否合法
+     *
+     * @param type        文件类型
+     * @param contentType 资源类型
+     * @return Result
+     */
+    private Result checkOssType(String type, String contentType) {
+        Object contentTypeLimit = ossTypeMap.get(type);
+        if (contentTypeLimit == null) {
+            return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, "不支持的type");
+        }
+        String[] limits = contentTypeLimit.toString().split(StrUtil.COMMA);
+        boolean isCheck = false;
+        for (String limit : limits) {
+            assert contentType != null;
+            if (contentType.contains(limit)) {
+                isCheck = true;
+                break;
+            }
+        }
+        if (!isCheck) {
+            return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, "请上传正确的文件类型");
+        }
+        return Result.success();
     }
 
     /**

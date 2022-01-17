@@ -78,7 +78,7 @@ public class OssController extends BaseController {
         if (!check.isOk()) {
             return check;
         }
-        String md5, fileName = IdUtil.nanoId(18) + "." + FileUtil.extName(file.getOriginalFilename());
+        String md5, fileName = IdUtil.nanoId(18) + StrUtil.DOT + FileUtil.extName(file.getOriginalFilename());
         String storagePath = ossProperties.getPath() + objectType + "/";
         String subPath = objectType + StrUtil.SLASH + fileName;
         String filePath = storagePath + fileName;
@@ -87,7 +87,7 @@ public class OssController extends BaseController {
         try {
             FileUtil.mkdir(storagePath);
             // 图片压缩
-            if ("image".contains(file.getContentType())) {
+            if (file.getContentType().contains("image")) {
                 Thumbnails.of(file.getInputStream())
                         .scale(1f)
                         .outputQuality(0.9f)

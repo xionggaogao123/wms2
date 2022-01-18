@@ -1,7 +1,6 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.lang.Validator;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -102,19 +101,12 @@ public class UserController extends BaseController {
         if (StrUtil.isNotEmpty(dto.getMail())) {
             Validator.validateEmail(dto.getMail(), "请输入正确的Email");
         }
-
-
-        /**
-         * 账号-大小写字母及数字
-         */
+        // 账号-大小写字母及数字
         Boolean flagLoginName = ReUtil.isMatch("^[A-Za-z0-9]+$", dto.getLoginName());
         if (!flagLoginName) {
             return Result.failure(ErrorCode.SYSTEM_ERROR, "请输入正确的账号");
         }
-
-        /**
-         * 密码-大小写字母及数字
-         */
+        // 密码-大小写字母及数字
         if (dto.getPassword() != null) {
             Boolean flagPasswd = ReUtil.isMatch("^[A-Za-z0-9]+$", dto.getPassword());
             if (!flagPasswd) {
@@ -130,7 +122,6 @@ public class UserController extends BaseController {
     @ApiOperation("更新用户")
     @PutMapping
     public Result update(@Valid @RequestBody UpUserDTO dto) {
-
         if (StrUtil.isNotEmpty(dto.getIdNumber())) {
             Validator.validateCitizenIdNumber(dto.getIdNumber(), "请输入正确的身份证");
         }
@@ -140,25 +131,6 @@ public class UserController extends BaseController {
         if (StrUtil.isNotEmpty(dto.getMail())) {
             Validator.validateEmail(dto.getMail(), "请输入正确的Email");
         }
-
-        /**
-         * 密码-大小写字母及数字
-         */
-        //密码不为空 判断是和否符合规则
-        if (ObjectUtil.isNotEmpty(dto.getPassword())) {
-            Boolean flagPasswd = ReUtil.isMatch("^[A-Za-z0-9]+$", dto.getPassword());
-            //判断是否有不合法字符
-            if (flagPasswd) {
-                //判断是否是8~16位字符串
-                if (dto.getPassword().length() >= 8 && dto.getPassword().length() <= 16) {
-                } else {
-                    return Result.failure(ErrorCode.SYSTEM_ERROR, "密码是8~16位的数字和英文字母");
-                }
-            } else {
-                return Result.failure(ErrorCode.SYSTEM_ERROR, "密码是8~16位的数字和英文字母");
-            }
-        }
-
         LoginUser loginUser = this.getLoginUser();
         if (dto.getId() == null) {
             dto.setId(loginUser.getId());

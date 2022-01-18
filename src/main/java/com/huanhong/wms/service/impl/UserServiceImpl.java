@@ -5,7 +5,8 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.huanhong.wms.SuperEntity;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
@@ -52,9 +53,6 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
     private CompanyMapper companyMapper;
     @Resource
     private DeptMapper deptMapper;
-
-    @Resource
-    private UserMapper userMapper;
 
     @Override
     public Result<User> checkLogin(LoginDTO login) {
@@ -148,15 +146,10 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         if (dto.getId() == null) {
             dto.setId(loginUser.getId());
         }
-
-        /**
-         * 查看用户是否停用
-         */
-        if (isStopUsing(dto.getId())==1){
-                return Result.failure("用户禁用中,不能更新数据");
+        // 查看用户是否停用
+        if (dto.getState() == null && isStopUsing(dto.getId())) {
+            return Result.failure("用户禁用中,不能更新数据");
         }
-
-
         User updateUser = new User();
         BeanUtil.copyProperties(dto, updateUser);
         if (StrUtil.isNotEmpty(dto.getPassword())) {
@@ -180,17 +173,15 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
     }
 
     /**
-     * 查询用户 是否停用 0-禁用 1-启用
+     * 查询用户 是否停用
+     *
      * @param userId
-     * @return
+     * @return boolean
      */
     @Override
-    public int isStopUsing(Integer userId) {
-        QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq("id",userId);
-        queryWrapper.eq("state",0);
-        int count = userMapper.selectCount(queryWrapper);
-        return count;
+    public boolean isStopUsing(Integer userId) {
+        int count = this.baseMapper.selectCount(Wrappers.<User>lambdaQuery().eq(SuperEntity::getId, userId).eq(User::getState, 0));
+        return count > 0;
     }
 
     private void getDeptUp(List<Map<String, Object>> depts, Integer deptId) {
@@ -202,7 +193,6 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
             }
         }
     }
-
 
 
 }

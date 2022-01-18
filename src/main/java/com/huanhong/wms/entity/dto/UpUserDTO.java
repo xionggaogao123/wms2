@@ -7,6 +7,7 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
 
 @Data
 @ApiModel(description = "更新用户")
@@ -17,11 +18,13 @@ public class UpUserDTO {
     @ApiModelProperty(value = "用户ID", required = true)
     private Integer id;
 
-    @ApiModelProperty(value = "登录密码")
+    @Pattern(regexp = "^[A-Za-z0-9]+$", message = "密码是8~16位的数字和英文字母组合")
+    @Length(min = 8, max = 16, message = "密码是8~16位的数字和英文字母组合")
+    @ApiModelProperty(value = "登录密码(密码是8~16位的数字和英文字母组合)")
     private String password;
 
     @Length(max = 24, min = 2, message = "姓名长度在2～24位之间")
-    @ApiModelProperty(value = "姓名")
+    @ApiModelProperty(value = "姓名(姓名长度在2～24位之间)")
     private String userName;
 
     @ApiModelProperty(value = "手机号")

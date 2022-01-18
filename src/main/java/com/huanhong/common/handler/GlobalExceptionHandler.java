@@ -54,7 +54,8 @@ public class GlobalExceptionHandler {
             result.setData(errorList);
             result.setMessage("多个参数错误");
         } else {
-            result.setMessage(fieldErrors.get(0).getField() + fieldErrors.get(0).getDefaultMessage());
+            result.setData(fieldErrors.get(0).getField());
+            result.setMessage(fieldErrors.get(0).getDefaultMessage());
         }
         result.setStatus(ErrorCode.PARAM_ERROR);
         return result;

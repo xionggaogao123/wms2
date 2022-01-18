@@ -1,10 +1,10 @@
 package com.huanhong.common.units;
 
-import com.aliyun.oss.OSS;
-import com.aliyun.oss.OSSClientBuilder;
+
 import com.aliyun.oss.common.utils.BinaryUtil;
-import com.aliyun.oss.model.PutObjectResult;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import com.obs.services.ObsClient;
+import com.obs.services.model.PutObjectResult;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -20,13 +20,16 @@ import java.net.URL;
 @Slf4j
 public class OssUtil {
 
-    public static final String OSS_ENDPOINT = "https://oss-cn-shanghai.aliyuncs.com";
-    public static final String OSS_ACCESSKEY_ID = "LTAIPg51Li0kuPD9";
-    public static final String OSS_ACCESSKEY_SECRET = "M455Xcu0uRXdF8jORvTwwm072Lm2In";
-    public static final String OSS_BUCKETNAME = "wmstest1";
+    public static final String OSS_ENDPOINT = "obs.cn-southwest-2.myhuaweicloud.com";
+    public static final String OSS_ACCESSKEY_ID = "ZT6H5XDSD3RFCTYEHFIK";
+    public static final String OSS_ACCESSKEY_SECRET = "WEGGqxqGQG4hRgdCFij7g95qJnHOJNWZII8ubYWK";
+    public static final String OSS_BUCKETNAME = "wmsobs";
 
-    public static OSS getOSS() {
-        return new OSSClientBuilder().build(OSS_ENDPOINT, OSS_ACCESSKEY_ID, OSS_ACCESSKEY_SECRET);
+//    public static OSS getOSS() {
+//        return new OSSClientBuilder().build(OSS_ENDPOINT, OSS_ACCESSKEY_ID, OSS_ACCESSKEY_SECRET);
+//    }
+    public static ObsClient getOBS(){
+        return  new ObsClient(OSS_ACCESSKEY_ID,OSS_ACCESSKEY_SECRET,OSS_ENDPOINT);
     }
 
     /**
@@ -37,7 +40,7 @@ public class OssUtil {
      * @return String
      * @since 2018-04-26
      */
-    public static String putObject2Url(String url, String basePath) {
+    public static String putObject2Url(String url, String basePath) throws IOException {
         // 上传
         InputStream stream = null;
         try {
@@ -59,21 +62,24 @@ public class OssUtil {
      * @param fileName 文件名
      * @return PutObjectResult
      */
-    public static PutObjectResult putObject(InputStream file, String fileName) {
+    public static PutObjectResult putObject(InputStream file, String fileName) throws IOException {
         // 创建OSSClient实例
-        OSS oss = getOSS();
-        PutObjectResult result = oss.putObject(OSS_BUCKETNAME, fileName, file);
+        // 创建ObsClient实例
+        ObsClient obsClient = getOBS();
+
+        PutObjectResult result = obsClient.putObject(OSS_BUCKETNAME, fileName, file);
+
         // 关闭client
-        oss.shutdown();
+        obsClient.close();
         return result;
     }
 
-    public static PutObjectResult putObject(File file, String fileName) {
+    public static PutObjectResult putObject(File file, String fileName) throws IOException {
         // 创建OSSClient实例
-        OSS oss = getOSS();
-        PutObjectResult result = oss.putObject(OSS_BUCKETNAME, fileName, file);
+        ObsClient obsClient = getOBS();
+        PutObjectResult result = obsClient.putObject(OSS_BUCKETNAME, fileName, file);
         // 关闭client
-        oss.shutdown();
+        obsClient.close();
         return result;
     }
 

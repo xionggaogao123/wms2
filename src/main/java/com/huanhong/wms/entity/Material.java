@@ -100,4 +100,5 @@ public class Material extends SuperEntity {
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "停用")
     private Integer stopUsing;
+
 }

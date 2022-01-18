@@ -18,10 +18,13 @@ import com.huanhong.wms.entity.Material;
 import com.huanhong.wms.entity.MaterialClassification;
 import com.huanhong.wms.entity.dto.AddMaterialDTO;
 import com.huanhong.wms.entity.dto.UpdateMaterialDTO;
+import com.huanhong.wms.entity.vo.MaterialDetailsVO;
 import com.huanhong.wms.entity.vo.MaterialVO;
+import com.huanhong.wms.entity.vo.OssVo;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.mapper.MaterialClassificationMapper;
 import com.huanhong.wms.mapper.MaterialMapper;
+import com.huanhong.wms.mapper.OssMapper;
 import com.huanhong.wms.service.IInventoryInformationService;
 import com.huanhong.wms.service.IMaterialClassificationService;
 import com.huanhong.wms.service.IMaterialService;
@@ -61,6 +64,9 @@ public class MaterialController extends BaseController {
 
     @Resource
     private InventoryInformationMapper inventoryInformationMapper;
+
+    @Resource
+    private OssMapper ossMapper;
 
 
     @Autowired
@@ -183,6 +189,11 @@ public class MaterialController extends BaseController {
                 int insert = materialMapper.insert(material);
                 if (insert > 0) {
                     LOGGER.info("添加物料成功");
+                    //用更新方式绑定附件
+                    //判断OSS是否为空
+                    if (StringUtils.isNotBlank(addMaterialDTO.getOssIds())){
+                        ossMapper.updateObjectIdByIds(material.getId(),addMaterialDTO.getOssIds());
+                    }
                     return Result.success(materialService.getMeterialByMeterialCode(material.getMaterialCoding()), "新增成功");
                 } else {
                     return Result.failure(ErrorCode.SYSTEM_ERROR, "新增失败！");
@@ -296,7 +307,11 @@ public class MaterialController extends BaseController {
     public Result getMeterialByMeterialCode(@PathVariable("meterialCode") String meterialCode) {
         Material material = materialService.getMeterialByMeterialCode(meterialCode);
         if (ObjectUtil.isNotEmpty(material)) {
-            return Result.success(material, "查询成功");
+            List<OssVo> list = ossMapper.getOssByObjectIdNoType(material.getId());
+            MaterialDetailsVO materialDetailsVO = new MaterialDetailsVO();
+            BeanUtil.copyProperties(material,materialDetailsVO);
+            materialDetailsVO.setListFile(list);
+            return Result.success(materialDetailsVO, "查询成功");
         }
         return Result.noDataError();
     }

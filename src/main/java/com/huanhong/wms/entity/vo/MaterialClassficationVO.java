@@ -15,7 +15,7 @@ public class MaterialClassficationVO {
     @ApiModelProperty(value = "类型编码")
     private String typeCode;
 
-    @ApiModelProperty(value = "父类编码-大类无父类编码，中、小类须填写")
+    @ApiModelProperty(value = "父类编码")
     private String parentCode;
 
     @ApiModelProperty(value = "类型名称")

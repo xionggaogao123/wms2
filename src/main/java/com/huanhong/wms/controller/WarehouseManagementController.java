@@ -2,7 +2,6 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -13,7 +12,6 @@ import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
-import com.huanhong.wms.entity.Company;
 import com.huanhong.wms.entity.SublibraryManagement;
 import com.huanhong.wms.entity.WarehouseManagement;
 import com.huanhong.wms.entity.dto.AddWarehouseDTO;
@@ -103,41 +101,41 @@ public class WarehouseManagementController extends BaseController {
         /**
          * 判断是否有必填参数为空
          */
-        try {
-
-            /**
-             * 查看公司是否存在
-             */
-            Company company = companyService.getCompanyById(addWarehouseDTO.getCompanyId());
-            if (ObjectUtil.isEmpty(company)) {
-                return Result.failure(ErrorCode.DATA_IS_NULL, "公司不存在，无法添加库房");
-            }
-
-            /**
-             * 实体类转为json
-             */
-            String warehouseManagementToJoStr = JSONObject.toJSONString(addWarehouseDTO);
-            JSONObject warehouseManagementJo = JSONObject.parseObject(warehouseManagementToJoStr);
-
-            /**
-             * 不能为空的参数list
-             * 配置于judge.properties
-             */
-            List<String> list = judgeConfig.getWarehouseNotNullList();
-
-            /**
-             * 将NotNullList中的值当作key判断value是否为空
-             */
-            for (int i = 0; i < list.size(); i++) {
-                String key = list.get(i);
-                if (ObjectUtil.isEmpty(warehouseManagementJo.getString(key)) || "null".equals(warehouseManagementJo.getString(key))) {
-                    return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, key + ": 不能为空");
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.error("添加仓库失败--判断参数空值出错,异常：" + e);
-            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--判空失败，请稍后再试或联系管理员");
-        }
+//        try {
+//
+//            /**
+//             * 查看公司是否存在
+//             */
+//            Company company = companyService.getCompanyById(addWarehouseDTO.getCompanyId());
+//            if (ObjectUtil.isEmpty(company)) {
+//                return Result.failure(ErrorCode.DATA_IS_NULL, "公司不存在，无法添加库房");
+//            }
+//
+//            /**
+//             * 实体类转为json
+//             */
+//            String warehouseManagementToJoStr = JSONObject.toJSONString(addWarehouseDTO);
+//            JSONObject warehouseManagementJo = JSONObject.parseObject(warehouseManagementToJoStr);
+//
+//            /**
+//             * 不能为空的参数list
+//             * 配置于judge.properties
+//             */
+//            List<String> list = judgeConfig.getWarehouseNotNullList();
+//
+//            /**
+//             * 将NotNullList中的值当作key判断value是否为空
+//             */
+//            for (int i = 0; i < list.size(); i++) {
+//                String key = list.get(i);
+//                if (ObjectUtil.isEmpty(warehouseManagementJo.getString(key)) || "null".equals(warehouseManagementJo.getString(key))) {
+//                    return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, key + ": 不能为空");
+//                }
+//            }
+//        } catch (Exception e) {
+//            LOGGER.error("添加仓库失败--判断参数空值出错,异常：" + e);
+//            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--判空失败，请稍后再试或联系管理员");
+//        }
 
         /**
          * 在此处查重

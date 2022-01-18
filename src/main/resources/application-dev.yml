@@ -38,5 +38,5 @@ project:
   # 文件资源配置
   oss:
     url: http://127.0.0.1/oss/
-    yun-url: http://wmstest1.oss-cn-shanghai.aliyuncs.com/
+    yun-url: wmsobs.obs.cn-southwest-2.myhuaweicloud.com
     path: D:\project\visitor\oss\

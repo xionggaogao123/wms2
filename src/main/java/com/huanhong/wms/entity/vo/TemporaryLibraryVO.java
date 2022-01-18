@@ -5,28 +5,21 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 @Data
-@ApiModel(value = "库存查询对象", description = "库存查询对象封装")
-public class InventoryInformationVO {
+@ApiModel(value = "临库查询对象", description = "临库查询对象封装")
+public class TemporaryLibraryVO {
+
+    @ApiModelProperty(value = "临库入库单编号")
+    private String documentNumber;
 
     @ApiModelProperty(value = "物料编码")
     private String materialCoding;
 
     @ApiModelProperty(value = "物料名称")
     private String materialName;
-
+    
     @ApiModelProperty(value = "货位编码")
     private String cargoSpaceId;
 
-    @ApiModelProperty(value = "父级编码,likeRight货位编码")
-    private String parentCode;
-
     @ApiModelProperty(value = "批次")
     private String batch;
-
-    @ApiModelProperty(value = "货主")
-    private String consignor;
-
-    @ApiModelProperty(value = "供应商")
-    private String supplier;
-
 }

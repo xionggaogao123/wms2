@@ -1,7 +1,7 @@
 package com.huanhong.wms.mapper;
 
-import com.huanhong.wms.entity.InventoryInformation;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.huanhong.wms.entity.InventoryInformation;
 
 /**
  * <p>
@@ -12,5 +12,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @since 2021-11-25
  */
 public interface InventoryInformationMapper extends BaseMapper<InventoryInformation> {
+
 
 }

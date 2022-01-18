@@ -26,8 +26,11 @@ public interface OssMapper extends BaseMapper<Oss> {
     @Select("select url from oss where user_id = #{userId} and object_type = 'face' order by id desc limit 1")
     String getUserFaceURL(Integer userId);
 
-    @Select("select id, name, size, md5, type, oss_host(url) as url, state, gmt_create from oss where del = 0 and object_id = #{objectId} and object_type = #{type}")
+    @Select("select id, name, size, md5, type, oss_host(url) as url, state, create_time from oss where del = 0 and object_id = #{objectId} and object_type = #{type}")
     List<OssVo> getOssByObjectId(Integer objectId, String type);
+
+    @Select("select id, name, size, md5, type, oss_host(url) as url, state, create_time,last_update from oss where del = 0 and object_id = #{objectId}")
+    List<OssVo> getOssByObjectIdNoType(Integer objectId);
 
     /**
      * 更新资源对象的绑定对象

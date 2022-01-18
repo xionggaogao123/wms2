@@ -33,4 +33,11 @@ public interface IInventoryInformationService extends SuperService<InventoryInfo
      */
     List<InventoryInformation>  getInventoryInformationByCargoSpaceId(String cargoSpaceId);
 
+    /**
+     * 获取库存list
+     * @param inventoryInformationVO
+     * @return
+     */
+    List<InventoryInformation> getInventoryInformation(InventoryInformationVO inventoryInformationVO);
+
 }

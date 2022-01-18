@@ -19,6 +19,7 @@ import com.huanhong.wms.entity.dto.AddMaterialClassificationDTO;
 import com.huanhong.wms.entity.dto.UpdateMaterialClassificationDTO;
 import com.huanhong.wms.entity.vo.MaterialClassficationVO;
 import com.huanhong.wms.mapper.MaterialClassificationMapper;
+import com.huanhong.wms.mapper.OssMapper;
 import com.huanhong.wms.service.IMaterialClassificationService;
 import com.huanhong.wms.service.IMaterialService;
 import io.swagger.annotations.Api;
@@ -48,6 +49,9 @@ public class MaterialClassificationController extends BaseController {
 
     @Resource
     private MaterialClassificationMapper materialClassificationMapper;
+
+    @Resource
+    private OssMapper ossMapper;
 
     @Resource
     private JudgeConfig judgeConfig;
@@ -209,8 +213,9 @@ public class MaterialClassificationController extends BaseController {
             MaterialClassification materialClassification = new MaterialClassification();
             BeanUtil.copyProperties(addMaterialClassificationDTO, materialClassification);
             int insert = materialClassificationMapper.insert(materialClassification);
-            LOGGER.info("添加物料成功");
+            LOGGER.info("添加物料分类成功");
             return render(insert > 0);
+
         } catch (Exception e) {
             LOGGER.error("添加物料错误--（插入数据）失败,异常：" + e);
             return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--插入数据失败，请稍后再试或联系管理员");

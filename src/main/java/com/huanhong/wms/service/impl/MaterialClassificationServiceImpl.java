@@ -56,11 +56,11 @@ public class MaterialClassificationServiceImpl extends SuperServiceImpl<Material
         //并对其进行判断是否为空，这一步类似动态SQL的拼装
         query.like(ObjectUtil.isNotEmpty(materialClassificationVO.getLevelType()), "level_type", materialClassificationVO.getLevelType());
 
-        query.like(StringUtils.isNotBlank(materialClassificationVO.getParentCode()), "parent_code", materialClassificationVO.getParentCode());
+        query.likeRight(StringUtils.isNotBlank(materialClassificationVO.getParentCode()), "parent_code", materialClassificationVO.getParentCode());
 
         query.like(StringUtils.isNotBlank(materialClassificationVO.getTypeName()), "type_name", materialClassificationVO.getTypeName());
 
-        query.like(StringUtils.isNotBlank(materialClassificationVO.getTypeCode()), "type_code", materialClassificationVO.getTypeCode());
+        query.likeRight(StringUtils.isNotBlank(materialClassificationVO.getTypeCode()), "type_code", materialClassificationVO.getTypeCode());
 
         return baseMapper.selectPage(materialClassificationPage, query);
     }

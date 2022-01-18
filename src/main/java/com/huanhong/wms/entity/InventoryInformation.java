@@ -38,11 +38,11 @@ public class InventoryInformation extends SuperEntity {
     @ApiModelProperty(value = "货位编号")
     private String cargoSpaceId;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "库存数量")
     private Double inventoryCredit;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "安全数量")
     private Double safeQuantity;
 

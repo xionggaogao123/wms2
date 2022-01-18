@@ -28,10 +28,11 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 
 
     @Resource
-    private  InventoryInformationMapper inventoryInformationMapper;
+    private InventoryInformationMapper inventoryInformationMapper;
 
     /**
      * 分页查询
+     *
      * @param inventoryInformationPage
      * @param inventoryInformationVO
      * @return
@@ -45,15 +46,15 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         //判断此时的条件对象Vo是否等于空，若等于空，
         //直接进行selectPage查询
         if (ObjectUtil.isEmpty(inventoryInformationVO)) {
-            return inventoryInformationMapper.selectPage(inventoryInformationPage,query);
+            return inventoryInformationMapper.selectPage(inventoryInformationPage, query);
         }
         //若Vo对象不为空，分别获取其中的字段，
         //并对其进行判断是否为空，这一步类似动态SQL的拼装
-        query.like(StringUtils.isNotBlank(inventoryInformationVO.getMaterialCoding()), "material_coding",inventoryInformationVO.getMaterialCoding());
+        query.like(StringUtils.isNotBlank(inventoryInformationVO.getMaterialCoding()), "material_coding", inventoryInformationVO.getMaterialCoding());
 
         query.like(StringUtils.isNotBlank(inventoryInformationVO.getMaterialName()), "material_name", inventoryInformationVO.getMaterialName());
 
-        query.like(StringUtils.isNotBlank(inventoryInformationVO.getCargoSpaceId()), "cargo_space_id", inventoryInformationVO.getCargoSpaceId());
+//      query.like(StringUtils.isNotBlank(inventoryInformationVO.getCargoSpaceId()), "cargo_space_id", inventoryInformationVO.getCargoSpaceId());
 
         query.like(StringUtils.isNotBlank(inventoryInformationVO.getBatch()), "batch", inventoryInformationVO.getBatch());
 
@@ -61,25 +62,44 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 
         query.like(StringUtils.isNotBlank(inventoryInformationVO.getSupplier()), "supplier", inventoryInformationVO.getSupplier());
 
+        query.likeRight(StringUtils.isNotBlank(inventoryInformationVO.getParentCode()), "cargo_space_id", inventoryInformationVO.getParentCode());
+
         return baseMapper.selectPage(inventoryInformationPage, query);
     }
 
     /**
-     * 根据物料编码和批次更新库存信息
+     * 根据物料编码和批次、货位更新库存信息
      */
     @Override
     public int updateInventoryInformation(InventoryInformation inventoryInformation) {
         UpdateWrapper<InventoryInformation> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("material_coding", inventoryInformation.getMaterialCoding());
-        updateWrapper.eq("Batch",inventoryInformation.getBatch());
-        int i = inventoryInformationMapper.update(inventoryInformation,updateWrapper);
+        updateWrapper.eq("Batch", inventoryInformation.getBatch());
+        updateWrapper.eq("cargo_space_id",inventoryInformation.getCargoSpaceId());
+        int i = inventoryInformationMapper.update(inventoryInformation, updateWrapper);
         return i;
     }
 
     @Override
     public List<InventoryInformation> getInventoryInformationByCargoSpaceId(String cargoSpaceId) {
         QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("cargo_space_id",cargoSpaceId);
+        queryWrapper.eq("cargo_space_id", cargoSpaceId);
+        List<InventoryInformation> inventoryInformationList = inventoryInformationMapper.selectList(queryWrapper);
+        return inventoryInformationList;
+    }
+
+
+    /**
+     *
+     * @param inventoryInformationVO
+     * @return
+     */
+    @Override
+    public List<InventoryInformation> getInventoryInformation(InventoryInformationVO inventoryInformationVO) {
+        QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("cargo_space_id", inventoryInformationVO.getCargoSpaceId());
+        queryWrapper.eq("material_coding",inventoryInformationVO.getMaterialCoding());
+        queryWrapper.eq("batch",inventoryInformationVO.getBatch());
         List<InventoryInformation> inventoryInformationList = inventoryInformationMapper.selectList(queryWrapper);
         return inventoryInformationList;
     }

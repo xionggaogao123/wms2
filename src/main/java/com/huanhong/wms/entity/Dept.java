@@ -43,6 +43,11 @@ public class Dept extends SuperBsEntity {
     @ApiModelProperty(value = "用户数")
     private Integer userCount;
 
+    @ApiModelProperty(value = "状态 0.禁用  1.启用")
+    private Integer state;
+
+
+
     /**
      * 子节点
      */

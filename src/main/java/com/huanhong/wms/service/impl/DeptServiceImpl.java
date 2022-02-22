@@ -29,6 +29,8 @@ public class DeptServiceImpl extends SuperServiceImpl<DeptMapper, Dept> implemen
 
     @Resource
     private RedisTemplate redisTemplate;
+    @Resource
+    private DeptMapper deptMapper;
 
 
     @Override
@@ -52,6 +54,20 @@ public class DeptServiceImpl extends SuperServiceImpl<DeptMapper, Dept> implemen
         this.baseMapper.deleteById(deptId);
         redisTemplate.delete(RedisKey.DEPT_TREE);
         return Result.success();
+    }
+
+    @Override
+    public boolean isStopUsing(int deptId) {
+        int flag = getDeptById(deptId).getState();
+        if (flag==0){
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public Dept getDeptById(int deptId) {
+        return deptMapper.selectById(deptId);
     }
 
     @Override

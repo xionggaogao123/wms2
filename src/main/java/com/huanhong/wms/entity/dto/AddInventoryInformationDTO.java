@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -51,6 +52,8 @@ public class AddInventoryInformationDTO {
     @ApiModelProperty(value = "批次")
     private String batch;
 
+    @Min(0)
+    @Max(1)
     @NotNull
     @ApiModelProperty(value = "货主")
     private Integer consignor;

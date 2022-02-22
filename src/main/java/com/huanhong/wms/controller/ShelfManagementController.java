@@ -2,7 +2,6 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -86,36 +85,6 @@ public class ShelfManagementController extends BaseController {
     @PostMapping("/add")
     public Result add(@Valid @RequestBody AddShelfDTO addShelfDTO) {
 
-        /**
-         * 判断是否有必填参数为空
-         */
-        try {
-            /**
-             * 实体类转为json
-             */
-            String shelfManagementToJoStr = JSONObject.toJSONString(addShelfDTO);
-            JSONObject shelfManagementJo = JSONObject.parseObject(shelfManagementToJoStr);
-            /**
-             * 不能为空的参数list
-             * 配置于judge.properties
-             */
-            List<String> list = judgeConfig.getShelfNotNullList();
-            /**
-             * 将NotNullList中的值当作key判断value是否为空
-             */
-            for (int i = 0; i < list.size(); i++) {
-                String key = list.get(i);
-                if (StringUtils.isBlank(shelfManagementJo.getString(key)) || "null".equals(shelfManagementJo.getString(key))) {
-                    return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, key + ": 不能为空");
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.error("添加货架失败--判断参数空值出错,异常：" + e);
-            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--判空失败，请稍后再试或联系管理员");
-        }
-        /**
-         * 在此处查重
-         */
         try {
             /**
              * 验证货架编码是否合法
@@ -228,7 +197,7 @@ public class ShelfManagementController extends BaseController {
             BeanUtil.copyProperties(updateShelfDTO, updateShlef);
             int update = shelfManagementMapper.update(updateShlef, updateWrapper);
             String parentCode = updateShlef.getShelfId();
-            if (update > 0) {
+            if (update > 0 && ObjectUtil.isNotNull(shelfManagement.getStopUsing())) {
                 //如果货架更新成功 判断此次更新货架是否处于启用状态
                 if (updateShlef.getStopUsing()==0){
                         cargoSpaceManagementService.stopUsingByParentCode(parentCode,true);

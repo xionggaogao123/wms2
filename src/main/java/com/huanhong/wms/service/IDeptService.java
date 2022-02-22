@@ -32,4 +32,8 @@ public interface IDeptService extends SuperService<Dept> {
 
     Result<Integer> deleteDept(LoginUser loginUser, Integer deptId);
 
+    boolean isStopUsing(int deptId);
+
+    Dept getDeptById(int deptId);
+
 }

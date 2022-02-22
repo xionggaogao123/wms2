@@ -192,7 +192,7 @@ public class WarehouseManagementController extends BaseController {
             updateWrapper.eq("warehouse_id", updateWarehouseDTO.getWarehouseId());
             int update = warehouseManagementMapper.update(warehouseManagement, updateWrapper);
             String parentCode = updateWarehouseDTO.getWarehouseId();
-            if (update > 0) {
+            if (update > 0 && ObjectUtil.isNotNull(warehouseManagement.getStopUsing())) {
                 //如果仓库更新成功 判断此次更新仓库是否处于启用状态
                 //若是启用状态  则将停用状态为 2-父级停用的子级全部启用
                 if (warehouseManagement.getStopUsing() == 0) {

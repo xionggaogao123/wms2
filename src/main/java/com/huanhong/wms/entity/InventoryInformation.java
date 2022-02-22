@@ -3,6 +3,7 @@ package com.huanhong.wms.entity;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.Version;
 import com.huanhong.wms.SuperEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -38,11 +39,11 @@ public class InventoryInformation extends SuperEntity {
     @ApiModelProperty(value = "货位编号")
     private String cargoSpaceId;
 
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "库存数量")
     private Double inventoryCredit;
 
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "安全数量")
     private Double safeQuantity;
 
@@ -82,7 +83,16 @@ public class InventoryInformation extends SuperEntity {
     @ApiModelProperty(value = "创建时间")
     private LocalDateTime createTime;
 
+    @TableField(value = "last_update",fill = FieldFill.INSERT_UPDATE)
+    @ApiModelProperty(value = "最后更新时间")
+    private LocalDateTime lastUpdate;
+
+
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "备注")
     private String remark;
+
+    @Version
+    @TableField(fill = FieldFill.INSERT)
+    private Integer version;
 }

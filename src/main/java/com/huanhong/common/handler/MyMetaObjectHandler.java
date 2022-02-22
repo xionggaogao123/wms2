@@ -14,10 +14,12 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
     public void insertFill(MetaObject metaObject) {
         //this.strictInsertFill(metaObject, "createTime", Date.class, new Date()); // 起始版本 3.3.0(推荐使用)s
         this.setFieldValByName("createTime", DateUtil.toLocalDateTime(new Date()),metaObject);
+        this.setFieldValByName("version",1,metaObject);
+        this.setFieldValByName("lastUpdate",DateUtil.toLocalDateTime(new Date()),metaObject);
     }
 
     @Override
     public void updateFill(MetaObject metaObject) {
-
+        this.setFieldValByName("lastUpdate",DateUtil.toLocalDateTime(new Date()),metaObject);
     }
 }

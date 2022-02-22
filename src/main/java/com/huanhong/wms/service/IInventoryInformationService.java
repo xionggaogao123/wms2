@@ -2,7 +2,10 @@ package com.huanhong.wms.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperService;
+import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.InventoryInformation;
+import com.huanhong.wms.entity.dto.AddInventoryInformationDTO;
+import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
 import com.huanhong.wms.entity.vo.InventoryInformationVO;
 
 import java.util.List;
@@ -25,7 +28,14 @@ public interface IInventoryInformationService extends SuperService<InventoryInfo
     /**
      * 库存信息更新
      */
-    int updateInventoryInformation(InventoryInformation inventoryInformation);
+    Result  updateInventoryInformation(UpdateInventoryInformationDTO updateInventoryInformationDTO);
+
+    /**
+     *
+     * @param addInventoryInformationDTO
+     * @return
+     */
+    Result addInventoryInformation(AddInventoryInformationDTO addInventoryInformationDTO);
 
 
     /**
@@ -33,11 +43,19 @@ public interface IInventoryInformationService extends SuperService<InventoryInfo
      */
     List<InventoryInformation>  getInventoryInformationByCargoSpaceId(String cargoSpaceId);
 
+
     /**
      * 获取库存list
      * @param inventoryInformationVO
      * @return
      */
-    List<InventoryInformation> getInventoryInformation(InventoryInformationVO inventoryInformationVO);
+    InventoryInformation getInventoryInformation(InventoryInformationVO inventoryInformationVO);
 
+
+    /**
+     * 查询新增库存时，传入的货位、物料编码、批次是否已经存在
+     * 若存在，则加上对应库存数量
+     * 若不存在，则新增此条数据
+     */
+    InventoryInformation getInventoryById(int id);
 }

@@ -4,8 +4,10 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -15,9 +17,21 @@ public class UpdateInventoryInformationDTO {
 
     private static final long serialVersionUID = 1L;
 
-    @NotBlank
-    @ApiModelProperty(value = "物料编码")
-    private String materialCoding;
+
+    @NotNull
+    @ApiModelProperty(value = "库存ID", required = true)
+    private Integer id;
+
+
+//    @NotBlank
+//    @ApiModelProperty(value = "物料编码")
+//    private String materialCoding;
+//
+//
+//    @NotBlank
+//    @ApiModelProperty(value = "批次")
+//    private String batch;
+
 
     @NotBlank
     @ApiModelProperty(value = "货位编码")
@@ -34,11 +48,8 @@ public class UpdateInventoryInformationDTO {
     private Double safeQuantity;
 
 
-    @NotBlank
-    @ApiModelProperty(value = "批次")
-    private String batch;
-
-
+    @Min(0)
+    @Max(1)
     @ApiModelProperty(value = "货主")
     private Integer consignor;
 

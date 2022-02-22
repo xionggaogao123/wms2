@@ -2,7 +2,6 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -90,9 +89,10 @@ public class WarehouseAreaManagementController extends BaseController {
     public Result add(@Valid @RequestBody AddWarehouseAreaDTO addWarehouseAreaDTO) {
 
         /**
-         * 判断是否有必填参数为空
+         * 在此处查重
          */
         try {
+
 
             /**
              * 查询子库是否存在
@@ -120,33 +120,7 @@ public class WarehouseAreaManagementController extends BaseController {
              * 组合子库编号和库区编号为完整库区编号
              */
             addWarehouseAreaDTO.setWarehouseAreaId(addWarehouseAreaDTO.getSublibraryId()+addWarehouseAreaDTO.getWarehouseAreaId());
-            /**
-             * 实体类转为json
-             */
-            String warehouseAreaManagementToJoStr = JSONObject.toJSONString(addWarehouseAreaDTO);
-            JSONObject warehouseAreaManagementJo = JSONObject.parseObject(warehouseAreaManagementToJoStr);
-            /**
-             * 不能为空的参数list
-             * 配置于judge.properties
-             */
-            List<String> list = judgeConfig.getWarehouseAreaNotNullList();
-            /**
-             * 将NotNullList中的值当作key判断value是否为空
-             */
-            for (int i = 0; i < list.size(); i++) {
-                String key = list.get(i);
-                if (StringUtils.isBlank(warehouseAreaManagementJo.getString(key)) || "null".equals(warehouseAreaManagementJo.getString(key))) {
-                    return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, key + ": 不能为空");
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.error("添加库区失败--判断参数空值出错,异常：" + e);
-            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--判空失败，请稍后再试或联系管理员");
-        }
-        /**
-         * 在此处查重
-         */
-        try {
+
             WarehouseAreaManagement warehouseAreaIsExist = warehouseAreaManagementService.getWarehouseAreaByWarehouseAreaId(addWarehouseAreaDTO.getWarehouseAreaId());
             if (ObjectUtil.isNotEmpty(warehouseAreaIsExist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "库区编号重复,库区已存在");
@@ -211,7 +185,7 @@ public class WarehouseAreaManagementController extends BaseController {
             updateWrapper.eq("warehouse_area_id", updateWarehouseAreaDTO.getWarehouseAreaId());
             int update = warehouseAreaManagementMapper.update(warehouseAreaManagement, updateWrapper);
             String parentCode = warehouseAreaManagement.getWarehouseAreaId();
-            if (update > 0) {
+            if (update > 0 && ObjectUtil.isNotNull(warehouseAreaManagement.getStopUsing())) {
                 //如果库区更新成功 判断此次更新库区是否处于启用状态
                 if (warehouseAreaManagement.getStopUsing()==0){
                        shelfManagementService.stopUsingByParentCode(parentCode,true);

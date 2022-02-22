@@ -1,6 +1,7 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.lang.Validator;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -15,6 +16,7 @@ import com.huanhong.wms.entity.User;
 import com.huanhong.wms.entity.dto.AddUserDTO;
 import com.huanhong.wms.entity.dto.UpUserDTO;
 import com.huanhong.wms.mapper.UserMapper;
+import com.huanhong.wms.service.IDeptService;
 import com.huanhong.wms.service.IUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -37,8 +39,12 @@ public class UserController extends BaseController {
 
     @Resource
     private IUserService userService;
+
     @Resource
     private UserMapper userMapper;
+
+    @Resource
+    private IDeptService deptService;
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -101,6 +107,12 @@ public class UserController extends BaseController {
         if (StrUtil.isNotEmpty(dto.getMail())) {
             Validator.validateEmail(dto.getMail(), "请输入正确的Email");
         }
+
+        //true 为启用  false 为停用
+        if (deptService.isStopUsing(dto.getDeptId())){
+                return Result.failure("部门停用中,无法添加用户");
+        }
+
         // 账号-大小写字母及数字
         Boolean flagLoginName = ReUtil.isMatch("^[A-Za-z0-9]+$", dto.getLoginName());
         if (!flagLoginName) {
@@ -131,6 +143,15 @@ public class UserController extends BaseController {
         if (StrUtil.isNotEmpty(dto.getMail())) {
             Validator.validateEmail(dto.getMail(), "请输入正确的Email");
         }
+
+        //true 为启用  false 为停用
+        if(ObjectUtil.isNotNull(dto.getDeptId())){
+            if (deptService.isStopUsing(dto.getDeptId())){
+                return Result.failure("部门停用中,无法转入用户");
+            }
+        }
+
+
         LoginUser loginUser = this.getLoginUser();
         if (dto.getId() == null) {
             dto.setId(loginUser.getId());

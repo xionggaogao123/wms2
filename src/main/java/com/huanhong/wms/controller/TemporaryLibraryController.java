@@ -49,7 +49,7 @@ import javax.validation.Valid;
         @ApiImplicitParam(name = "size", value = "每页行数"),
     })
     @ApiOperationSupport(order = 1)
-    @ApiOperation(value = "分页查询", notes = "生成代码")
+    @ApiOperation(value = "分页查询")
     @GetMapping("/pagingFuzzyQuery")
     public Result<Page<TemporaryLibrary>> page(@RequestParam(defaultValue = "1") Integer current,
                                                @RequestParam(defaultValue = "10") Integer size,
@@ -68,7 +68,7 @@ import javax.validation.Valid;
        }
 
         @ApiOperationSupport(order = 2)
-        @ApiOperation(value = "添加", notes = "生成代码")
+        @ApiOperation(value = "添加")
         @PostMapping("/add")
         public Result add(@Valid @RequestBody AddTemporaryLibraryDTO addTemporaryLibraryDTO) {
             try {
@@ -90,7 +90,7 @@ import javax.validation.Valid;
         }
 
         @ApiOperationSupport(order = 3)
-        @ApiOperation(value = "更新", notes = "生成代码")
+        @ApiOperation(value = "更新")
         @PutMapping("/update")
         public Result update(@Valid @RequestBody UpdateTemporaryLibraryDTO updateTemporaryLibraryDTO) {
         try {
@@ -105,7 +105,7 @@ import javax.validation.Valid;
 }
 
         @ApiOperationSupport(order = 4)
-        @ApiOperation(value = "删除", notes = "生成代码")
+        @ApiOperation(value = "删除")
         @DeleteMapping("/deleteByMaterialCodeAndBatch/{materialCode}&{batch}")
         public Result delete(@PathVariable("materialCode") String materialCode, @PathVariable("batch") String batch) {
             try {

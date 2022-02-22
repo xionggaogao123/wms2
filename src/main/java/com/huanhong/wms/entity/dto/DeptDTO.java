@@ -5,6 +5,9 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
 
 @Data
 @Accessors(chain = true)
@@ -33,5 +36,11 @@ public class DeptDTO {
 
     @ApiModelProperty(value = "顺序 从小到大")
     private Integer sort;
+
+    @Min(0)
+    @Max(1)
+    @ApiModelProperty(value = "状态 0.禁用  1.启用")
+    private Integer state;
+
 
 }

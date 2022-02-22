@@ -5,6 +5,7 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.huanhong.wms.SuperEntity;
 import com.huanhong.wms.SuperServiceImpl;
@@ -51,8 +52,12 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
 
     @Resource
     private CompanyMapper companyMapper;
+
     @Resource
     private DeptMapper deptMapper;
+
+    @Resource
+    private UserMapper userMapper;
 
     @Override
     public Result<User> checkLogin(LoginDTO login) {
@@ -170,6 +175,14 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
             log.error("用户信息更新异常: {}", updateUser);
         }
         return update > 0 ? Result.success(updateUser.getId()) : Result.failure("更新失败");
+    }
+
+    @Override
+    public boolean getUserByDept(int deptId) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("dept_id",deptId);
+        int count = userMapper.selectCount(queryWrapper);
+        return count>0;
     }
 
     /**

@@ -2,7 +2,6 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -90,8 +89,9 @@ public class SublibraryManagementController extends BaseController {
     @PostMapping("/add")
     public Result add(@Valid @RequestBody AddSubliraryDTO addSubliraryDTO) {
 
+
         /**
-         * 判断是否有必填参数为空
+         * 在此处查重
          */
         try {
 
@@ -122,33 +122,6 @@ public class SublibraryManagementController extends BaseController {
              */
             addSubliraryDTO.setSublibraryId(addSubliraryDTO.getWarehouseId()+addSubliraryDTO.getSublibraryId());
 
-            /**
-             * 实体类转为json
-             */
-            String sublibraryManagementToJoStr = JSONObject.toJSONString(addSubliraryDTO);
-            JSONObject sublibraryManagementJo = JSONObject.parseObject(sublibraryManagementToJoStr);
-            /**
-             * 不能为空的参数list
-             * 配置于judge.properties
-             */
-            List<String> list = judgeConfig.getSublibraryNotNullList();
-            /**
-             * 将NotNullList中的值当作key判断value是否为空
-             */
-            for (int i = 0; i < list.size(); i++) {
-                String key = list.get(i);
-                if (StringUtils.isBlank(sublibraryManagementJo.getString(key)) || "null".equals(sublibraryManagementJo.getString(key))) {
-                    return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, key + ": 不能为空");
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.error("添子库失败--判断参数空值出错,异常：" + e);
-            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--判空失败，请稍后再试或联系管理员");
-        }
-        /**
-         * 在此处查重
-         */
-        try {
             SublibraryManagement sublibrary = sublibraryManagementService.getSublibraryBySublibraryId(addSubliraryDTO.getSublibraryId());
             if (ObjectUtil.isNotEmpty(sublibrary)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "子库编号重复");
@@ -210,7 +183,8 @@ public class SublibraryManagementController extends BaseController {
             updateWrapper.eq("sublibrary_id", updateSubliraryDTO.getSublibraryId());
             int update = sublibraryManagementMapper.update(sublibraryManagement, updateWrapper);
             String parentCode = sublibraryManagement.getSublibraryId();
-            if (update > 0) {
+
+            if (update > 0&&ObjectUtil.isNotNull(sublibraryManagement.getStopUsing())) {
                 //如果子库更新成功 判断此次更新子库是否处于启用状态
                 if (sublibraryManagement.getStopUsing()==0){
                 warehouseAreaManagementService.stopUsingByParentCode(parentCode,true);

@@ -39,5 +39,5 @@ project:
   # 文件资源配置
   oss:
     url: https://aux.aiairy.com/oss/
-    yun-url: http://wmstest1.oss-cn-shanghai.aliyuncs.com/
+    yun-url: wmsobs.obs.cn-southwest-2.myhuaweicloud.com
     path: /www/wwwroot/aux.aiairy.com/oss/

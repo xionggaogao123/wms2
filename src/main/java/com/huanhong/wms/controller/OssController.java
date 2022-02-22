@@ -2,7 +2,6 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileReader;
-import cn.hutool.core.lang.id.NanoId;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.alibaba.fastjson.JSON;
@@ -80,7 +79,8 @@ public class OssController extends BaseController {
 //        if (!file.getContentType().contains("image")) {
 //            return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, "请上传正确的图片");
 //        }
-        String md5, fileName = NanoId.randomNanoId(18) + "." + FileUtil.extName(file.getOriginalFilename());
+        String md5,
+        fileName = file.getOriginalFilename();
         String filePath = ossProperties.getPath() + objectType + "/";
         String fullPath = filePath + fileName;
         long fileSize = file.getSize();
@@ -140,7 +140,7 @@ public class OssController extends BaseController {
         UploadOssVo data = new UploadOssVo();
         data.setId(oss.getId());
         data.setFileName(oss.getUrl());
-        data.setFileUrl(ossProperties.getYunUrl() + oss.getUrl());
+        data.setFileUrl(ossProperties.getYunUrl() +"/" +oss.getUrl());
         data.setObjectId(objectId);
         return Result.success(data);
     }

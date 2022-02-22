@@ -13,6 +13,7 @@ import com.huanhong.wms.entity.Dept;
 import com.huanhong.wms.entity.dto.DeptDTO;
 import com.huanhong.wms.mapper.DeptMapper;
 import com.huanhong.wms.service.IDeptService;
+import com.huanhong.wms.service.IUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -35,6 +36,9 @@ public class DeptController extends BaseController {
     private IDeptService deptService;
     @Resource
     private DeptMapper deptMapper;
+
+    @Resource
+    private IUserService userService;
 
     @ApiOperationSupport(order = 1)
     @ApiOperation(value = "获取部门树")
@@ -87,6 +91,15 @@ public class DeptController extends BaseController {
 //        if (loginUser.getPermissionLevel()) {
 //            return Result.noAuthority();
 //        }
+
+        //true 为停用  false 为启用
+        if (deptService.isStopUsing(dto.getId())){
+            //部门停用中 且此次更新未改为启用 则不允许更新
+            if (dto.getState()!=1){
+                return Result.failure("部门停用中禁止更新");
+            }
+        }
+
         Dept dept = new Dept();
         BeanUtil.copyProperties(dto, dept);
 
@@ -107,6 +120,9 @@ public class DeptController extends BaseController {
 //        if (loginUser.getPermissionLevel()) {
 //            return Result.noAuthority();
 //        }
+        if (userService.getUserByDept(id)){
+            return Result.failure("部门下有人员存在，无法删除");
+        }
         return deptService.deleteDept(loginUser, id);
     }
 }

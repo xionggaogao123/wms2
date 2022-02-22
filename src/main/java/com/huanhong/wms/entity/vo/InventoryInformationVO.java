@@ -24,7 +24,7 @@ public class InventoryInformationVO {
     private String batch;
 
     @ApiModelProperty(value = "货主")
-    private String consignor;
+    private Integer consignor;
 
     @ApiModelProperty(value = "供应商")
     private String supplier;

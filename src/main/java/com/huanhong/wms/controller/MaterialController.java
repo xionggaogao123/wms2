@@ -32,8 +32,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +40,7 @@ import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/v1/meterial")
 @ApiSort()
@@ -68,11 +68,9 @@ public class MaterialController extends BaseController {
     @Resource
     private OssMapper ossMapper;
 
-
     @Autowired
     private JudgeConfig judgeConfig;
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(MaterialController.class);
 
 
     /**
@@ -101,7 +99,7 @@ public class MaterialController extends BaseController {
             }
             return Result.success(pageResult);
         } catch (Exception e) {
-            LOGGER.error("分页查询异常"+e);
+            log.error("分页查询异常"+e);
             return Result.failure("查询失败--系统异常，请联系管理员");
         }
     }
@@ -188,7 +186,7 @@ public class MaterialController extends BaseController {
                 material.setMaterialCoding(orderNo);
                 int insert = materialMapper.insert(material);
                 if (insert > 0) {
-                    LOGGER.info("添加物料成功");
+                    log.info("添加物料成功");
                     //用更新方式绑定附件
                     //判断OSS是否为空
                     if (StringUtils.isNotBlank(addMaterialDTO.getOssIds())){
@@ -199,12 +197,12 @@ public class MaterialController extends BaseController {
                     return Result.failure(ErrorCode.SYSTEM_ERROR, "新增失败！");
                 }
             } catch (Exception e) {
-                LOGGER.error("添加物料错误--（插入数据）失败,异常：" + e);
+                log.error("添加物料错误--（插入数据）失败,异常：" + e);
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--插入数据失败，请稍后再试或联系管理员");
             }
 
         } catch (Exception e) {
-            LOGGER.error("生成新物料编码出错: " + e);
+            log.error("生成新物料编码出错: " + e);
             return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--物料编码生成失败，请稍后再试或联系管理员");
         }
     }
@@ -248,10 +246,10 @@ public class MaterialController extends BaseController {
             BeanUtil.copyProperties(updateMaterialDTO, updateMaterial);
             updateWrapper.eq("material_coding", updateMaterialDTO.getMaterialCoding());
             int i = materialMapper.update(updateMaterial, updateWrapper);
-            LOGGER.info("物料: " + updateMaterialDTO.getMaterialCoding() + " 更新成功");
+            log.info("物料: " + updateMaterialDTO.getMaterialCoding() + " 更新成功");
             return render(i > 0);
         } catch (Exception e) {
-            LOGGER.error("更新物料信息出错--更新失败，异常：" + e);
+            log.error("更新物料信息出错--更新失败，异常：" + e);
             return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常：物料更新失败，请稍后再试或联系管理员");
         }
     }
@@ -287,11 +285,11 @@ public class MaterialController extends BaseController {
             wrapper.eq("material_coding", meterialCode);
             int i = materialMapper.delete(wrapper);
             if (i > 0) {
-                LOGGER.info("物料: " + meterialCode + " 删除成功");
+                log.info("物料: " + meterialCode + " 删除成功");
             }
             return render(i > 0);
         } catch (Exception e) {
-            LOGGER.error("删除物料信息出错--删除失败，异常：" + e);
+            log.error("删除物料信息出错--删除失败，异常：" + e);
             return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常：物料删除失败，请稍后再试或联系管理员");
         }
     }

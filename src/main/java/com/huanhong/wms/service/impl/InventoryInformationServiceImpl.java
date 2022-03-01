@@ -92,58 +92,59 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         /**
          * 判断货位是否存在
          */
-        CargoSpaceManagement cargoSpaceManagement = cargoSpaceManagementService.getCargoSpaceByCargoSpaceId(updateInventoryInformationDTO.getCargoSpaceId());
-        if (ObjectUtil.isEmpty(cargoSpaceManagement)) {
-            return Result.failure(ErrorCode.DATA_IS_NULL, "货位不存在！");
+        if (StringUtils.isNotBlank(updateInventoryInformationDTO.getCargoSpaceId())) {
+            CargoSpaceManagement cargoSpaceManagement = cargoSpaceManagementService.getCargoSpaceByCargoSpaceId(updateInventoryInformationDTO.getCargoSpaceId());
+            if (ObjectUtil.isEmpty(cargoSpaceManagement)) {
+                return Result.failure(ErrorCode.DATA_IS_NULL, "货位不存在！");
+            }
         }
-
-
         InventoryInformation inventoryInformationOld = getInventoryById(updateInventoryInformationDTO.getId());
         /**
          * vesion 对比veision 如果一致则更新并加一  不一致则不更新
          */
-        if (StringUtils.isNotBlank(updateInventoryInformationDTO.getCargoSpaceId())){
+        if (StringUtils.isNotBlank(updateInventoryInformationDTO.getCargoSpaceId())) {
             inventoryInformationOld.setCargoSpaceId(updateInventoryInformationDTO.getCargoSpaceId());
         }
-        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getInventoryCredit())){
+        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getInventoryCredit())) {
             inventoryInformationOld.setInventoryCredit(updateInventoryInformationDTO.getInventoryCredit());
         }
-        if (ObjectUtil.isNotEmpty(updateInventoryInformationDTO.getSafeQuantity())){
+        if (ObjectUtil.isNotEmpty(updateInventoryInformationDTO.getSafeQuantity())) {
             inventoryInformationOld.setSafeQuantity(updateInventoryInformationDTO.getSafeQuantity());
         }
-        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getConsignor())){
+        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getConsignor())) {
             inventoryInformationOld.setConsignor(updateInventoryInformationDTO.getConsignor());
         }
-        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getEffectiveDate())){
+        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getEffectiveDate())) {
             inventoryInformationOld.setEffectiveDate(updateInventoryInformationDTO.getEffectiveDate());
         }
-        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getUnitPrice())){
+        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getUnitPrice())) {
             inventoryInformationOld.setUnitPrice(updateInventoryInformationDTO.getUnitPrice());
         }
-        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getManagementFeeRate())){
+        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getManagementFeeRate())) {
             inventoryInformationOld.setManagementFeeRate(updateInventoryInformationDTO.getManagementFeeRate());
         }
-        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getSalesUnitPrice())){
+        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getSalesUnitPrice())) {
             inventoryInformationOld.setSalesUnitPrice(updateInventoryInformationDTO.getSalesUnitPrice());
         }
-        if (StringUtils.isNotBlank(updateInventoryInformationDTO.getSupplier())){
+        if (StringUtils.isNotBlank(updateInventoryInformationDTO.getSupplier())) {
             inventoryInformationOld.setSupplier(updateInventoryInformationDTO.getSupplier());
         }
-        if (StringUtils.isNotBlank(updateInventoryInformationDTO.getPriorityStorageLocation())){
+        if (StringUtils.isNotBlank(updateInventoryInformationDTO.getPriorityStorageLocation())) {
             inventoryInformationOld.setPriorityStorageLocation(updateInventoryInformationDTO.getPriorityStorageLocation());
         }
-        if (StringUtils.isNotBlank(updateInventoryInformationDTO.getRemark())){
+        if (StringUtils.isNotBlank(updateInventoryInformationDTO.getRemark())) {
             inventoryInformationOld.setRemark(updateInventoryInformationDTO.getRemark());
         }
         int i = inventoryInformationMapper.updateById(inventoryInformationOld);
-        if (i>0){
-            return  Result.success("更新成功！");
+        if (i > 0) {
+            return Result.success("更新成功！");
         }
         return Result.failure("更新失败,库存信息或被其他人改动,请重试");
     }
 
     /**
      * 库存新增
+     *
      * @param addInventoryInformationDTO
      * @return
      */
@@ -164,19 +165,19 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         InventoryInformationVO inventoryInformationVO = new InventoryInformationVO();
         BeanUtil.copyProperties(addInventoryInformationDTO, inventoryInformationVO);
         InventoryInformation inventoryInformationIsExist = getInventoryInformation(inventoryInformationVO);
-        if (ObjectUtil.isNotEmpty(inventoryInformationIsExist)){
+        if (ObjectUtil.isNotEmpty(inventoryInformationIsExist)) {
             //已有数量
             Double inventoryCreditOld = inventoryInformationIsExist.getInventoryCredit();
             //新增数量
             Double inventoryCreditNew = addInventoryInformationDTO.getInventoryCredit();
             //存入最终数量
-            inventoryInformationIsExist.setInventoryCredit(NumberUtil.add(inventoryCreditOld,inventoryCreditNew));
+            inventoryInformationIsExist.setInventoryCredit(NumberUtil.add(inventoryCreditOld, inventoryCreditNew));
 //            inventoryInformationIsExist.setVersion(12);
             //将查出的ID存入updateDTO
             int i = inventoryInformationMapper.updateById(inventoryInformationIsExist);
-            if (i>0){
+            if (i > 0) {
                 return Result.success("此货位存在同批次的同种物料,已合并数量");
-            }else {
+            } else {
                 return Result.failure("此货位存在同批次的同种物料,合并数量失败(库存信息或被其他人改动,请重试)");
             }
         }
@@ -194,11 +195,11 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
          * 插入本次新增的库存
          */
         InventoryInformation inventoryInformation = new InventoryInformation();
-        BeanUtil.copyProperties(addInventoryInformationDTO,inventoryInformation);
+        BeanUtil.copyProperties(addInventoryInformationDTO, inventoryInformation);
         int insert = inventoryInformationMapper.insert(inventoryInformation);
 
         //将同一库、同一物料所有的推荐存放位置放入list
-        List<Map<String,Object>>  maplist = inventoryInformationMapper.selectMaps(queryWrapper);
+        List<Map<String, Object>> maplist = inventoryInformationMapper.selectMaps(queryWrapper);
 
         List<String> listPSL = new ArrayList<>();
         //将本次的货位ID放入推荐存放位置的list中
@@ -206,13 +207,13 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         listPSL.add(inventoryInformation.getCargoSpaceId());
         if (insert > 0) {
             //遍历maplist将优先存放位置转换为list<String>
-            for (Map map:maplist) {
+            for (Map map : maplist) {
                 //若优先存放位置不为空，获取值放入listPsl准备查重
-                if (MapUtil.isNotEmpty(map)){
+                if (MapUtil.isNotEmpty(map)) {
                     String s = map.get("priorityStorageLocation").toString();
-                    listTemp =  Arrays.stream(StringUtils.split(s, ",")).map(s1 -> s1.trim()).collect(Collectors.toList());
+                    listTemp = Arrays.stream(StringUtils.split(s, ",")).map(s1 -> s1.trim()).collect(Collectors.toList());
                 }
-                listPSL = Stream.of(listPSL,listTemp)
+                listPSL = Stream.of(listPSL, listTemp)
                         .flatMap(Collection::stream).distinct().collect(Collectors.toList());
             }
 
@@ -224,8 +225,8 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
             String[] strings = listPSL.toArray(new String[listPSL.size()]);
             String resultString = StringUtil.join(strings, ",");
             inventoryInformationUpdate.setPriorityStorageLocation(resultString);
-            inventoryInformationMapper.update(inventoryInformationUpdate,updateWrapper);
-            return Result.success();
+            inventoryInformationMapper.update(inventoryInformationUpdate, updateWrapper);
+            return Result.success("新增库存成功");
         } else {
             return Result.failure(ErrorCode.SYSTEM_ERROR, "新增库存失败！");
         }
@@ -242,9 +243,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     }
 
 
-
     /**
-     *
      * @param inventoryInformationVO
      * @return
      */
@@ -252,8 +251,8 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     public InventoryInformation getInventoryInformation(InventoryInformationVO inventoryInformationVO) {
         QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("cargo_space_id", inventoryInformationVO.getCargoSpaceId());
-        queryWrapper.eq("material_coding",inventoryInformationVO.getMaterialCoding());
-        queryWrapper.eq("batch",inventoryInformationVO.getBatch());
+        queryWrapper.eq("material_coding", inventoryInformationVO.getMaterialCoding());
+        queryWrapper.eq("batch", inventoryInformationVO.getBatch());
         return inventoryInformationMapper.selectOne(queryWrapper);
     }
 

@@ -54,8 +54,8 @@ public class PlanUseOutDetailsController extends BaseController {
 //    }
 
     @ApiOperationSupport(order = 2)
-    @ApiOperation(value = "添加计划领用明细表", notes = "生成代码")
-    @PostMapping
+    @ApiOperation(value = "添加领料出库明细表", notes = "生成代码")
+    @PostMapping("/add")
     public Result add(@Valid @RequestBody AddPlanUseOutDetailsDTO addPlanUseOutDetailsDTO) {
         try {
             PlanUseOutDetails planUseOutDetails = new PlanUseOutDetails();
@@ -69,8 +69,8 @@ public class PlanUseOutDetailsController extends BaseController {
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation(value = "更新计划领用明细表", notes = "生成代码")
-    @PutMapping
+    @ApiOperation(value = "更新领料出库明细表", notes = "生成代码")
+    @PutMapping("/update")
     public Result update(@Valid @RequestBody UpdatePlanUseOutDetailsDTO updatePlanUseOutDetailsDTO) {
         try {
             PlanUseOutDetails planUseOutDetails = new PlanUseOutDetails();
@@ -84,7 +84,7 @@ public class PlanUseOutDetailsController extends BaseController {
     }
 
     @ApiOperationSupport(order = 4)
-    @ApiOperation(value = "删除计划领用明细表", notes = "生成代码")
+    @ApiOperation(value = "删除领料出库明细表", notes = "生成代码")
     @DeleteMapping("/{id}")
     public Result delete(@PathVariable Integer id) {
         int i = planUseOutDetailsMapper.deleteById(id);
@@ -92,7 +92,7 @@ public class PlanUseOutDetailsController extends BaseController {
     }
 
     @ApiOperationSupport(order = 5)
-    @ApiOperation(value = "根据ID获取明细详细信息")
+    @ApiOperation(value = "根据ID获取领料出库明细详细信息")
     @GetMapping("/getPlanUseOutDetailsById/{id}")
     public PlanUseOutDetails getplanUseOutDetailsById(@PathVariable Integer id) {
         return planUseOutDetailsService.getPlanUseOutDetailsByDetailsId(id);

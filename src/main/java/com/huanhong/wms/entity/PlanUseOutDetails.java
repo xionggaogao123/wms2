@@ -51,6 +51,10 @@ public class PlanUseOutDetails extends SuperEntity {
     @ApiModelProperty(value = "库存数量")
     private Double inventoryCredit;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "出库状态：0-未出库，1-部分出库，2-全部出库")
+    private Integer outStatus;
+
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "使用地点")
     private String usePlace;

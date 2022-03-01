@@ -49,6 +49,11 @@ public class UpdatePlanUseOutDetailsDTO {
     @ApiModelProperty(value = "领用用途")
     private String requisitionUse;
 
+    @Min(0)
+    @Max(2)
+    @ApiModelProperty(value = "出库状态：0-未出库，1-部分出库，2-全部出库")
+    private Integer outStatus;
+
     @ApiModelProperty(value = "用途")
     private String purpose;
 

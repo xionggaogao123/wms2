@@ -1,6 +1,7 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -149,7 +151,6 @@ public class PlanUseOutController extends BaseController {
             log.error("查询失败,异常：", e);
             return Result.failure("查询失败，系统异常！");
         }
-
     }
 
     @ApiOperationSupport(order = 7)
@@ -163,5 +164,206 @@ public class PlanUseOutController extends BaseController {
         return ObjectUtil.isNotNull(count) ? Result.success(count) : Result.failure("未查询到相关数据") ;
     }
 
+
+    @ApiOperationSupport(order = 8)
+    @ApiOperation(value = "流程引擎-领料出库")
+    @GetMapping ("getParameterById/{id}")
+    public Result getParameterById(@PathVariable Integer id){
+        /**
+         * 根据主表ID获取主表及明细表数据
+         */
+        try {
+            PlanUseOut planUseOut = planUseOutService.getPlanUseOutById(id);
+            List<PlanUseOutDetails> planUseOutList = planUseOutDetailsService.getListPlanUseOutDetailsByDocNumberAndWarehosue(planUseOut.getDocumentNumber(), planUseOut.getWarehouseId());
+            if (ObjectUtil.isNotEmpty(planUseOut)) {
+
+                /**
+                 * 当查询到主表事进行数据封装
+                 * 1.表头--主表表明--用于判断应该进入那个流程-tableName
+                 * 2.主表字段名对照-main
+                 * 3.明细表字段名对照-details
+                 * 4.主表数据-mainValue
+                 * 5.明细表数据-detailsValue
+                 * 6.主表更新接口-mainUpdate
+                 * 7.明细表更新接口-detailsUpdate
+                 */
+                JSONObject jsonResult = new JSONObject();
+                jsonResult.put("tableName","plan_use_out");
+                jsonResult.put("main",jsonField(new PlanUseOut()));
+                jsonResult.put("details",jsonField(new PlanUseOutDetails()));
+                jsonResult.put("mainValue",planUseOut);
+                jsonResult.put("detailsValue",planUseOutList);
+                jsonResult.put("mainUpdate","/wms/api/v1/plan-use-out/update");
+                jsonResult.put("detailsUpdate","/wms/api/v1/plan-use-out-details/update");
+                return Result.success(jsonResult);
+            } else {
+                return Result.failure("未查询到相关信息");
+            }
+        } catch (Exception e) {
+            log.error("查询失败,异常：", e);
+            return Result.failure("查询失败，系统异常！");
+        }
+    }
+
+    public JSONObject jsonField(Object object){
+        Field[] fields = object.getClass().getDeclaredFields();
+        JSONObject jsonObject = new JSONObject();
+        for (int i = 0;i < fields.length; i++){
+            Field field = fields[i];
+            field.setAccessible(true);
+            String key = field.getName();
+            jsonObject.put(key,fieldName(key));
+        }
+        return jsonObject;
+    }
+
+    public JSONObject fieldName(String key){
+        JSONObject jsonObject = new JSONObject();
+        JSONObject value = new JSONObject();
+        switch (key){
+            case "serialVersionUID":
+                jsonObject.put("name","id");
+                jsonObject.put("type","text");
+                jsonObject.put("class","hiden");
+                return jsonObject;
+            case "documentNumber":
+                jsonObject.put("name","单据编号");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "status":
+                jsonObject.put("name","单据状态");
+                jsonObject.put("type","select");
+                jsonObject.put("class","readOnly");
+                //下拉菜单的值
+                value.put("1","草拟");
+                value.put("2","审批中");
+                value.put("3","审批生效");
+                value.put("4","作废");
+                jsonObject.put("value",value);
+                return jsonObject;
+            case "planClassification":
+                jsonObject.put("name","计划类别");
+                jsonObject.put("type","select");
+                jsonObject.put("class","readOnly");
+                //下拉菜单的值
+                value.put("1","正常");
+                value.put("2","加急");
+                value.put("3","补计划");
+                jsonObject.put("value",value);
+                return jsonObject;
+            case "requisitioningUnit":
+                jsonObject.put("name","领用单位");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "warehouseId":
+                jsonObject.put("name","库房ID");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "librarian":
+                jsonObject.put("name","库管员");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "costBearingUnit":
+                jsonObject.put("name","费用承担单位");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "expenseItem":
+                jsonObject.put("name","费用项目");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "materialUse":
+                jsonObject.put("name","物资用途");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "requisitionUse":
+                jsonObject.put("name","领用用途");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "outStatus":
+                jsonObject.put("name","出库状态");
+                jsonObject.put("type","select");
+                jsonObject.put("class","hiden");
+                value.put("0","未出库");
+                value.put("1","部分出库");
+                value.put("2","全部出库");
+                jsonObject.put("value",value);
+                return jsonObject;
+            case "remark":
+                jsonObject.put("name","备注");
+                jsonObject.put("type","text");
+                jsonObject.put("class","input");
+                return jsonObject;
+            case "createTime":
+                jsonObject.put("name","创建时间");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "lastUpdate":
+                jsonObject.put("name","最后更新时间");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "usePlanningDocumentNumber":
+                jsonObject.put("name","原单据编号");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "materialCoding":
+                jsonObject.put("name","物料编码");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "materialName":
+                jsonObject.put("name","物料名称");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "requisitionQuantity":
+                jsonObject.put("name","领用数量");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "approvalsQuantity":
+                jsonObject.put("name","批准数量");
+                jsonObject.put("type","text");
+                jsonObject.put("class","input");
+                return jsonObject;
+            case "outboundQuantity":
+                jsonObject.put("name","实出数量");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "inventoryCredit":
+                jsonObject.put("name","库存数量");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "usePlace":
+                jsonObject.put("name","使用地点");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "purpose":
+                jsonObject.put("name","用途");
+                jsonObject.put("type","text");
+                jsonObject.put("class","readOnly");
+                return jsonObject;
+            case "version":
+                jsonObject.put("name","版本号");
+                jsonObject.put("type","text");
+                jsonObject.put("class","hiden");
+                return jsonObject;
+            default:
+                return null;
+        }
+    }
 }
 

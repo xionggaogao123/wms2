@@ -69,6 +69,8 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
 
         query.like(StringUtils.isNotBlank(planUseOutVO.getLibrarian()), "librarian", planUseOutVO.getLibrarian());
 
+        query.eq(ObjectUtil.isNotNull(planUseOutVO.getOutStatus()),"out_status",planUseOutVO.getOutStatus());
+
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         /**
@@ -185,6 +187,12 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
         if (StringUtils.isNotBlank(updatePlanUseOutDTO.getRequisitionUse())){
             planUseOutOld.setRequisitionUse(updatePlanUseOutDTO.getRequisitionUse());
         }
+
+        //出库状态
+        if (ObjectUtil.isNotNull(updatePlanUseOutDTO.getOutStatus())){
+            planUseOutOld.setOutStatus(updatePlanUseOutDTO.getOutStatus());
+        }
+
         //备注
         if (StringUtils.isNotBlank(updatePlanUseOutDTO.getRemark())){
             planUseOutOld.setRemark(updatePlanUseOutDTO.getRemark());

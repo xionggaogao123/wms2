@@ -18,7 +18,7 @@ public class PlanUseOutVO {
     @ApiModelProperty(value = "状态状态状态:1.草拟,2.审批中,3.审批生效,4.作废")
     private Integer status;
 
-    @ApiModelProperty(value = "计划类别-正常、加急、补计划、请选择（默认）")
+    @ApiModelProperty(value = "计划类别-1.正常、2加急、3补计划、请选择（默认）")
     private Integer planClassification;
 
     @ApiModelProperty(value = "领用单位")
@@ -29,6 +29,9 @@ public class PlanUseOutVO {
 
     @ApiModelProperty(value = "库管员")
     private String librarian;
+
+    @ApiModelProperty(value = "出库状态：0-未出库，1-部分出库，2-全部出库")
+    private Integer outStatus;
 
     @ApiModelProperty(value = "申请日期-起始")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

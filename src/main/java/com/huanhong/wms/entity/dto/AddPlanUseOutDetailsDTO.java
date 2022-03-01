@@ -4,9 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 
 @Data
 @ApiModel("新增领料出库单")
@@ -42,9 +40,15 @@ public class AddPlanUseOutDetailsDTO {
     @ApiModelProperty(value = "库房ID")
     private String warehouseId;
 
+    @Min(0)
     @NotNull
     @ApiModelProperty(value = "库存数量")
     private Double inventoryCredit;
+
+    @Min(0)
+    @Max(2)
+    @ApiModelProperty(value = "出库状态：0-未出库，1-部分出库，2-全部出库")
+    private Integer outStatus;
 
     @ApiModelProperty(value = "使用地点")
     private String usePlace;

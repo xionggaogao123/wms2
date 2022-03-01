@@ -30,6 +30,11 @@ public class AddPlanUseOutDTO {
     @ApiModelProperty(value = "计划类别-1.正常、2.加急、3.补计划、请选择（默认）")
     private Integer planClassification;
 
+    @Min(0)
+    @Max(2)
+    @ApiModelProperty(value = "出库状态：0-未出库，1-部分出库，2-全部出库")
+    private Integer outStatus;
+
     @NotBlank
     @ApiModelProperty(value = "领用单位")
     private String requisitioningUnit;

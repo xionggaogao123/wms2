@@ -38,7 +38,7 @@ public class PlanUseOutDetailsServiceImpl extends SuperServiceImpl<PlanUseOutDet
     public Result addPlanUseOutDetails(List<AddPlanUseOutDetailsDTO> listAddDto) {
         PlanUseOutDetails planUseOutDetails = new PlanUseOutDetails();
         try {
-            for (int i = 0; i<=listAddDto.size(); i++){
+            for (int i = 0; i<listAddDto.size(); i++){
                 BeanUtil.copyProperties(listAddDto.get(i),planUseOutDetails);
                 planUseOutDetailsMapper.insert(planUseOutDetails);
             }

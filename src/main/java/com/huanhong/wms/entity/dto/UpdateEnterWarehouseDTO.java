@@ -21,6 +21,9 @@ public class UpdateEnterWarehouseDTO {
     @ApiModelProperty(value = "入库单ID", required = true)
     private Integer id;
 
+    @ApiModelProperty(value = "流程Id")
+    private String processInstanceId;
+
     @ApiModelProperty(value = "采购合同编号")
     private String contractNumber;
 

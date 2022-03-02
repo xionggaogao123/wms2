@@ -58,4 +58,11 @@ public interface IPlanUseOutService extends SuperService<PlanUseOut> {
      */
     PlanUseOut getPlanUseOutByDocNumAndWarhouseId(String docNumber,String warhouseId);
 
+    /**
+     * 根据流程ID获取单据ID
+     * @param processInstanceId
+     * @return
+     */
+    PlanUseOut getPlanUseOutByProcessInstanceId(String processInstanceId);
+
 }

@@ -36,7 +36,7 @@ public class EnterWarehouseDetailsServiceImpl extends SuperServiceImpl<EnterWare
     public Result addEnterWarehouseDetails(List<AddEnterWarehouseDetailsDTO> listAddDto) {
         EnterWarehouseDetails enterWarehouseDetails = new EnterWarehouseDetails();
         try {
-            for (int i = 0; i<=listAddDto.size(); i++){
+            for (int i = 0; i<listAddDto.size(); i++){
                 BeanUtil.copyProperties(listAddDto.get(i),enterWarehouseDetails);
                 enterWarehouseDetailsMapper.insert(enterWarehouseDetails);
             }
@@ -56,7 +56,7 @@ public class EnterWarehouseDetailsServiceImpl extends SuperServiceImpl<EnterWare
     }
 
     @Override
-    public List<EnterWarehouseDetails> getListWarehouseDetailsByDocNumberAndWarehosue(String documentNumber,String warehouse) {
+    public List<EnterWarehouseDetails> getListEnterWarehouseDetailsByDocNumberAndWarehosue(String documentNumber,String warehouse) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("original_document_number",documentNumber);
         queryWrapper.eq("warehouse",warehouse);

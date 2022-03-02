@@ -41,7 +41,7 @@ public interface IEnterWarehouseDetailsService extends SuperService<EnterWarehou
      * @param Warehouse
      * @return
      */
-    List<EnterWarehouseDetails> getListWarehouseDetailsByDocNumberAndWarehosue(String documentNumber,String warehouse);
+    List<EnterWarehouseDetails> getListEnterWarehouseDetailsByDocNumberAndWarehosue(String documentNumber,String warehouse);
 
     /**
      * 根据明细ID获取明细信息

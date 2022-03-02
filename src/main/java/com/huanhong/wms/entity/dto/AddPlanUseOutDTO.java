@@ -18,6 +18,7 @@ public class AddPlanUseOutDTO {
     @ApiModelProperty(value = "单据编号")
     private String documentNumber;
 
+
     @Min(1)
     @Max(4)
     @NotNull

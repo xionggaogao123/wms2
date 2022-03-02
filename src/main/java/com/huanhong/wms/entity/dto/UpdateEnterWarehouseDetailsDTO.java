@@ -29,10 +29,10 @@ public class UpdateEnterWarehouseDetailsDTO {
     private LocalDateTime validPeriod;
 
     @ApiModelProperty(value = "应收数量")
-    private Integer quantityReceivable;
+    private Double quantityReceivable;
 
     @ApiModelProperty(value = "实收数量")
-    private Integer actualQuantity;
+    private Double actualQuantity;
 
     @ApiModelProperty(value = "不含税单价")
     private BigDecimal unitPriceWithoutTax;

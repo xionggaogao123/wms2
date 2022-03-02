@@ -16,10 +16,14 @@ import com.huanhong.wms.entity.dto.UpdatePlanUseOutDTO;
 import com.huanhong.wms.entity.vo.PlanUseOutVO;
 import com.huanhong.wms.mapper.PlanUseOutMapper;
 import com.huanhong.wms.service.IPlanUseOutService;
+import org.apache.poi.util.StringUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * <p>
@@ -155,6 +159,12 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
         /**
          * vesion 对比veision 如果一致则更新并加一  不一致则不更新
          */
+
+        //流程Id
+        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getProcessInstanceId())){
+            planUseOutOld.setProcessInstanceId(updatePlanUseOutDTO.getProcessInstanceId());
+        }
+
         //单据状态
         if (ObjectUtil.isNotNull(updatePlanUseOutDTO.getStatus())){
             planUseOutOld.setStatus(updatePlanUseOutDTO.getStatus());
@@ -187,6 +197,29 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
         if (StringUtils.isNotBlank(updatePlanUseOutDTO.getRequisitionUse())){
             planUseOutOld.setRequisitionUse(updatePlanUseOutDTO.getRequisitionUse());
         }
+        //已完成的明细id,格式：以逗号隔开的字符串
+        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getDetailIds())){
+            //获取已经存储的已完成明细Id
+            List<String> listOld = new ArrayList<>();
+            //更新的Id
+            List<String> listPSL = new ArrayList<>();
+            listPSL= Collections.singletonList(updatePlanUseOutDTO.getDetailIds());
+            if (ObjectUtil.isNotNull(planUseOutOld.getDetailIds())){
+                String s = planUseOutOld.getDetailIds();
+                listOld = Arrays.stream(StringUtils.split(s, ",")).map(s1 -> s1.trim()).collect(Collectors.toList());
+            }
+            listPSL = Stream.of(listPSL, listOld)
+                    .flatMap(Collection::stream).distinct().collect(Collectors.toList());
+            String[] strings = listPSL.toArray(new String[listPSL.size()]);
+            String resultString = StringUtil.join(strings, ",");
+            planUseOutOld.setDetailIds(resultString);
+        }else {
+            List<String> listPSL = new ArrayList<>();
+            listPSL= Collections.singletonList(updatePlanUseOutDTO.getDetailIds());
+            String[] strings = listPSL.toArray(new String[listPSL.size()]);
+            String resultString = StringUtil.join(strings, ",");
+            planUseOutOld.setDetailIds(resultString);
+        }
 
         //出库状态
         if (ObjectUtil.isNotNull(updatePlanUseOutDTO.getOutStatus())){
@@ -206,12 +239,22 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
         return planUseOutMapper.selectById(id);
     }
 
+
     @Override
     public PlanUseOut getPlanUseOutByDocNumAndWarhouseId(String docNumber, String warhouseId) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("document_number",docNumber);
         queryWrapper.eq("warehouse_id",warhouseId);
         PlanUseOut planUseOut =  planUseOutMapper.selectOne(queryWrapper);
+        return planUseOut;
+    }
+
+
+    @Override
+    public PlanUseOut getPlanUseOutByProcessInstanceId(String processInstanceId){
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("process_instance_id",processInstanceId);
+        PlanUseOut planUseOut = planUseOutMapper.selectOne(queryWrapper);
         return planUseOut;
     }
 }

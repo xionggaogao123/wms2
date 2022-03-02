@@ -35,12 +35,12 @@ public class AddEnterWarehouseDetailsDTO {
     @Min(0)
     @NotNull
     @ApiModelProperty(value = "应收数量")
-    private Integer quantityReceivable;
+    private Double quantityReceivable;
 
     @Min(0)
     @NotNull
     @ApiModelProperty(value = "实收数量")
-    private Integer actualQuantity;
+    private Double actualQuantity;
 
     @Min(0)
     @NotNull

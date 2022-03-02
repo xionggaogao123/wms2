@@ -171,7 +171,7 @@ public class EnterWarehouseServiceImpl extends SuperServiceImpl<EnterWarehouseMa
     }
 
     /**
-     * 根据单据编号获取采购入库单
+     * 根据单据编号和仓库编号获取采购入库单
      * @param docNumber
      * @param warhouse
      * @return
@@ -210,6 +210,10 @@ public class EnterWarehouseServiceImpl extends SuperServiceImpl<EnterWarehouseMa
         //采购合同编号
         if (StringUtils.isNotBlank(updateEnterWarehouseDTO.getContractNumber())){
             enterWarehouseOld.setContractNumber(updateEnterWarehouseDTO.getContractNumber());
+        }
+        //流程ID
+        if (StringUtils.isNotBlank(updateEnterWarehouseDTO.getProcessInstanceId())){
+            enterWarehouseOld.setProcessInstanceId(updateEnterWarehouseDTO.getProcessInstanceId());
         }
         //询价单编号
         if (StringUtils.isNotBlank(updateEnterWarehouseDTO.getRfqNumber())){
@@ -253,5 +257,15 @@ public class EnterWarehouseServiceImpl extends SuperServiceImpl<EnterWarehouseMa
         }
         int update = enterWarehouseMapper.updateById(enterWarehouseOld);
         return update > 0 ? Result.success("更新成功") : Result.failure("更新失败");
+    }
+
+
+
+    @Override
+    public EnterWarehouse getEnterWarehouseByProcessInstanceId(String processInstanceId){
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("process_instance_id",processInstanceId);
+        EnterWarehouse enterWarehouse = enterWarehouseMapper.selectOne(queryWrapper);
+        return enterWarehouse;
     }
 }

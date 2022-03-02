@@ -55,4 +55,12 @@ public interface IEnterWarehouseService extends SuperService<EnterWarehouse> {
      * @return
      */
     EnterWarehouse getEnterWarehouseById(Integer id);
+
+
+    /**
+     * 根据流程Id获取入库单信息
+     * @param processInstanceId
+     * @return
+     */
+    EnterWarehouse getEnterWarehouseByProcessInstanceId(String processInstanceId);
 }

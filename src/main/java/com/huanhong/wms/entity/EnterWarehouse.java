@@ -23,6 +23,10 @@ public class EnterWarehouse extends SuperEntity {
     @ApiModelProperty(value = "采购入库单据编号")
     private String documentNumber;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "流程Id")
+    private String processInstanceId;
+
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "入库类型-1. 暂估入库（默认）2.正式入库")
     private Integer storageType;
@@ -36,7 +40,7 @@ public class EnterWarehouse extends SuperEntity {
     private String rfqNumber;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "状态:1.草拟2.审批中3.审批生效4.作废")
+    @ApiModelProperty(value = "单据状态:1.草拟2.审批中3.审批生效4.作废")
     private Integer state;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)

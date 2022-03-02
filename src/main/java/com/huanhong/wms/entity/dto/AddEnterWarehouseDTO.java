@@ -24,6 +24,7 @@ public class AddEnterWarehouseDTO {
     @ApiModelProperty(value = "采购合同编号")
     private String contractNumber;
 
+
     @NotBlank
     @ApiModelProperty(value = "询价单编号")
     private String rfqNumber;

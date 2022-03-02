@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ApiModel(description="计划领用明细表")
+@ApiModel(description="领料出库明细表")
 public class PlanUseOutDetails extends SuperEntity {
 
     private static final long serialVersionUID=1L;

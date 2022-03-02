@@ -18,6 +18,9 @@ public class UpdatePlanUseOutDTO {
     @ApiModelProperty(value = "入库单ID", required = true)
     private Integer id;
 
+    @ApiModelProperty(value = "流程Id")
+    private String processInstanceId;
+
     @Min(1)
     @Max(4)
     @ApiModelProperty(value = "状态状态:1.草拟,2.审批中,3.审批生效,4.作废")
@@ -33,6 +36,9 @@ public class UpdatePlanUseOutDTO {
 
     @ApiModelProperty(value = "库管员")
     private String librarian;
+
+    @ApiModelProperty(value = "已完成明细Id")
+    private String detailIds;
 
     @ApiModelProperty(value = "费用承担单位")
     private String costBearingUnit;

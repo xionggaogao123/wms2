@@ -15,6 +15,9 @@ public class PlanUseOutVO {
     @ApiModelProperty(value = "单据编号")
     private String documentNumber;
 
+    @ApiModelProperty(value = "流程Id")
+    private String processInstanceId;
+
     @ApiModelProperty(value = "状态状态状态:1.草拟,2.审批中,3.审批生效,4.作废")
     private Integer status;
 

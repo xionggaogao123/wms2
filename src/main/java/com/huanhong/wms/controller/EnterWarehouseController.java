@@ -1,9 +1,12 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
+import com.huanhong.common.units.EntityUtils;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.EnterWarehouse;
@@ -117,7 +120,7 @@ public class EnterWarehouseController extends BaseController {
         try {
             Map map = new HashMap();
             EnterWarehouse enterWarehouse = enter_warehouseService.getEnterWarehouseByDocNumberAndWarhouse(documentNumber, wareHouse);
-            List<EnterWarehouseDetails> enterWarehouseDetailsList = enterWarehouseDetailsService.getListWarehouseDetailsByDocNumberAndWarehosue(documentNumber, wareHouse);
+            List<EnterWarehouseDetails> enterWarehouseDetailsList = enterWarehouseDetailsService.getListEnterWarehouseDetailsByDocNumberAndWarehosue(documentNumber, wareHouse);
             if (ObjectUtil.isNotEmpty(enterWarehouse)) {
                 map.put("doc", enterWarehouse);
                 map.put("details", enterWarehouseDetailsList);
@@ -139,7 +142,7 @@ public class EnterWarehouseController extends BaseController {
             Map map = new HashMap();
             EnterWarehouse enterWarehouse = enter_warehouseService.getEnterWarehouseById(id);
             if (ObjectUtil.isNotEmpty(enterWarehouse)) {
-                List<EnterWarehouseDetails> enterWarehouseDetailsList = enterWarehouseDetailsService.getListWarehouseDetailsByDocNumberAndWarehosue(enterWarehouse.getDocumentNumber(), enterWarehouse.getWarehouse());
+                List<EnterWarehouseDetails> enterWarehouseDetailsList = enterWarehouseDetailsService.getListEnterWarehouseDetailsByDocNumberAndWarehosue(enterWarehouse.getDocumentNumber(), enterWarehouse.getWarehouse());
                 map.put("enter_warehouse", enterWarehouse);
                 map.put("enter_warehouse_details", enterWarehouseDetailsList);
             } else {
@@ -149,6 +152,145 @@ public class EnterWarehouseController extends BaseController {
         } catch (Exception e) {
             log.error("查询失败,异常：", e);
             return Result.failure("查询失败，系统异常！");
+        }
+    }
+
+
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "warehouseId", value = "仓库编号")
+    })
+    @ApiOperationSupport(order = 7)
+    @ApiOperation(value = "根据仓库编号获取处于审批中的单据数量")
+    @GetMapping("getCountByWarehouseId/{warehouseId}")
+    public Result getCountByWarehouseId(@PathVariable String warehouseId){
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("warehouse",warehouseId);
+        queryWrapper.eq("status",2);
+        Integer count =  enter_warehouseMapper.selectCount(queryWrapper);
+        return ObjectUtil.isNotNull(count) ? Result.success(count) : Result.failure("未查询到相关数据") ;
+    }
+
+
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "单据Id"),
+    })
+    @ApiOperationSupport(order = 8)
+    @ApiOperation(value = "流程引擎-采购入库-查询")
+    @GetMapping ("getParameterById/{id}")
+    public Result getParameterById(@PathVariable Integer id){
+
+        EntityUtils entityUtils = new EntityUtils();
+        /**
+         * 根据主表ID获取主表及明细表数据
+         */
+        try {
+            EnterWarehouse enterWarehouse = enter_warehouseService.getEnterWarehouseById(id);
+            List<EnterWarehouseDetails> enterWarehouseList = enterWarehouseDetailsService.getListEnterWarehouseDetailsByDocNumberAndWarehosue(enterWarehouse.getDocumentNumber(),enterWarehouse.getWarehouse());
+            if (ObjectUtil.isNotEmpty(enterWarehouse)) {
+                /**
+                 * 当查询到主表事进行数据封装
+                 * 1.表头--主表表明--用于判断应该进入那个流程-tableName
+                 * 2.主表字段名对照-main
+                 * 3.明细表字段名对照-details
+                 * 4.主表数据-mainValue
+                 * 5.明细表数据-detailsValue
+                 * 6.主表更新接口-mainUpdate
+                 * 7.明细表更新接口-detailsUpdate
+                 */
+                JSONObject jsonResult = new JSONObject();
+                jsonResult.put("tableName","enter_warehouse");
+                jsonResult.put("main", entityUtils.jsonField( "enterWarehouse",new EnterWarehouse()));
+                jsonResult.put("details",entityUtils.jsonField("enterWarehouse",new EnterWarehouseDetails()));
+                jsonResult.put("mainValue",enterWarehouse);
+                jsonResult.put("detailsValue",enterWarehouseList);
+                jsonResult.put("mainUpdate","/wms/api/v1/enter-warehouse/update");
+                jsonResult.put("detailsUpdate","/wms/api/v1/enter-warehouse-details");
+                jsonResult.put("missionCompleted","/wms/api/v1/enter-warehouse/missionCompleted");
+                return Result.success(jsonResult);
+            } else {
+                return Result.failure("未查询到相关信息");
+            }
+        } catch (Exception e) {
+            log.error("查询失败,异常：", e);
+            return Result.failure("查询失败，系统异常！");
+        }
+    }
+
+
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "单据Id"),
+            @ApiImplicitParam(name = "processInstanceId", value = "流程Id")
+    })
+    @ApiOperationSupport(order = 9)
+    @ApiOperation(value = "流程引擎-采购入库-发起")
+    @PutMapping("/missionStarts")
+    public Result missionStarts(@RequestParam Integer id,
+                                @RequestParam String processInstanceId){
+
+        try {
+            EnterWarehouse enterWarehouse = enter_warehouseService.getEnterWarehouseById(id);
+            /**
+             * 正常情况不需要原对单据进行非空验证，
+             * 此处预留其他判断条件的位置
+             */
+            if (ObjectUtil.isNotNull(enterWarehouse)){
+                UpdateEnterWarehouseDTO updateEnterWarehouseDTO = new UpdateEnterWarehouseDTO();
+                updateEnterWarehouseDTO.setId(id);
+                updateEnterWarehouseDTO.setProcessInstanceId(processInstanceId);
+                /**
+                 *  单据状态由草拟转为审批中
+                 *  审批状态:
+                 *  1.草拟
+                 *  2.审批中
+                 *  3.审批生效
+                 *  4.作废
+                 */
+                updateEnterWarehouseDTO.setState(2);
+                Result result = enter_warehouseService.updateEnterWarehouse(updateEnterWarehouseDTO);
+                if (result.isOk()){
+                    return Result.success("进入流程");
+                }else {
+                    return Result.failure("未进入流程");
+                }
+            }else {
+                return Result.failure("采购入库单异常,无法进入流程引擎");
+            }
+        }catch (Exception e){
+            log.error("流程启动接口异常",e);
+            return Result.failure("系统异常");
+        }
+    }
+
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "processInstanceId", value = "流程Id")
+    })
+    @ApiOperationSupport(order = 10)
+    @ApiOperation(value = "流程引擎-采购入库-完成审批")
+    @PutMapping("/missionCompleted")
+    public Result missionCompleted(@RequestParam String processInstanceId){
+
+        try {
+            //通过流程Id查询出单据Id
+            EnterWarehouse enterWarehouse = enter_warehouseService.getEnterWarehouseByProcessInstanceId(processInstanceId);
+            if (ObjectUtil.isNotNull(enterWarehouse)){
+                UpdateEnterWarehouseDTO updateEnterWarehouseDTO = new UpdateEnterWarehouseDTO();
+                updateEnterWarehouseDTO.setId(enterWarehouse.getId());
+                /**
+                 *  单据状态由审批中改为审批生效
+                 *  审批状态:
+                 *  1.草拟
+                 *  2.审批中
+                 *  3.审批生效
+                 *  4.作废
+                 */
+                updateEnterWarehouseDTO.setState(3);
+                return enter_warehouseService.updateEnterWarehouse(updateEnterWarehouseDTO);
+            }else {
+                return Result.failure("单据异常无法完成");
+            }
+        }catch (Exception e){
+            log.error("完成审批接口异常",e);
+            return  Result.failure("系统异常");
         }
     }
 }

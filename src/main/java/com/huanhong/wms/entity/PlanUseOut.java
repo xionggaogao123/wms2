@@ -14,13 +14,17 @@ import java.time.LocalDateTime;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ApiModel(description="计划领用主表")
+@ApiModel(description="领料出库主表")
 public class PlanUseOut extends SuperEntity {
 
     private static final long serialVersionUID=1L;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "单据编号")
+    @ApiModelProperty(value = "流程Id")
+    private String processInstanceId;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "领料出库单据编号")
     private String documentNumber;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
@@ -62,6 +66,10 @@ public class PlanUseOut extends SuperEntity {
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "出库状态：0-未出库，1-部分出库，2-全部出库")
     private Integer outStatus;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "已完成明细Id")
+    private  String  detailIds;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "备注")

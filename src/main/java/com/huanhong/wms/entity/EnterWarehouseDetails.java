@@ -38,11 +38,11 @@ public class EnterWarehouseDetails extends SuperEntity {
 
     @ApiModelProperty(value = "应收数量")
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    private Integer quantityReceivable;
+    private Double quantityReceivable;
 
     @ApiModelProperty(value = "实收数量")
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    private Integer actualQuantity;
+    private Double actualQuantity;
 
     @ApiModelProperty(value = "不含税单价")
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)

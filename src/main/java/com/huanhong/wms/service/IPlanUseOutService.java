@@ -26,6 +26,14 @@ public interface IPlanUseOutService extends SuperService<PlanUseOut> {
      */
     Page<PlanUseOut> pageFuzzyQuery(Page<PlanUseOut> planUseOutPage, PlanUseOutVO planUseOutVO);
 
+    /**
+     * PDA端分页查询
+     * @param planUseOutPage
+     * @param planUseOutVO
+     * @return
+     */
+    Page<PlanUseOut> pageFuzzyQueryPDA(Page<PlanUseOut> planUseOutPage, PlanUseOutVO planUseOutVO);
+
 
     /**
      * 新增领料出库单

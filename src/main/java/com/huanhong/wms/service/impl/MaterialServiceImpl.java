@@ -80,6 +80,18 @@ public class MaterialServiceImpl extends SuperServiceImpl<MaterialMapper, Materi
         return count;
     }
 
+    /**
+     * 根据物料编码或物料名称模糊查询物料
+     * @return
+     */
+    @Override
+    public List<Material> getMaterialListByKey(String key) {
+        QueryWrapper<Material> queryWrapper = new QueryWrapper<>();
+        queryWrapper.like("material_coding",key).or().like("material_name",key);
+        List<Material> materialslist = materialMapper.selectList(queryWrapper);
+        return materialslist;
+    }
+
 
     /**
      * 条件组合模糊分页查询
@@ -151,4 +163,5 @@ public class MaterialServiceImpl extends SuperServiceImpl<MaterialMapper, Materi
 
         return baseMapper.selectPage(meterialPage, query);
     }
+
 }

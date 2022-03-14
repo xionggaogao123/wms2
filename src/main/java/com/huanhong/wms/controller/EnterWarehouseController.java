@@ -185,8 +185,8 @@ public class EnterWarehouseController extends BaseController {
          */
         try {
             EnterWarehouse enterWarehouse = enter_warehouseService.getEnterWarehouseById(id);
-            List<EnterWarehouseDetails> enterWarehouseList = enterWarehouseDetailsService.getListEnterWarehouseDetailsByDocNumberAndWarehosue(enterWarehouse.getDocumentNumber(),enterWarehouse.getWarehouse());
-            if (ObjectUtil.isNotEmpty(enterWarehouse)) {
+            if (ObjectUtil.isNotNull(enterWarehouse)) {
+                List<EnterWarehouseDetails> enterWarehouseList = enterWarehouseDetailsService.getListEnterWarehouseDetailsByDocNumberAndWarehosue(enterWarehouse.getDocumentNumber(),enterWarehouse.getWarehouse());
                 /**
                  * 当查询到主表事进行数据封装
                  * 1.表头--主表表明--用于判断应该进入那个流程-tableName
@@ -268,7 +268,6 @@ public class EnterWarehouseController extends BaseController {
     @ApiOperation(value = "流程引擎-采购入库-完成审批")
     @PutMapping("/missionCompleted")
     public Result missionCompleted(@RequestParam String processInstanceId){
-
         try {
             //通过流程Id查询出单据Id
             EnterWarehouse enterWarehouse = enter_warehouseService.getEnterWarehouseByProcessInstanceId(processInstanceId);
@@ -293,5 +292,6 @@ public class EnterWarehouseController extends BaseController {
             return  Result.failure("系统异常");
         }
     }
+
 }
 

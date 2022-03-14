@@ -162,9 +162,9 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
          * 同一批次的一种物料在某一个货位上只有一条数据
          * 1.若批次 物料 货位已经存在，则调用更新方法增加库存数量
          */
-        InventoryInformationVO inventoryInformationVO = new InventoryInformationVO();
-        BeanUtil.copyProperties(addInventoryInformationDTO, inventoryInformationVO);
-        InventoryInformation inventoryInformationIsExist = getInventoryInformation(inventoryInformationVO);
+//        InventoryInformationVO inventoryInformationVO = new InventoryInformationVO();
+//        BeanUtil.copyProperties(addInventoryInformationDTO, inventoryInformationVO);
+        InventoryInformation inventoryInformationIsExist = getInventoryInformation(addInventoryInformationDTO.getMaterialCoding(),addInventoryInformationDTO.getBatch(),addInventoryInformationDTO.getCargoSpaceId());
         if (ObjectUtil.isNotEmpty(inventoryInformationIsExist)) {
             //已有数量
             Double inventoryCreditOld = inventoryInformationIsExist.getInventoryCredit();
@@ -233,7 +233,6 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 
     }
 
-
     @Override
     public List<InventoryInformation> getInventoryInformationByCargoSpaceId(String cargoSpaceId) {
         QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
@@ -243,23 +242,38 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     }
 
 
-    /**
-     * @param inventoryInformationVO
-     * @return
-     */
-    @Override
-    public InventoryInformation getInventoryInformation(InventoryInformationVO inventoryInformationVO) {
-        QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("cargo_space_id", inventoryInformationVO.getCargoSpaceId());
-        queryWrapper.eq("material_coding", inventoryInformationVO.getMaterialCoding());
-        queryWrapper.eq("batch", inventoryInformationVO.getBatch());
-        return inventoryInformationMapper.selectOne(queryWrapper);
-    }
-
-
     @Override
     public InventoryInformation getInventoryById(int id) {
         InventoryInformation inventoryInformationResult = inventoryInformationMapper.selectById(id);
         return inventoryInformationResult;
+    }
+
+    @Override
+    public InventoryInformation getInventoryInformation(String materialCoding, String batch, String cargoSpaceId) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("material_coding",materialCoding);
+        queryWrapper.eq("batch",batch);
+        queryWrapper.eq("cargo_space_id",cargoSpaceId);
+        return inventoryInformationMapper.selectOne(queryWrapper);
+    }
+
+    @Override
+    public Double getNumByMaterialCodingAndWarehouseId(String materialCoding, String warehouseId) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.select("IFNULL(SUM(Inventory_credit),0) AS num");
+        queryWrapper.eq("material_coding",materialCoding);
+        queryWrapper.likeRight("cargo_space_id",warehouseId);
+        Map map =  this.getMap(queryWrapper);
+        Double num = (Double) map.get("num");
+        return num;
+    }
+
+    @Override
+    public List<InventoryInformation> getInventoryInformationListByMaterialCodingAndWarehouseId(String materialCoding, String warehouseId) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.select("id,material_coding,Inventory_credit,batch,cargo_space_id");
+        queryWrapper.eq("material_coding",materialCoding);
+        queryWrapper.likeRight("cargo_space_id",warehouseId);
+        return inventoryInformationMapper.selectList(queryWrapper);
     }
 }

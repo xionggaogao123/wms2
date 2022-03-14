@@ -143,7 +143,6 @@ public class InventoryInformationController extends BaseController {
     @ApiOperation(value = "移动库存")
     @PutMapping("/movingInventory")
     public Result movingInventory(@Valid @RequestBody MovingInventoryDTO movingInventoryDTO) {
-
         try {
             /**
              * 判断可移数量和移动数量

@@ -1,6 +1,7 @@
 package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
@@ -13,6 +14,7 @@ import com.huanhong.wms.service.IPlanUseOutDetailsService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -50,16 +52,28 @@ public class PlanUseOutDetailsServiceImpl extends SuperServiceImpl<PlanUseOutDet
     }
 
     /**
-     *
-     * @param updatePlanUseOutDetailsDTO
+     * updatePlanUseOutDetailsDTO
+     * @param updatePlanUseOutDetailsDTOList
      * @return
      */
     @Override
-    public Result updatePlanUseOutDetails(UpdatePlanUseOutDetailsDTO updatePlanUseOutDetailsDTO) {
-        PlanUseOutDetails planUseOutDetails = new PlanUseOutDetails();
-        BeanUtil.copyProperties(updatePlanUseOutDetailsDTO,planUseOutDetails);
-        int update = planUseOutDetailsMapper.updateById(planUseOutDetails);
-        return update > 0 ? Result.success("更新成功") : Result.failure("更新失败");
+    public Result updatePlanUseOutDetails(List<UpdatePlanUseOutDetailsDTO> updatePlanUseOutDetailsDTOList) {
+        List<PlanUseOutDetails> listSuccess = new ArrayList<>();
+        List<PlanUseOutDetails> listFalse = new ArrayList<>();
+        JSONObject jsonObject = new JSONObject();
+        for (UpdatePlanUseOutDetailsDTO updatePlanUseOutDetailsDTO : updatePlanUseOutDetailsDTOList) {
+            PlanUseOutDetails planUseOutDetails = new PlanUseOutDetails();
+            BeanUtil.copyProperties(updatePlanUseOutDetailsDTO,planUseOutDetails);
+            int update = planUseOutDetailsMapper.updateById(planUseOutDetails);
+            if (update>0){
+                listSuccess.add(planUseOutDetails);
+            }else {
+                listFalse.add(planUseOutDetails);
+            }
+        }
+        jsonObject.put("success",listSuccess);
+        jsonObject.put("false",listFalse);
+        return Result.success(jsonObject);
     }
 
     /**
@@ -73,6 +87,23 @@ public class PlanUseOutDetailsServiceImpl extends SuperServiceImpl<PlanUseOutDet
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("use_planning_document_number",documentNumber);
         queryWrapper.eq("warehouse_id",warehouseId);
+        List<PlanUseOutDetails> listData = planUseOutDetailsMapper.selectList(queryWrapper);
+        return listData;
+    }
+
+    /**
+     * 区分状态
+     * @param documentNumber
+     * @param warehouseId
+     * @param outStatus
+     * @return
+     */
+    @Override
+    public List<PlanUseOutDetails> getListPlanUseOutDetailsByDocNumberAndWarehosueAndOutStatus(String documentNumber, String warehouseId, Integer outStatus) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("use_planning_document_number",documentNumber);
+        queryWrapper.eq("warehouse_id",warehouseId);
+        queryWrapper.eq("out_status",outStatus);
         List<PlanUseOutDetails> listData = planUseOutDetailsMapper.selectList(queryWrapper);
         return listData;
     }

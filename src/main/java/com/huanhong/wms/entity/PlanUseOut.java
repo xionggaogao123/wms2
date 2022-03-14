@@ -14,10 +14,10 @@ import java.time.LocalDateTime;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ApiModel(description="领料出库主表")
+@ApiModel(description = "领料出库主表")
 public class PlanUseOut extends SuperEntity {
 
-    private static final long serialVersionUID=1L;
+    private static final long serialVersionUID = 1L;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "流程Id")
@@ -38,6 +38,10 @@ public class PlanUseOut extends SuperEntity {
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "领用单位")
     private String requisitioningUnit;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "领用人")
+    private String recipient;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "库房ID")
@@ -63,13 +67,14 @@ public class PlanUseOut extends SuperEntity {
     @ApiModelProperty(value = "领用用途")
     private String requisitionUse;
 
+
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "出库状态：0-未出库，1-部分出库，2-全部出库")
     private Integer outStatus;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "已完成明细Id")
-    private  String  detailIds;
+    private String detailIds;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "备注")
@@ -79,11 +84,11 @@ public class PlanUseOut extends SuperEntity {
     @TableField(fill = FieldFill.INSERT)
     private Integer version;
 
-    @TableField(value = "create_time" ,fill = FieldFill.INSERT)
+    @TableField(value = "create_time", fill = FieldFill.INSERT)
     @ApiModelProperty(value = "申请日期")
     private LocalDateTime createTime;
 
-    @TableField(value = "last_update",fill = FieldFill.INSERT_UPDATE)
+    @TableField(value = "last_update", fill = FieldFill.INSERT_UPDATE)
     @ApiModelProperty(value = "最后更新时间")
     private LocalDateTime lastUpdate;
 }

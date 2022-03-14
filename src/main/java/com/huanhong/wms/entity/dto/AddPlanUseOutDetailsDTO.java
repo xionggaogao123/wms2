@@ -28,11 +28,11 @@ public class AddPlanUseOutDetailsDTO {
     @ApiModelProperty(value = "领用数量")
     private Double requisitionQuantity;
 
-    @NotNull
+
     @ApiModelProperty(value = "批准数量")
     private Double approvalsQuantity;
 
-    @NotNull
+
     @ApiModelProperty(value = "实出数量")
     private Double outboundQuantity;
 

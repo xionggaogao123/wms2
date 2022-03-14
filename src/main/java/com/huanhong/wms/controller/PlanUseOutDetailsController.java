@@ -13,12 +13,15 @@ import com.huanhong.wms.service.IPlanUseOutDetailsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.List;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/v1//plan-use-out-details")
 @ApiSort()
@@ -71,12 +74,9 @@ public class PlanUseOutDetailsController extends BaseController {
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "更新领料出库明细表", notes = "生成代码")
     @PutMapping("/update")
-    public Result update(@Valid @RequestBody UpdatePlanUseOutDetailsDTO updatePlanUseOutDetailsDTO) {
+    public Result update(@Valid @RequestBody List<UpdatePlanUseOutDetailsDTO> updatePlanUseOutDetailsDTOList) {
         try {
-            PlanUseOutDetails planUseOutDetails = new PlanUseOutDetails();
-            BeanUtil.copyProperties(updatePlanUseOutDetailsDTO, planUseOutDetails);
-            int update = planUseOutDetailsMapper.updateById(planUseOutDetails);
-            return render(update > 0);
+            return planUseOutDetailsService.updatePlanUseOutDetails(updatePlanUseOutDetailsDTOList);
         } catch (Exception e) {
             log.error("更新失败，异常：", e);
             return Result.failure("更新失败，系统异常！");

@@ -41,6 +41,10 @@ public class AddPlanUseOutDTO {
     private String requisitioningUnit;
 
     @NotBlank
+    @ApiModelProperty(value = "领用人")
+    private String recipient;
+
+    @NotBlank
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;
 

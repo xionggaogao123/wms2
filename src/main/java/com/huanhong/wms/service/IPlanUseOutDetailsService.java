@@ -28,10 +28,10 @@ public interface IPlanUseOutDetailsService extends SuperService<PlanUseOutDetail
 
     /**
      * 领料出库单明细更新
-     * @param updatePlanUseOutDetailsDTO
+     * @param updatePlanUseOutDetailsDTOList
      * @return
      */
-    Result updatePlanUseOutDetails(UpdatePlanUseOutDetailsDTO updatePlanUseOutDetailsDTO);
+    Result updatePlanUseOutDetails(List<UpdatePlanUseOutDetailsDTO> updatePlanUseOutDetailsDTOList);
 
 
     /**
@@ -41,6 +41,15 @@ public interface IPlanUseOutDetailsService extends SuperService<PlanUseOutDetail
      * @return
      */
     List<PlanUseOutDetails> getListPlanUseOutDetailsByDocNumberAndWarehosue(String documentNumber, String warehouseId);
+
+
+    /**
+     * 根据原单据编号和出库状态和仓库获取明细list
+     * @param documentNumber
+     * @param warehouseId
+     * @return
+     */
+    List<PlanUseOutDetails> getListPlanUseOutDetailsByDocNumberAndWarehosueAndOutStatus(String documentNumber, String warehouseId,Integer outStatus);
 
     /**
      * 根据明细ID获取明细信息

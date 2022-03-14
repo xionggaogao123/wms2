@@ -34,6 +34,9 @@ public class UpdatePlanUseOutDTO {
     @ApiModelProperty(value = "领用单位")
     private String requisitioningUnit;
 
+    @ApiModelProperty(value = "领用人")
+    private String recipient;
+
     @ApiModelProperty(value = "库管员")
     private String librarian;
 

@@ -69,6 +69,8 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
 
         query.like(StringUtils.isNotBlank(planUseOutVO.getRequisitioningUnit()), "requisitioning_unit", planUseOutVO.getRequisitioningUnit());
 
+        query.like(StringUtils.isNotBlank(planUseOutVO.getRecipient()),"recipient",planUseOutVO.getRecipient());
+
         query.like(StringUtils.isNotBlank(planUseOutVO.getWarehouseId()), "warehouse_id", planUseOutVO.getWarehouseId());
 
         query.like(StringUtils.isNotBlank(planUseOutVO.getLibrarian()), "librarian", planUseOutVO.getLibrarian());
@@ -93,6 +95,39 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
 
         return planUseOutMapper.selectPage(planUseOutPage, query);
     }
+
+    /**
+     *
+     * @param planUseOutPage
+     * @param planUseOutVO
+     * @return
+     */
+    @Override
+    public Page<PlanUseOut> pageFuzzyQueryPDA(Page<PlanUseOut> planUseOutPage, PlanUseOutVO planUseOutVO) {
+        //新建QueryWrapper对象
+        QueryWrapper<PlanUseOut> query = new QueryWrapper<>();
+
+        //根据id排序
+        query.orderByAsc("id");
+
+        //单据编号
+        query.like(ObjectUtil.isNotNull(planUseOutVO.getDocumentNumber()), "document_number", planUseOutVO.getDocumentNumber());
+
+        //仓库
+        query.like(ObjectUtil.isNotNull(planUseOutVO.getWarehouseId()), "warehouse_id", planUseOutVO.getWarehouseId());
+
+        //单据状态
+        if (ObjectUtil.isNotNull(planUseOutVO.getOutStatus())&&planUseOutVO.getOutStatus()==0){
+            query.eq("out_status",0).or().eq("out_status",1);
+        }else if (ObjectUtil.isNotNull(planUseOutVO.getOutStatus())&&planUseOutVO.getOutStatus()==1){
+            query.eq("out_status",2);
+        }
+
+        return planUseOutMapper.selectPage(planUseOutPage, query);
+    }
+
+
+
 
     @Override
     public Result addPlanUseOut(AddPlanUseOutDTO addPlanUseOutDTO) {
@@ -196,6 +231,10 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
         //领用用途
         if (StringUtils.isNotBlank(updatePlanUseOutDTO.getRequisitionUse())){
             planUseOutOld.setRequisitionUse(updatePlanUseOutDTO.getRequisitionUse());
+        }
+        //领用人
+        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getRecipient())){
+            planUseOutOld.setRecipient(updatePlanUseOutDTO.getRecipient());
         }
         //已完成的明细id,格式：以逗号隔开的字符串
         if (StringUtils.isNotBlank(updatePlanUseOutDTO.getDetailIds())){

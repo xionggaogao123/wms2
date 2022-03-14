@@ -33,7 +33,10 @@ public class PlanUseOutVO {
     @ApiModelProperty(value = "库管员")
     private String librarian;
 
-    @ApiModelProperty(value = "出库状态：0-未出库，1-部分出库，2-全部出库")
+    @ApiModelProperty(value = "领用人")
+    private String recipient;
+
+    @ApiModelProperty(value = "出库状态：0-未出库，1-部分出库，2-全部出库 // PDA端 0-未出库&出库 1-全部出库")
     private Integer outStatus;
 
     @ApiModelProperty(value = "申请日期-起始")

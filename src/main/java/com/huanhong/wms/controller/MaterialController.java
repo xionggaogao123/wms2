@@ -316,7 +316,6 @@ public class MaterialController extends BaseController {
 
 
 
-
 //    /**
 //     * 根据物料名称查询物料信息
 //     *

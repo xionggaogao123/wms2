@@ -45,17 +45,27 @@ public interface IInventoryInformationService extends SuperService<InventoryInfo
 
 
     /**
-     * 获取库存list
-     * @param inventoryInformationVO
-     * @return
-     */
-    InventoryInformation getInventoryInformation(InventoryInformationVO inventoryInformationVO);
-
-
-    /**
      * 查询新增库存时，传入的货位、物料编码、批次是否已经存在
      * 若存在，则加上对应库存数量
      * 若不存在，则新增此条数据
      */
     InventoryInformation getInventoryById(int id);
+
+
+    InventoryInformation getInventoryInformation(String materialCoding, String batch, String cargoSpaceId);
+
+    /**
+     * 根据物料编码和仓库Id获取物料库存数量
+     * @return
+     */
+    Double getNumByMaterialCodingAndWarehouseId(String materialCoding,String warehouseId);
+
+
+    /**
+     * 根据物料编码和仓库Id获取物料库存List
+     * @param materialCoding
+     * @param warehouseId
+     * @return
+     */
+    List<InventoryInformation> getInventoryInformationListByMaterialCodingAndWarehouseId(String materialCoding,String warehouseId);
 }

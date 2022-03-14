@@ -32,4 +32,11 @@ public interface IMaterialService extends SuperService<Material> {
      * @return
      */
    int isStopUsing(String materialCode);
+
+    /**
+     * 根据物料编码或物料名称模糊查询物料
+     * @return
+     */
+   List<Material> getMaterialListByKey(String key);
+
 }

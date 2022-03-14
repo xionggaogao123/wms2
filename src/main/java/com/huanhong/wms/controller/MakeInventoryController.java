@@ -84,20 +84,20 @@ import javax.validation.Valid;
         @ApiOperationSupport(order = 5)
         @ApiOperation(value = "根据ID获取盘点单数据")
         @GetMapping("/getMakeInventoryById/{id}")
-        public MakeInventory getMakeInvenrory(@PathVariable Integer id){
+        public Result getMakeInvenrory(@PathVariable Integer id){
             MakeInventory makeInventory = makeInventoryService.getMakeInventoryById(id);
-            return ObjectUtil.isNotNull(makeInventory) ? makeInventory : null;
+            return ObjectUtil.isNotNull(makeInventory) ? Result.success(makeInventory) : Result.failure("未查询到相关信息");
         }
 
         @ApiOperationSupport(order = 6)
         @ApiOperation(value = "根据单据编号和子库编号获取盘点单数据")
         @GetMapping("/getMakeInventoryByDocNumAndSublibraryId/{docNum}&{sublibraryId}")
-        public MakeInventory getMakeInventoryByDocNumAndSublibraryId(@PathVariable String docNum,
+        public Result getMakeInventoryByDocNumAndSublibraryId(@PathVariable String docNum,
                                                                      @PathVariable String sublibraryId
                                                                      ){
             String warehouseId = sublibraryId.substring(0,4);
             MakeInventory makeInventory = makeInventoryService.getMakeInventoryByDocNumAndWarehouse(docNum,warehouseId);
-            return ObjectUtil.isNotNull(makeInventory) ? makeInventory : null;
+            return ObjectUtil.isNotNull(makeInventory) ? Result.success(makeInventory) : Result.failure("未查询到相关信息");
         }
 
         @ApiOperationSupport(order = 7)

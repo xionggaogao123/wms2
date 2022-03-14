@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 @ApiModel("更新领料出库明细单")
 public class UpdatePlanUseOutDetailsDTO {
 
-    private static final long serialVersionUID=1L;
+    private static final long serialVersionUID = 1L;
 
     @NotNull
     @ApiModelProperty(value = "入库单ID", required = true)
@@ -53,6 +53,17 @@ public class UpdatePlanUseOutDetailsDTO {
     @Max(2)
     @ApiModelProperty(value = "出库状态：0-未出库，1-部分出库，2-全部出库")
     private Integer outStatus;
+
+    @Min(0)
+    @ApiModelProperty(value = "领用数量")
+    private Double requisitionQuantity;
+
+    @Min(0)
+    @ApiModelProperty(value = "批准数量")
+    private Double approvalsQuantity;
+    @Min(0)
+    @ApiModelProperty(value = "实出数量")
+    private Double outboundQuantity;
 
     @ApiModelProperty(value = "用途")
     private String purpose;

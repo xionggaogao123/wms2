@@ -1,5 +1,6 @@
 package com.huanhong.wms.controller;
 
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -11,18 +12,17 @@ import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.EnterWarehouse;
 import com.huanhong.wms.entity.EnterWarehouseDetails;
-import com.huanhong.wms.entity.dto.AddEnterWarehouseAndDetails;
-import com.huanhong.wms.entity.dto.AddEnterWarehouseDetailsDTO;
-import com.huanhong.wms.entity.dto.UpdateEnterWarehouseDTO;
+import com.huanhong.wms.entity.Material;
+import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.EnterWarehouseVO;
 import com.huanhong.wms.mapper.EnterWarehouseMapper;
-import com.huanhong.wms.service.IEnterWarehouseDetailsService;
-import com.huanhong.wms.service.IEnterWarehouseService;
+import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -34,6 +34,7 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/v1/enter-warehouse")
+@Validated
 @ApiSort()
 @Api(tags = "采购入库单主表")
 public class EnterWarehouseController extends BaseController {
@@ -46,6 +47,15 @@ public class EnterWarehouseController extends BaseController {
 
     @Resource
     private IEnterWarehouseDetailsService enterWarehouseDetailsService;
+
+    @Resource
+    private IInventoryInformationService inventoryInformationService;
+
+    @Resource
+    private IMaterialService materialService;
+
+    @Resource
+    private IWarehouseManagementService warehouseManagementService;
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -75,31 +85,80 @@ public class EnterWarehouseController extends BaseController {
     @PostMapping("/add")
     public Result add(@Valid @RequestBody AddEnterWarehouseAndDetails addEnterWarehouseAndDetails) {
         try {
+
+//            WarehouseManagement warehouse = warehouseManagementService.getWarehouseByWarehouseId(addEnterWarehouseAndDetails.getAddEnterWarehouseDTO().getWarehouse());
+//            if(ObjectUtil.isNull(warehouse)){
+//                return Result.failure("仓库不存在");
+//            }
             Result result = enter_warehouseService.addEnterWarehouse(addEnterWarehouseAndDetails.getAddEnterWarehouseDTO());
+            if (!result.isOk()) {
+                return Result.failure("新增入库单失败");
+            }
             EnterWarehouse enterWarehouse = (EnterWarehouse) result.getData();
             String docNum = enterWarehouse.getDocumentNumber();
-            String warehouse = addEnterWarehouseAndDetails.getAddEnterWarehouseDTO().getWarehouse();
+            String warehouseId = addEnterWarehouseAndDetails.getAddEnterWarehouseDTO().getWarehouse();
             List<AddEnterWarehouseDetailsDTO> addEnterWarehouseDetailsDTOList = addEnterWarehouseAndDetails.getAddEnterWarehouseDetailsDTOList();
             if (ObjectUtil.isNotNull(addEnterWarehouseDetailsDTOList)) {
                 for (AddEnterWarehouseDetailsDTO details : addEnterWarehouseDetailsDTOList
                 ) {
                     details.setOriginalDocumentNumber(docNum);
-                    details.setWarehouse(warehouse);
+                    details.setWarehouse(warehouseId);
                 }
-                enterWarehouseDetailsService.addEnterWarehouseDetails(addEnterWarehouseDetailsDTOList);
+                // 01AA0000
+                Result resultAdd = enterWarehouseDetailsService.addEnterWarehouseDetails(addEnterWarehouseDetailsDTOList);
+
+                if (!resultAdd.isOk()) {
+                    return Result.failure("新增入库明细单失败");
+                }
+
+                AddInventoryInformationDTO addInventoryInformationDTO = new AddInventoryInformationDTO();
+                int count = 0;
+                for (AddEnterWarehouseDetailsDTO enterWarehouseDetails :
+                        addEnterWarehouseDetailsDTOList) {
+                    addInventoryInformationDTO.setMaterialCoding(enterWarehouseDetails.getMaterialCoding());
+                    Material material = materialService.getMeterialByMeterialCode(enterWarehouseDetails.getMaterialCoding());
+                    addInventoryInformationDTO.setMaterialName(material.getMaterialName());
+                    addInventoryInformationDTO.setMeasurementUnit(material.getMeasurementUnit());
+                    if (ObjectUtil.isNotNull(material.getAuxiliaryUnit())) {
+                        addInventoryInformationDTO.setAuxiliaryUnit(material.getAuxiliaryUnit());
+                    }
+                    addInventoryInformationDTO.setCargoSpaceId(enterWarehouseDetails.getWarehouse() + "01AA0000");
+                    addInventoryInformationDTO.setInventoryCredit(enterWarehouseDetails.getActualQuantity());
+                    addInventoryInformationDTO.setSafeQuantity((double) 0);
+                    addInventoryInformationDTO.setBatch(enterWarehouseDetails.getBatch());
+                    addInventoryInformationDTO.setConsignor(0);
+                    addInventoryInformationDTO.setUnitPrice(enterWarehouseDetails.getUnitPriceIncludingTax());
+                    addInventoryInformationDTO.setManagementFeeRate(1.1);
+                    addInventoryInformationDTO.setSalesUnitPrice(NumberUtil.mul(enterWarehouseDetails.getUnitPriceIncludingTax(), 1.1));
+                    addInventoryInformationDTO.setSupplier("待补");
+                    Result resultAddIventory = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
+                    if (resultAddIventory.isOk()) {
+                        count++;
+                    }
+                }
+                return count == addEnterWarehouseDetailsDTOList.size() ? Result.success()  : Result.failure("变动库存失败！");
             }
-            return result;
         } catch (Exception e) {
             log.error("添加入库单出错，异常", e);
             return Result.failure("系统异常：入库单添加失败。");
         }
+        return Result.failure("系统异常");
     }
 
     @ApiOperationSupport(order = 3)
-    @ApiOperation(value = "更新采购入库单主表", notes = "生成代码")
+    @ApiOperation(value = "更新采购入库单主表及明细", notes = "生成代码")
     @PutMapping("/update")
-    public Result update(@Valid @RequestBody UpdateEnterWarehouseDTO updateEnterWarehouseDTO) {
-        return enter_warehouseService.updateEnterWarehouse(updateEnterWarehouseDTO);
+    public Result update(@Valid @RequestBody UpdateEnterWarehouseAndDetailsDTO updateEnterWarehouseAndDetailsDTO) {
+        try {
+            Result resultUpdateEnterWarehouse = enter_warehouseService.updateEnterWarehouse(updateEnterWarehouseAndDetailsDTO.getUpdateEnterWarehouseDTO());
+            if (resultUpdateEnterWarehouse.isOk()) {
+                return enterWarehouseDetailsService.updateEnterWarehouseDetails(updateEnterWarehouseAndDetailsDTO.getUpdateEnterWarehouseDetailsDTOList());
+            } else {
+                return Result.failure("更新失败");
+            }
+        } catch (Exception e) {
+            return Result.failure("系统异常，更新失败");
+        }
     }
 
     @ApiOperationSupport(order = 4)
@@ -162,12 +221,12 @@ public class EnterWarehouseController extends BaseController {
     @ApiOperationSupport(order = 7)
     @ApiOperation(value = "根据仓库编号获取处于审批中的单据数量")
     @GetMapping("getCountByWarehouseId/{warehouseId}")
-    public Result getCountByWarehouseId(@PathVariable String warehouseId){
+    public Result getCountByWarehouseId(@PathVariable String warehouseId) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq("warehouse",warehouseId);
-        queryWrapper.eq("status",2);
-        Integer count =  enter_warehouseMapper.selectCount(queryWrapper);
-        return ObjectUtil.isNotNull(count) ? Result.success(count) : Result.failure("未查询到相关数据") ;
+        queryWrapper.eq("warehouse", warehouseId);
+        queryWrapper.eq("status", 2);
+        Integer count = enter_warehouseMapper.selectCount(queryWrapper);
+        return ObjectUtil.isNotNull(count) ? Result.success(count) : Result.failure("未查询到相关数据");
     }
 
 
@@ -176,8 +235,8 @@ public class EnterWarehouseController extends BaseController {
     })
     @ApiOperationSupport(order = 8)
     @ApiOperation(value = "流程引擎-采购入库-查询")
-    @GetMapping ("getParameterById/{id}")
-    public Result getParameterById(@PathVariable Integer id){
+    @GetMapping("getParameterById/{id}")
+    public Result getParameterById(@PathVariable Integer id) {
 
         EntityUtils entityUtils = new EntityUtils();
         /**
@@ -186,7 +245,7 @@ public class EnterWarehouseController extends BaseController {
         try {
             EnterWarehouse enterWarehouse = enter_warehouseService.getEnterWarehouseById(id);
             if (ObjectUtil.isNotNull(enterWarehouse)) {
-                List<EnterWarehouseDetails> enterWarehouseList = enterWarehouseDetailsService.getListEnterWarehouseDetailsByDocNumberAndWarehosue(enterWarehouse.getDocumentNumber(),enterWarehouse.getWarehouse());
+                List<EnterWarehouseDetails> enterWarehouseList = enterWarehouseDetailsService.getListEnterWarehouseDetailsByDocNumberAndWarehosue(enterWarehouse.getDocumentNumber(), enterWarehouse.getWarehouse());
                 /**
                  * 当查询到主表事进行数据封装
                  * 1.表头--主表表明--用于判断应该进入那个流程-tableName
@@ -198,14 +257,14 @@ public class EnterWarehouseController extends BaseController {
                  * 7.明细表更新接口-detailsUpdate
                  */
                 JSONObject jsonResult = new JSONObject();
-                jsonResult.put("tableName","enter_warehouse");
-                jsonResult.put("main", entityUtils.jsonField( "enterWarehouse",new EnterWarehouse()));
-                jsonResult.put("details",entityUtils.jsonField("enterWarehouse",new EnterWarehouseDetails()));
-                jsonResult.put("mainValue",enterWarehouse);
-                jsonResult.put("detailsValue",enterWarehouseList);
-                jsonResult.put("mainUpdate","/wms/api/v1/enter-warehouse/update");
-                jsonResult.put("detailsUpdate","/wms/api/v1/enter-warehouse-details");
-                jsonResult.put("missionCompleted","/wms/api/v1/enter-warehouse/missionCompleted");
+                jsonResult.put("tableName", "enter_warehouse");
+                jsonResult.put("main", entityUtils.jsonField("enterWarehouse", new EnterWarehouse()));
+                jsonResult.put("details", entityUtils.jsonField("enterWarehouse", new EnterWarehouseDetails()));
+                jsonResult.put("mainValue", enterWarehouse);
+                jsonResult.put("detailsValue", enterWarehouseList);
+                jsonResult.put("mainUpdate", "/wms/api/v1/enter-warehouse/update");
+                jsonResult.put("detailsUpdate", "/wms/api/v1/enter-warehouse-details");
+                jsonResult.put("missionCompleted", "/wms/api/v1/enter-warehouse/missionCompleted");
                 return Result.success(jsonResult);
             } else {
                 return Result.failure("未查询到相关信息");
@@ -225,7 +284,7 @@ public class EnterWarehouseController extends BaseController {
     @ApiOperation(value = "流程引擎-采购入库-发起")
     @PutMapping("/missionStarts")
     public Result missionStarts(@RequestParam Integer id,
-                                @RequestParam String processInstanceId){
+                                @RequestParam String processInstanceId) {
 
         try {
             EnterWarehouse enterWarehouse = enter_warehouseService.getEnterWarehouseById(id);
@@ -233,7 +292,7 @@ public class EnterWarehouseController extends BaseController {
              * 正常情况不需要原对单据进行非空验证，
              * 此处预留其他判断条件的位置
              */
-            if (ObjectUtil.isNotNull(enterWarehouse)){
+            if (ObjectUtil.isNotNull(enterWarehouse)) {
                 UpdateEnterWarehouseDTO updateEnterWarehouseDTO = new UpdateEnterWarehouseDTO();
                 updateEnterWarehouseDTO.setId(id);
                 updateEnterWarehouseDTO.setProcessInstanceId(processInstanceId);
@@ -247,16 +306,16 @@ public class EnterWarehouseController extends BaseController {
                  */
                 updateEnterWarehouseDTO.setState(2);
                 Result result = enter_warehouseService.updateEnterWarehouse(updateEnterWarehouseDTO);
-                if (result.isOk()){
+                if (result.isOk()) {
                     return Result.success("进入流程");
-                }else {
+                } else {
                     return Result.failure("未进入流程");
                 }
-            }else {
+            } else {
                 return Result.failure("采购入库单异常,无法进入流程引擎");
             }
-        }catch (Exception e){
-            log.error("流程启动接口异常",e);
+        } catch (Exception e) {
+            log.error("流程启动接口异常", e);
             return Result.failure("系统异常");
         }
     }
@@ -267,11 +326,11 @@ public class EnterWarehouseController extends BaseController {
     @ApiOperationSupport(order = 10)
     @ApiOperation(value = "流程引擎-采购入库-完成审批")
     @PutMapping("/missionCompleted")
-    public Result missionCompleted(@RequestParam String processInstanceId){
+    public Result missionCompleted(@RequestParam String processInstanceId) {
         try {
             //通过流程Id查询出单据Id
             EnterWarehouse enterWarehouse = enter_warehouseService.getEnterWarehouseByProcessInstanceId(processInstanceId);
-            if (ObjectUtil.isNotNull(enterWarehouse)){
+            if (ObjectUtil.isNotNull(enterWarehouse)) {
                 UpdateEnterWarehouseDTO updateEnterWarehouseDTO = new UpdateEnterWarehouseDTO();
                 updateEnterWarehouseDTO.setId(enterWarehouse.getId());
                 /**
@@ -284,12 +343,12 @@ public class EnterWarehouseController extends BaseController {
                  */
                 updateEnterWarehouseDTO.setState(3);
                 return enter_warehouseService.updateEnterWarehouse(updateEnterWarehouseDTO);
-            }else {
+            } else {
                 return Result.failure("单据异常无法完成");
             }
-        }catch (Exception e){
-            log.error("完成审批接口异常",e);
-            return  Result.failure("系统异常");
+        } catch (Exception e) {
+            log.error("完成审批接口异常", e);
+            return Result.failure("系统异常");
         }
     }
 

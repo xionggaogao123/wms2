@@ -44,7 +44,6 @@ public class AddInventoryInformationDTO {
     private Double inventoryCredit;
 
     @Min(0)
-    @NotNull
     @ApiModelProperty(value = "安全数量")
     private Double safeQuantity;
 
@@ -58,7 +57,7 @@ public class AddInventoryInformationDTO {
     @ApiModelProperty(value = "货主")
     private Integer consignor;
 
-    @NotNull
+
     @ApiModelProperty(value = "有效日期")
     private LocalDateTime effectiveDate;
 

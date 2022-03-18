@@ -1,6 +1,7 @@
 package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,13 +38,13 @@ public class EnterWarehouseDetailsServiceImpl extends SuperServiceImpl<EnterWare
     public Result addEnterWarehouseDetails(List<AddEnterWarehouseDetailsDTO> listAddDto) {
         EnterWarehouseDetails enterWarehouseDetails = new EnterWarehouseDetails();
         try {
-            for (int i = 0; i<listAddDto.size(); i++){
-                BeanUtil.copyProperties(listAddDto.get(i),enterWarehouseDetails);
+            for (int i = 0; i < listAddDto.size(); i++) {
+                BeanUtil.copyProperties(listAddDto.get(i), enterWarehouseDetails);
                 enterWarehouseDetailsMapper.insert(enterWarehouseDetails);
             }
             return Result.success();
-        }catch (Exception e){
-            log.error("明细插入失败！异常：",e);
+        } catch (Exception e) {
+            log.error("明细插入失败！异常：", e);
             return Result.failure(ErrorCode.SYSTEM_ERROR, "明细新增失败！");
         }
     }
@@ -50,16 +52,37 @@ public class EnterWarehouseDetailsServiceImpl extends SuperServiceImpl<EnterWare
     @Override
     public Result updateEnterWarehouseDetails(UpdateEnterWarehouseDetailsDTO updateEnterWarehouseDetailsDTO) {
         EnterWarehouseDetails enterWarehouseDetails = new EnterWarehouseDetails();
-        BeanUtil.copyProperties(updateEnterWarehouseDetailsDTO,enterWarehouseDetails);
+        BeanUtil.copyProperties(updateEnterWarehouseDetailsDTO, enterWarehouseDetails);
         int update = enterWarehouseDetailsMapper.updateById(enterWarehouseDetails);
         return update > 0 ? Result.success("更新成功") : Result.failure("更新失败");
     }
 
     @Override
-    public List<EnterWarehouseDetails> getListEnterWarehouseDetailsByDocNumberAndWarehosue(String documentNumber,String warehouse) {
+    public Result updateEnterWarehouseDetails(List<UpdateEnterWarehouseDetailsDTO> updateEnterWarehouseDetailsDTOList) {
+
+        List<EnterWarehouseDetails> listSuccess = new ArrayList<>();
+        List<EnterWarehouseDetails> listFalse = new ArrayList<>();
+        JSONObject jsonObject = new JSONObject();
+        for (UpdateEnterWarehouseDetailsDTO updateEnterWarehouseDetailsDTO : updateEnterWarehouseDetailsDTOList) {
+            EnterWarehouseDetails enterWarehouseDetails = new EnterWarehouseDetails();
+            BeanUtil.copyProperties(updateEnterWarehouseDetailsDTO, enterWarehouseDetails);
+            int update = enterWarehouseDetailsMapper.updateById(enterWarehouseDetails);
+            if (update > 0) {
+                listSuccess.add(enterWarehouseDetails);
+            } else {
+                listFalse.add(enterWarehouseDetails);
+            }
+        }
+        jsonObject.put("success", listSuccess);
+        jsonObject.put("false", listFalse);
+        return Result.success(jsonObject);
+    }
+
+    @Override
+    public List<EnterWarehouseDetails> getListEnterWarehouseDetailsByDocNumberAndWarehosue(String documentNumber, String warehouse) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq("original_document_number",documentNumber);
-        queryWrapper.eq("warehouse",warehouse);
+        queryWrapper.eq("original_document_number", documentNumber);
+        queryWrapper.eq("warehouse", warehouse);
         List<EnterWarehouseDetails> listData = enterWarehouseDetailsMapper.selectList(queryWrapper);
         return listData;
     }

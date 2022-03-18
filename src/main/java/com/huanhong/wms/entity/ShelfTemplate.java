@@ -60,4 +60,8 @@ public class ShelfTemplate extends SuperEntity {
     @ApiModelProperty(value = "创建时间")
     private LocalDateTime createTime;
 
+    @TableField(value = "last_update",fill = FieldFill.INSERT_UPDATE)
+    @ApiModelProperty(value = "最后更新时间")
+    private LocalDateTime lastUpdate;
+
 }

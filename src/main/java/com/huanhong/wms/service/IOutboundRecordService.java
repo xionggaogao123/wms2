@@ -75,6 +75,6 @@ public interface IOutboundRecordService extends SuperService<OutboundRecord> {
      * @param materialCoding
      * @return
      */
-    OutboundRecord  getOutboundRecordListByDocNumAndWarehouseIdAndMaterialCoding(String docNum,String warehouseId,String materialCoding);
+    OutboundRecord  getOutboundRecordByDocNumAndWarehouseIdAndMaterialCoding(String docNum,String warehouseId,String materialCoding);
 
 }

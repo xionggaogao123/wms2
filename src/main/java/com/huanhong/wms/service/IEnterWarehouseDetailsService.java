@@ -21,6 +21,7 @@ public interface IEnterWarehouseDetailsService extends SuperService<EnterWarehou
 
     /**
      * 采购入库单明细新增
+     *
      * @param listAddDto
      * @return
      */
@@ -29,6 +30,7 @@ public interface IEnterWarehouseDetailsService extends SuperService<EnterWarehou
 
     /**
      * 采购入库单明细更新
+     *
      * @param updateEnterWarehouseDetailsDTO
      * @return
      */
@@ -36,15 +38,25 @@ public interface IEnterWarehouseDetailsService extends SuperService<EnterWarehou
 
 
     /**
+     * 更新明细LIST
+     * @param updateEnterWarehouseDetailsDTOList
+     * @return
+     */
+    Result updateEnterWarehouseDetails(List<UpdateEnterWarehouseDetailsDTO> updateEnterWarehouseDetailsDTOList);
+
+
+    /**
      * 根据原单据编号和仓库获取明细list
+     *
      * @param documentNumber
      * @param Warehouse
      * @return
      */
-    List<EnterWarehouseDetails> getListEnterWarehouseDetailsByDocNumberAndWarehosue(String documentNumber,String warehouse);
+    List<EnterWarehouseDetails> getListEnterWarehouseDetailsByDocNumberAndWarehosue(String documentNumber, String warehouse);
 
     /**
      * 根据明细ID获取明细信息
+     *
      * @param id
      * @return
      */

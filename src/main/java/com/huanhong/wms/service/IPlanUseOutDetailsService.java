@@ -33,6 +33,12 @@ public interface IPlanUseOutDetailsService extends SuperService<PlanUseOutDetail
      */
     Result updatePlanUseOutDetails(List<UpdatePlanUseOutDetailsDTO> updatePlanUseOutDetailsDTOList);
 
+    /**
+     * 领料出库单明细更新
+     * @param updatePlanUseOutDetailsDTO
+     * @return
+     */
+    Result updatePlanUseOutDetails(UpdatePlanUseOutDetailsDTO updatePlanUseOutDetailsDTO);
 
     /**
      * 根据原单据编号和仓库获取明细list

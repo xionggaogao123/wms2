@@ -61,7 +61,7 @@ public interface IPlanUseOutService extends SuperService<PlanUseOut> {
     /**
      * 根据单据编号和仓库ID获取单据信息
      * @param docNumber
-     * @param WarhouseId
+     * @param warhouseId
      * @return
      */
     PlanUseOut getPlanUseOutByDocNumAndWarhouseId(String docNumber,String warhouseId);

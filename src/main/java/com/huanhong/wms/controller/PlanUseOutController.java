@@ -1,6 +1,7 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -14,6 +15,7 @@ import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
+import com.huanhong.wms.entity.vo.PdaUpdateOutVO;
 import com.huanhong.wms.entity.vo.PlanUseOutVO;
 import com.huanhong.wms.mapper.PlanUseOutMapper;
 import com.huanhong.wms.service.*;
@@ -64,6 +66,7 @@ public class PlanUseOutController extends BaseController {
 
     @Resource
     private IWarehouseManagementService warehouseManagementService;
+
 
 
     @ApiImplicitParams({
@@ -368,7 +371,7 @@ public class PlanUseOutController extends BaseController {
                     //批准数量
                     BigDecimal approvalsQuantity = BigDecimal.valueOf(planUseOutDetails.getApprovalsQuantity());
                     if (requisitionQuantity.compareTo(approvalsQuantity) != 0) {
-                        outboundRecord = outboundRecordService.getOutboundRecordListByDocNumAndWarehouseIdAndMaterialCoding(docNum, warehousId, planUseOutDetails.getMaterialCoding());
+                        outboundRecord = outboundRecordService.getOutboundRecordByDocNumAndWarehouseIdAndMaterialCoding(docNum, warehousId, planUseOutDetails.getMaterialCoding());
                         upDateOutboundRecordAndInventory(outboundRecord, planUseOutDetails.getApprovalsQuantity());
                     }
                 }
@@ -464,7 +467,78 @@ public class PlanUseOutController extends BaseController {
 
     @ApiOperationSupport(order = 14)
     @ApiOperation(value = "更新出库记录")
-
+    @PutMapping("/updateOutboundList")
+    public Result updateOutboundList(@Valid @RequestBody List<PdaUpdateOutVO> pdaUpdateOutVOList){
+        /**
+         * 更新出库明细
+         */
+        try {
+            OutboundRecordDetails outboundRecordDetails = new OutboundRecordDetails();
+            List<OutboundRecordDetails> outboundRecordDetailsList = new ArrayList<>();
+            for (PdaUpdateOutVO pdaUpdateOutVO : pdaUpdateOutVOList) {
+                UpdatePlanUseOutDetailsDTO updatePlanUseOutDetailsDTO = pdaUpdateOutVO.getUpdatePlanUseOutDetailsDTO();
+                Result result = planUseOutDetailsService.updatePlanUseOutDetails(updatePlanUseOutDetailsDTO);
+                if (result.isOk()){
+                    //明细更新成功后，回滚全部库存
+                    PlanUseOutDetails planUseOutDetails = planUseOutDetailsService.getPlanUseOutDetailsByDetailsId(updatePlanUseOutDetailsDTO.getId());
+                    String docNum = planUseOutDetails.getUsePlanningDocumentNumber();
+                    String warehousId = planUseOutDetails.getWarehouseId();
+                    String materialCoding = planUseOutDetails.getMaterialCoding();
+                    OutboundRecord outboundRecord = outboundRecordService.getOutboundRecordByDocNumAndWarehouseIdAndMaterialCoding(docNum,warehousId,materialCoding);
+                    if (ObjectUtil.isEmpty(outboundRecord)){
+                        return Result.failure("未找到出库记录！");
+                    }
+                    int id = outboundRecord.getId();
+                    Result resultUpdateOutbond = upDateOutboundRecordAndInventory(outboundRecordService.getOutboundRecordById(id), (double) 0);
+                    if (resultUpdateOutbond.isOk()){
+                        //回滚库存成功，使用新的出库记录更新库存
+                        for (OutboundRecordDetailsVO outboundRecordDetailsVONew : pdaUpdateOutVO.getOutboundRecordDetailsVOList()
+                             ) {
+                            String batch = outboundRecordDetailsVONew.getBatch();
+                            String cargoSpaceId= outboundRecordDetailsVONew.getCargoSpaceId();
+                            Double inventoryCreditWant = outboundRecordDetailsVONew.getInventoryCredit();
+                            InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(materialCoding,batch,cargoSpaceId);
+                            if (ObjectUtil.isEmpty(inventoryInformation)){
+                                return Result.failure("未找到库存信息");
+                            }
+                            Double inventoryReal = inventoryInformation.getInventoryCredit();
+                            Double inventoryNum = NumberUtil.sub(inventoryReal,inventoryCreditWant);
+                            if (BigDecimal.valueOf(inventoryNum).compareTo(BigDecimal.valueOf(0))>0){
+                                UpdateInventoryInformationDTO updateInventoryInformationDTO = new UpdateInventoryInformationDTO();
+                                BeanUtil.copyProperties(inventoryInformation,updateInventoryInformationDTO);
+                                updateInventoryInformationDTO.setInventoryCredit(inventoryNum);
+                                Result resultUpdateInventory = inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
+                                if (resultUpdateInventory.isOk()){
+                                    outboundRecordDetails.setBatch(batch);
+                                    outboundRecordDetails.setCargoSpaceId(cargoSpaceId);
+                                    outboundRecordDetails.setInventoryCredit(inventoryCreditWant);
+                                    outboundRecordDetails.setId(inventoryInformation.getId());
+                                    outboundRecordDetailsList.add(outboundRecordDetails);
+                                }else {
+                                    return Result.failure("库存更新失败");
+                                }
+                            }else {
+                                return Result.failure("货位:"+cargoSpaceId+",  物料:"+materialCoding+ " , 批次："+batch+",  库存数量不不足");
+                            }
+                        }
+                        //更新出库记录
+                        UpdateOutboundRecordDTO updateOutboundRecordDTO = new UpdateOutboundRecordDTO();
+                        BeanUtil.copyProperties(outboundRecord,updateOutboundRecordDTO);
+                        updateOutboundRecordDTO.setDetails(JSON.toJSONString(outboundRecordDetailsList));
+                        return outboundRecordService.updateOutboundRecord(updateOutboundRecordDTO);
+                    }else {
+                        return resultUpdateOutbond;
+                    }
+                }else {
+                    return result;
+                }
+            }
+        }catch (Exception e){
+           log.error("用户");
+            return Result.failure("系统异常");
+        }
+        return Result.failure("未知错误");
+    }
 
 
 
@@ -473,7 +547,7 @@ public class PlanUseOutController extends BaseController {
         for (PlanUseOutDetails planUseOutDetails : planUseOutDetailsList
         ) {
             JSONObject jsonObject = new JSONObject();
-            OutboundRecord outboundRecord = outboundRecordService.getOutboundRecordListByDocNumAndWarehouseIdAndMaterialCoding(planUseOutDetails.getUsePlanningDocumentNumber(), planUseOutDetails.getWarehouseId(), planUseOutDetails.getMaterialCoding());
+            OutboundRecord outboundRecord = outboundRecordService.getOutboundRecordByDocNumAndWarehouseIdAndMaterialCoding(planUseOutDetails.getUsePlanningDocumentNumber(), planUseOutDetails.getWarehouseId(), planUseOutDetails.getMaterialCoding());
             if (ObjectUtil.isNotNull(outboundRecord)) {
                 Result.failure("未查询到出库记录单相关信息");
             }
@@ -650,6 +724,9 @@ public class PlanUseOutController extends BaseController {
 
                         //存入新数量
                         InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(outboundRecord.getMaterialCoding(), outboundRecordDetails.getBatch(), outboundRecordDetails.getCargoSpaceId());
+                        if (ObjectUtil.isEmpty(inventoryInformation)){
+                            return Result.failure("未找到库存信息");
+                        }
                         BeanUtil.copyProperties(inventoryInformation, addInventoryInformationDTO);
                         addInventoryInformationDTO.setInventoryCredit(newInventory.doubleValue());
                         Result result = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
@@ -671,6 +748,9 @@ public class PlanUseOutController extends BaseController {
                     //当tempNum等于0,剩余的出库记录全部回滚库存--失败无补偿手段
                     AddInventoryInformationDTO addInventoryInformationDTO = new AddInventoryInformationDTO();
                     InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(outboundRecord.getMaterialCoding(), outboundRecordDetails.getBatch(), outboundRecordDetails.getCargoSpaceId());
+                    if (ObjectUtil.isEmpty(inventoryInformation)){
+                        return Result.failure("未找到库存信息");
+                    }
                     BeanUtil.copyProperties(inventoryInformation, addInventoryInformationDTO);
                     addInventoryInformationDTO.setInventoryCredit(outboundRecordDetails.getInventoryCredit());
                     Result result = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
@@ -693,7 +773,5 @@ public class PlanUseOutController extends BaseController {
         }
         return Result.failure("未知错误！");
     }
-
-
 }
 

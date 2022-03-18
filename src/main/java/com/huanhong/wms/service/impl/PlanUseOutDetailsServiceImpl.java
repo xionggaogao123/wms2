@@ -76,6 +76,14 @@ public class PlanUseOutDetailsServiceImpl extends SuperServiceImpl<PlanUseOutDet
         return Result.success(jsonObject);
     }
 
+    @Override
+    public Result updatePlanUseOutDetails(UpdatePlanUseOutDetailsDTO updatePlanUseOutDetailsDTO) {
+        PlanUseOutDetails planUseOutDetails = new PlanUseOutDetails();
+        BeanUtil.copyProperties(updatePlanUseOutDetailsDTO,planUseOutDetails);
+        int update = planUseOutDetailsMapper.updateById(planUseOutDetails);
+        return update>0 ? Result.success() : Result.failure("更新失败");
+    }
+
     /**
      *
      * @param documentNumber

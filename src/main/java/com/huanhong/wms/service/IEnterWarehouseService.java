@@ -63,4 +63,5 @@ public interface IEnterWarehouseService extends SuperService<EnterWarehouse> {
      * @return
      */
     EnterWarehouse getEnterWarehouseByProcessInstanceId(String processInstanceId);
+
 }

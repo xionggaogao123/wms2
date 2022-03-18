@@ -61,8 +61,12 @@ public class SublibraryManagement extends SuperEntity {
     private Integer stopUsing;
 
     @TableField(value = "create_time" ,fill = FieldFill.INSERT)
-    @ApiModelProperty(value = "创建时间")
+    @ApiModelProperty(value = "入库时间")
     private LocalDateTime createTime;
+
+    @TableField(value = "last_update",fill = FieldFill.INSERT_UPDATE)
+    @ApiModelProperty(value = "最后更新时间")
+    private LocalDateTime lastUpdate;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "备注")

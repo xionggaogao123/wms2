@@ -2,6 +2,7 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -233,5 +234,26 @@ public class CargoSpaceManagementController extends BaseController {
             return Result.failure(ErrorCode.SYSTEM_ERROR, "获取库存信息失败");
         }
     }
+
+
+    @ApiOperationSupport(order = 7)
+    @ApiOperation(value = "PDA-获取对应货位的所有库存附带货位信息")
+    @GetMapping("/getInventoryInformationAndCargoSpaceByCargoSpaceId/{cargoSpaceId}")
+    public Result getAllInventoryForPDA(@PathVariable String cargoSpaceId) {
+        try {
+            JSONObject jsonObject = new JSONObject();
+            //库存信息
+            List<InventoryInformation> inventoryInformationList = iventoryInformationService.getInventoryInformationByCargoSpaceId(cargoSpaceId);
+            //货位信息
+            CargoSpaceManagement cargoSpaceManagement = cargoSpaceManagementService.getCargoSpaceByCargoSpaceId(cargoSpaceId);
+            jsonObject.put("cargoSpace",cargoSpaceManagement);
+            jsonObject.put("inventory",inventoryInformationList);
+            return Result.success(jsonObject);
+        } catch (Exception e) {
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "获取库存信息失败");
+        }
+    }
+
+
 }
 

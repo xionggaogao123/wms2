@@ -1,6 +1,8 @@
 package com.huanhong.wms.entity;
 
 import java.time.LocalDateTime;
+import java.util.Date;
+
 import com.huanhong.wms.SuperEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -18,7 +20,7 @@ public class ProcessAssignment extends SuperEntity {
     private String name;
 
     @ApiModelProperty(value = "计划类型")
-    private Boolean objectType;
+    private Integer objectType;
 
     @ApiModelProperty(value = "计划id")
     private Integer objectId;
@@ -45,7 +47,7 @@ public class ProcessAssignment extends SuperEntity {
     private String taskId;
 
     @ApiModelProperty(value = "任务审批状态:0-未处理，1-审批通过，2-驳回")
-    private Boolean status;
+    private Integer status;
 
     @ApiModelProperty(value = "任务办理人账号")
     private String userAccount;
@@ -54,7 +56,7 @@ public class ProcessAssignment extends SuperEntity {
     private String userName;
 
     @ApiModelProperty(value = "开始时间")
-    private LocalDateTime startTime;
+    private Date startTime;
 
     @ApiModelProperty(value = "备注")
     private String remark;

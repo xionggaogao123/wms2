@@ -1,15 +1,25 @@
 package com.huanhong.wms.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
-import org.springframework.web.bind.annotation.RequestMapping;
+import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.entity.AllocationPlan;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.bind.annotation.RestController;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.mapper.AllocationPlanMapper;
 import com.huanhong.wms.service.IAllocationPlanService;
+
+import javax.annotation.Resource;
+import javax.validation.Valid;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1//allocation-plan")
@@ -31,7 +41,7 @@ import com.huanhong.wms.service.IAllocationPlanService;
     @ApiOperation(value = "分页查询调拨计划主表", notes = "生成代码")
     @GetMapping("/page")
     public Result<Page<AllocationPlan>> page(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size,
-                                           @RequestParam Map<String, Object> search) {
+                                             @RequestParam Map<String, Object> search) {
         QueryWrapper<AllocationPlan> query = new QueryWrapper<>();
         query.orderByDesc("id");
         if (search.containsKey("search")) {

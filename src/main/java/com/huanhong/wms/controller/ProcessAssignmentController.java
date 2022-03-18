@@ -5,8 +5,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
+import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.ProcessAssignment;
+import com.huanhong.wms.entity.User;
+import com.huanhong.wms.entity.dto.UpPaStatus;
+import com.huanhong.wms.entity.param.ProcessAssignmentParam;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -23,61 +27,38 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/process-task")
-    @ApiSort()
-    @Api(tags = "流程任务表")
-    public class ProcessAssignmentController extends BaseController {
+@ApiSort()
+@Api(tags = "流程任务表")
+public class ProcessAssignmentController extends BaseController {
 
     @Resource
-    private IProcessAssignmentService process_taskService;
+    private IProcessAssignmentService processAssignmentService;
     @Resource
-    private ProcessAssignmentMapper process_taskMapper;
+    private ProcessAssignmentMapper processAssignmentMapper;
 
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "current", value = "当前页码"),
-        @ApiImplicitParam(name = "size", value = "每页行数"),
-        @ApiImplicitParam(name = "search", value = "聚合搜索（标题）"),
-    })
-    @ApiOperationSupport(order = 1)
-    @ApiOperation(value = "分页查询流程任务表", notes = "生成代码")
+
+    @ApiOperation(value = "分页查询流程任务表")
+    @ApiOperationSupport(ignoreParameters = {"countId", "records", "hitCount", "maxLimit", "optimizeCountSql", "orders", "searchCount"})
     @GetMapping("/page")
-    public Result<Page<ProcessAssignment>> page(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size,
-                                          @RequestParam Map<String, Object> search) {
-        QueryWrapper<ProcessAssignment> query = new QueryWrapper<>();
-        query.orderByDesc("id");
-        if (search.containsKey("search")) {
-            String text = search.get("search").toString();
-            if (StrUtil.isNotEmpty(text)) {
-                 query.and(qw -> qw.like("title", text).or()
-                    .like("user_name", text)
-             );
-            }
-        }
-            return Result.success(process_taskMapper.selectPage(new Page<>(current, size), query));
-        }
+    public Result<Page<ProcessAssignment>> page(Page<ProcessAssignment> page, ProcessAssignmentParam param) {
+        LoginUser loginUser = this.getLoginUser();
+        param.setUserAccount(loginUser.getLoginName());
+        return processAssignmentService.selectPage(page, param);
+    }
 
-        @ApiOperationSupport(order = 2)
-        @ApiOperation(value = "添加流程任务表", notes = "生成代码")
-        @PostMapping
-        public Result add(@Valid @RequestBody ProcessAssignment process_task) {
-            int insert = process_taskMapper.insert(process_task);
-            return render(insert > 0);
-        }
 
-        @ApiOperationSupport(order = 3)
-        @ApiOperation(value = "更新流程任务表", notes = "生成代码")
-        @PutMapping
-        public Result update(@Valid @RequestBody ProcessAssignment process_task) {
-             int update = process_taskMapper.updateById(process_task);
-              return render(update > 0);
-        }
+    @ApiOperation(value = "更新流程审批状态")
+    @PostMapping("/status")
+    public Result<Integer> update(@Valid @RequestBody UpPaStatus up) {
+        return processAssignmentService.updateProcessAssignmentStatusByParam(up);
+    }
 
-        @ApiOperationSupport(order = 4)
-        @ApiOperation(value = "删除流程任务表", notes = "生成代码")
-        @DeleteMapping("/{id}")
-        public Result delete(@PathVariable Integer id) {
-            int i = process_taskMapper.deleteById(id);
-            return render(i > 0);
-        }
+    @ApiOperation(value = "删除流程任务表", notes = "生成代码")
+    @DeleteMapping("/{id}")
+    public Result delete(@PathVariable Integer id) {
+        int i = processAssignmentMapper.deleteById(id);
+        return render(i > 0);
+    }
 
 
 }

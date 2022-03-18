@@ -22,8 +22,8 @@ public class ProcurementPlan extends SuperEntity {
     @ApiModelProperty(value = "物料用途")
     private String materialUse;
 
-    @ApiModelProperty(value = "计划类别")
-    private String planCategory;
+    @ApiModelProperty(value = "计划类别-正常、加急、补计划、请选择（默认）")
+    private Integer planClassification;
 
     @ApiModelProperty(value = "计划时间")
     private String planningTime;

@@ -27,7 +27,7 @@ public class ArrivalVerification extends SuperEntity {
     private String rfqNumber;
 
     @ApiModelProperty(value = "计划类别-正常、加急、补计划、请选择（默认）")
-    private String planClassification;
+    private Integer planClassification;
 
     @ApiModelProperty(value = "附件-图片文件地址或图片MD5")
     private String appendix;

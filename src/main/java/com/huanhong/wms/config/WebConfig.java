@@ -4,6 +4,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.huanhong.common.interceptor.LogInterceptor;
+import com.huanhong.common.interceptor.UserInfoInterceptor;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;
@@ -39,6 +40,8 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         // 日志拦截器
         registry.addInterceptor(new LogInterceptor());
+        // 用户信息拦截器
+        registry.addInterceptor(new UserInfoInterceptor());
     }
 
     /**

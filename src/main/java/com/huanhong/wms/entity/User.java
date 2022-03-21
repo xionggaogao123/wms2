@@ -1,5 +1,6 @@
 package com.huanhong.wms.entity;
 
+import cn.hutool.core.lang.Dict;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.huanhong.wms.SuperBsEntity;
 import io.swagger.annotations.ApiModel;
@@ -62,8 +63,15 @@ public class User extends SuperBsEntity {
     @ApiModelProperty(value = "状态 0.禁用  1.启用")
     private Integer state;
 
+    @ApiModelProperty(value = "是否为管理员 1.是 0.否")
+    private Integer isAdmin;
+
     @ApiModelProperty(value = "部门列表")
     @TableField(exist = false)
     private List<Map<String, Object>> depts;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "用户角色")
+    private List<Dict> roles;
 
 }

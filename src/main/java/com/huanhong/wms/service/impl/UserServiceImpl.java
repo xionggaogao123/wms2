@@ -2,6 +2,7 @@ package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.lang.Dict;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
@@ -9,6 +10,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.huanhong.wms.SuperEntity;
 import com.huanhong.wms.SuperServiceImpl;
+import com.huanhong.wms.bean.Constant;
 import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.Company;
@@ -21,6 +23,7 @@ import com.huanhong.wms.mapper.CompanyMapper;
 import com.huanhong.wms.mapper.DeptMapper;
 import com.huanhong.wms.mapper.UserMapper;
 import com.huanhong.wms.service.IDeptService;
+import com.huanhong.wms.service.ISysRoleService;
 import com.huanhong.wms.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -31,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -58,6 +62,9 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
 
     @Resource
     private UserMapper userMapper;
+
+    @Resource
+    private ISysRoleService sysRoleService;
 
     @Override
     public Result<User> checkLogin(LoginDTO login) {
@@ -90,6 +97,11 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         if (!company.getState().equals(1)) {
             return Result.failure("公司账号已被禁用");
         }
+
+        // 角色信息
+        List<Dict> roles = sysRoleService.getLoginRoles(user.getId());
+        user.setRoles(roles);
+
         user.setPassword(null);
         return Result.success(user);
     }

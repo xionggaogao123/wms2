@@ -19,7 +19,7 @@ public class ProcessAssignment extends SuperEntity {
     @ApiModelProperty(value = "任务名称")
     private String name;
 
-    @ApiModelProperty(value = "计划类型")
+    @ApiModelProperty(value = "计划类型 1、出库 2、入库 3、调拨 4、采购计划 5、需求计划 6、到货检验 ")
     private Integer objectType;
 
     @ApiModelProperty(value = "计划id")

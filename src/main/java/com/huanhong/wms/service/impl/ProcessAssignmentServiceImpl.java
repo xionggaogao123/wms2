@@ -218,7 +218,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
         } else {
             query.eq("status", param.getStatus());
         }
-        if (param.getObjectType() != null && param.getObjectType() > 5) {
+        if (param.getObjectType() != null && param.getObjectType() >0 && param.getObjectType() < 5) {
             query.eq("object_type", param.getObjectType());
         }
         if (StrUtil.isNotBlank(param.getDocumentNumber())) {

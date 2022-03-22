@@ -41,6 +41,24 @@ public interface Constant {
      * 编码
      */
     String UTF8 = "UTF-8";
+    /**
+     * id
+     */
+    String ID = "id";
 
+    /**
+     * 名称
+     */
+    String NAME = "name";
+
+    /**
+     * 编码
+     */
+    String CODE = "code";
+
+    /**
+     * 值
+     */
+    String VALUE = "value";
 }
 

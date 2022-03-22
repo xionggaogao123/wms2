@@ -9,6 +9,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.net.InetAddress;
@@ -20,6 +21,7 @@ import java.net.UnknownHostException;
 @ServletComponentScan
 @ComponentScan("com.huanhong")
 @SpringBootApplication
+@EnableScheduling
 public class Application {
 
     public static void main(String[] args) throws UnknownHostException {

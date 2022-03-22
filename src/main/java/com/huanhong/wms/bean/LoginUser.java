@@ -3,6 +3,8 @@ package com.huanhong.wms.bean;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author ldy81
  * @date 2019/12/12 16:17
@@ -27,5 +29,12 @@ public class LoginUser {
 
     @ApiModelProperty(value = "所属公司ID")
     private Integer companyId;
+
+    @ApiModelProperty(value = "是否为管理员 1.是 0.否")
+    private Integer isAdmin;
+
+    @ApiModelProperty(value = "用户角色 ids")
+    private List<String> loginUserRoleIds;
+
 
 }

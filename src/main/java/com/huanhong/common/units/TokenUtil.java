@@ -2,6 +2,7 @@ package com.huanhong.common.units;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
+import com.huanhong.wms.bean.Constant;
 import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.entity.User;
 import io.jsonwebtoken.Claims;
@@ -10,6 +11,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Toke工具类
@@ -31,12 +34,16 @@ public class TokenUtil {
      */
     public static String createJWT(User user, int timeOutMinute) {
         Date now = new Date();
+        // 获取角色id集合
+        List<Long> roleIdList = user.getRoles().stream().map(dict -> Convert.toLong(dict.get(Constant.ID))).collect(Collectors.toList());
         JwtBuilder builder = Jwts.builder().setId(user.getId().toString())
                 .setSubject(user.getLoginName())
                 .setIssuer(user.getUserName())
                 .claim("pl", user.getPermissionLevel())
                 .claim("c", user.getCompanyId())
                 .claim("pc", user.getParentCompanyId())
+                .claim("a", user.getIsAdmin())
+                .claim("r", roleIdList)
                 .signWith(SignatureAlgorithm.HS256, TOKEN_SECRET)
                 .setIssuedAt(now);
         if (timeOutMinute > 0) {
@@ -60,6 +67,8 @@ public class TokenUtil {
         user.setPermissionLevel(body.get("pl", String.class));
         user.setCompanyId(body.get("c", Integer.class));
         user.setParentCompanyId(body.get("pc", Integer.class));
+        user.setIsAdmin(body.get("a", Integer.class));
+        user.setLoginUserRoleIds(body.get("r", List.class));
         return user;
     }
 
@@ -80,6 +89,8 @@ public class TokenUtil {
                 .claim("pl", body.get("pl"))
                 .claim("c", body.get("c"))
                 .claim("pc", body.get("pc"))
+                .claim("a", body.get("a"))
+                .claim("r", body.get("r"))
                 .signWith(SignatureAlgorithm.HS256, TOKEN_SECRET)
                 .setIssuedAt(now);
         if (timeOutMinute > 0) {
@@ -91,12 +102,16 @@ public class TokenUtil {
     public static String refreshJWT(User user, String jwt) {
         Date now = new Date();
         Claims body = Jwts.parser().setSigningKey(TOKEN_SECRET).parseClaimsJws(jwt).getBody();
+        // 获取角色id集合
+        List<Long> roleIdList = user.getRoles().stream().map(dict -> Convert.toLong(dict.get(Constant.ID))).collect(Collectors.toList());
         JwtBuilder builder = Jwts.builder().setId(user.getId().toString())
                 .setSubject(user.getLoginName())
                 .setIssuer(user.getUserName())
                 .claim("pl", user.getPermissionLevel())
                 .claim("c", user.getCompanyId())
                 .claim("pc", user.getParentCompanyId())
+                .claim("a", user.getIsAdmin())
+                .claim("r", roleIdList)
                 .signWith(SignatureAlgorithm.HS256, TOKEN_SECRET)
                 .setIssuedAt(now);
         builder.setExpiration(body.getExpiration());

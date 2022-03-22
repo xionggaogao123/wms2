@@ -23,8 +23,10 @@ public class EntityUtils {
                 jsonObject.put(prefixKey, fieldNamePlanUseOut(prefixKey));
             } else if ("enterWarehouse".equals(key)) {
                 jsonObject.put(prefixKey, fieldNameEnterWarehouse(prefixKey));
-            }else if ("requirementsPlanning".equals(key)){
-                jsonObject.put(prefixKey,fieldNameRequirementsPlanning(prefixKey));
+            } else if ("requirementsPlanning".equals(key)) {
+                jsonObject.put(prefixKey, fieldNameRequirementsPlanning(prefixKey));
+            } else if ("procurementPlan".equals(key)) {
+                jsonObject.put(prefixKey, fieldNameProcurementPlan(prefixKey));
             }
         }
         return jsonObject;
@@ -474,6 +476,161 @@ public class EntityUtils {
                 jsonObject.put("name", "预估金额");
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "input");
+                return jsonObject;
+            case "arrivalTime":
+                jsonObject.put("name", "要求到货时间");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readonly");
+                return jsonObject;
+            case "usePurpose":
+                jsonObject.put("name", "使用用途");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readonly");
+                return jsonObject;
+            case "usePlace":
+                jsonObject.put("name", "使用地点");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readonly");
+                return jsonObject;
+            case "version":
+                jsonObject.put("name", "版本号");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "hiden");
+                return jsonObject;
+            default:
+                return null;
+        }
+    }
+
+    public JSONObject fieldNameProcurementPlan(String key) {
+        JSONObject jsonObject = new JSONObject();
+        JSONObject value = new JSONObject();
+        switch (key) {
+            case "id":
+                jsonObject.put("name", "id");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "serialVersionUID":
+                jsonObject.put("name", "id");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "hiden");
+                return jsonObject;
+            case "originalDocumentNumber":
+                jsonObject.put("name", "需求计划单据编号");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "planNumber":
+                jsonObject.put("name", "采购计划单据编号");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "processInstanceId":
+                jsonObject.put("name", "流程id");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "hiden");
+                return jsonObject;
+            case "warehouseId":
+                jsonObject.put("name", "仓库编号");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "materialUse":
+                jsonObject.put("name", "物料用途");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "planClassification":
+                jsonObject.put("name", "计划类别");
+                jsonObject.put("type", "select");
+                jsonObject.put("class", "readOnly");
+                //下拉菜单的值
+                value.put("1", "正常");
+                value.put("2", "加急");
+                value.put("3", "补计划");
+                jsonObject.put("value", value);
+                return jsonObject;
+            case "status":
+                jsonObject.put("name", "单据状态");
+                jsonObject.put("type", "select");
+                jsonObject.put("class", "readOnly");
+                //下拉菜单的值
+                value.put("1", "草拟");
+                value.put("2", "审批中");
+                value.put("3", "审批生效");
+                value.put("4", "作废");
+                jsonObject.put("value", value);
+                return jsonObject;
+            case "planningDepartment":
+                jsonObject.put("name", "计划部门");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "planner":
+                jsonObject.put("name", "计划员");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "demandDepartment":
+                jsonObject.put("name", "需求部门");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "remark":
+                jsonObject.put("name", "备注");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "input");
+                return jsonObject;
+            case "createTime":
+                jsonObject.put("name", "创建时间");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "lastUpdate":
+                jsonObject.put("name", "最后更新时间");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "materialCoding":
+                jsonObject.put("name", "物料编码");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "requiredQuantity":
+                jsonObject.put("name", "需求数量");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "plannedPurchaseQuantity":
+                jsonObject.put("name", "计划采购数量");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "input");
+                return jsonObject;
+            case "approvedQuantity":
+                jsonObject.put("name", "批准数量");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "input");
+                return jsonObject;
+            case "estimatedUnitPric":
+                jsonObject.put("name", "预估单价");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "input");
+                return jsonObject;
+            case "estimatedAmount":
+                jsonObject.put("name", "预估金额");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "input");
+                return jsonObject;
+            case "inventory":
+                jsonObject.put("name", "库存数量");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "safetyStock":
+                jsonObject.put("name", "安全库存");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
                 return jsonObject;
             case "arrivalTime":
                 jsonObject.put("name", "要求到货时间");

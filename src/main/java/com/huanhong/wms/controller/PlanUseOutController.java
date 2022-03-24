@@ -771,7 +771,7 @@ public class PlanUseOutController extends BaseController {
             log.error("回滚库存或更新详细信息异常", e);
             return Result.failure("回滚库存或更新详细信息失败");
         }
-        return Result.failure("未知错误！");
+        return Result.success();
     }
 }
 

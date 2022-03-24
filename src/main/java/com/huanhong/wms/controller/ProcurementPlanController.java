@@ -178,7 +178,7 @@ public class ProcurementPlanController extends BaseController {
                 JSONObject jsonResult = new JSONObject();
                 jsonResult.put("tableName", "procurement_plan");
                 jsonResult.put("main", entityUtils.jsonField("procurementPlan", new ProcurementPlan()));
-                jsonResult.put("details", entityUtils.jsonField("procurementPlan", new ProcurementPlan()));
+                jsonResult.put("details", entityUtils.jsonField("procurementPlan", new ProcurementPlanDetails()));
                 jsonResult.put("mainValue", procurementPlan);
                 jsonResult.put("detailsValue", procurementPlanDetailsList);
                 jsonResult.put("mainUpdate", "/wms/api/v1/procurement-plan/update");

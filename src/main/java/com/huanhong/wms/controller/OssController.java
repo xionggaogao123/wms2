@@ -14,6 +14,7 @@ import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.Oss;
+import com.huanhong.wms.entity.User;
 import com.huanhong.wms.entity.vo.UploadOssVo;
 import com.huanhong.wms.mapper.OssMapper;
 import com.huanhong.wms.mapper.UserMapper;
@@ -142,6 +143,12 @@ public class OssController extends BaseController {
         data.setFileName(oss.getUrl());
         data.setFileUrl(ossProperties.getYunUrl() +"/" +oss.getUrl());
         data.setObjectId(objectId);
+        if ("sign".equals(objectType)){
+            User user = new User();
+            user.setId(loginUser.getId());
+            user.setSignUrl(data.getFileUrl());
+            userMapper.updateById(user);
+        }
         return Result.success(data);
     }
 

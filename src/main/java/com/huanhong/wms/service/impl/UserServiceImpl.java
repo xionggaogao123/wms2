@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.huanhong.wms.SuperEntity;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.Constant;
+import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.Company;
@@ -18,6 +19,7 @@ import com.huanhong.wms.entity.Dept;
 import com.huanhong.wms.entity.User;
 import com.huanhong.wms.entity.dto.AddUserDTO;
 import com.huanhong.wms.entity.dto.LoginDTO;
+import com.huanhong.wms.entity.dto.SignPasswordDTO;
 import com.huanhong.wms.entity.dto.UpUserDTO;
 import com.huanhong.wms.mapper.CompanyMapper;
 import com.huanhong.wms.mapper.DeptMapper;
@@ -192,9 +194,9 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
     @Override
     public boolean getUserByDept(int deptId) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq("dept_id",deptId);
+        queryWrapper.eq("dept_id", deptId);
         int count = userMapper.selectCount(queryWrapper);
-        return count>0;
+        return count > 0;
     }
 
     /**
@@ -207,6 +209,44 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
     public boolean isStopUsing(Integer userId) {
         int count = this.baseMapper.selectCount(Wrappers.<User>lambdaQuery().eq(SuperEntity::getId, userId).eq(User::getState, 0));
         return count > 0;
+    }
+
+    @Override
+    public Result<Integer> setSingPassword(SignPasswordDTO dto) {
+        User user = userMapper.selectById(dto.getId());
+        User upUser = new User();
+        upUser.setId(dto.getId());
+        upUser.setSignPassword(dto.getSignPassword());
+        int update = 0;
+        //添加签名密码
+        if (StrUtil.isNotBlank(dto.getCommitPassword())) {
+            if (StrUtil.isBlank(user.getSignPassword())) {
+                if (!dto.getSignPassword().equals(dto.getCommitPassword())) {
+                    return Result.failure(ErrorCode.PARAM_ERROR, "两次输入密码不一致");
+                }
+                update = userMapper.updateById(upUser);
+                if (update > 0) {
+                    return Result.success();
+                }
+                return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常，请稍后重试");
+            }
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "已设置密码");
+        }
+        //修改密码
+        if (StrUtil.isNotBlank(dto.getOldPassword())) {
+            if (!user.getSignPassword().equals(dto.getOldPassword())) {
+                return Result.failure(ErrorCode.PARAM_ERROR, "旧密码输入有误，请确认");
+            }
+            if (dto.getSignPassword().equals(dto.getOldPassword())) {
+                return Result.failure(ErrorCode.PARAM_ERROR, "新密码不得与原密一致，请重新设置");
+            }
+            update = userMapper.updateById(upUser);
+        }
+        if (update > 0) {
+            return Result.success();
+        }
+        return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常，请稍后重试");
+
     }
 
     private void getDeptUp(List<Map<String, Object>> depts, Integer deptId) {

@@ -30,7 +30,7 @@ public class Oss extends SuperEntity {
     @ApiModelProperty(value = "资源所属对象ID")
     private Integer objectId;
 
-    @ApiModelProperty(value = "资源所属对象类型")
+    @ApiModelProperty(value = "资源所属对象类型 sign:签名图片")
     private String objectType;
 
     @ApiModelProperty(value = "资源路径")

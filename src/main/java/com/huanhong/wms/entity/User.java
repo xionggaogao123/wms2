@@ -74,4 +74,13 @@ public class User extends SuperBsEntity {
     @ApiModelProperty(value = "用户角色")
     private List<Dict> roles;
 
+    @ApiModelProperty(value = "签名图片")
+    private String signUrl;
+
+    @ApiModelProperty(value = "签名密码")
+    private String signPassword;
+
+    @ApiModelProperty(value = "上次输入密码时间")
+    private String lastSign;
+
 }

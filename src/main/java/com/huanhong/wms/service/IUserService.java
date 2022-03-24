@@ -6,6 +6,7 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.User;
 import com.huanhong.wms.entity.dto.AddUserDTO;
 import com.huanhong.wms.entity.dto.LoginDTO;
+import com.huanhong.wms.entity.dto.SignPasswordDTO;
 import com.huanhong.wms.entity.dto.UpUserDTO;
 
 /**
@@ -39,4 +40,5 @@ public interface IUserService extends SuperService<User> {
     //查询用户是否停用
     boolean isStopUsing(Integer userId);
 
+    Result<Integer> setSingPassword(SignPasswordDTO dto);
 }

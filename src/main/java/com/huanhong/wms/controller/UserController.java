@@ -14,6 +14,7 @@ import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.User;
 import com.huanhong.wms.entity.dto.AddUserDTO;
+import com.huanhong.wms.entity.dto.SignPasswordDTO;
 import com.huanhong.wms.entity.dto.UpUserDTO;
 import com.huanhong.wms.mapper.UserMapper;
 import com.huanhong.wms.service.IDeptService;
@@ -159,6 +160,21 @@ public class UserController extends BaseController {
         return userService.updateUser(loginUser, dto);
     }
 
+    @ApiOperationSupport(order = 8)
+    @ApiOperation("设置、修改签名密码")
+    @PostMapping("/signPass")
+    public Result<Integer> setSignPassword(@Valid @RequestBody SignPasswordDTO dto) {
+
+        LoginUser loginUser = this.getLoginUser();
+        if (StrUtil.isBlank(dto.getSignPassword())) {
+           return Result.failure("签名密码为空");
+        }
+        if (StrUtil.isNotBlank(dto.getOldPassword()) && StrUtil.isNotBlank(dto.getCommitPassword())) {
+            return Result.failure("参数有误");
+        }
+        dto.setId(loginUser.getId());
+        return userService.setSingPassword(dto);
+    }
 
     @ApiOperationSupport(order = 9)
     @ApiOperation("删除用户")

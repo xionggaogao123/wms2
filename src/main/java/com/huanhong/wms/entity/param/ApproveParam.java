@@ -26,7 +26,7 @@ public class ApproveParam {
     @ApiModelProperty(value = "审批类型 1.通过 2.驳回")
     private Integer type;
 
-    @ApiModelProperty(value = "用户id")
+    @ApiModelProperty(value = "用户id",hidden = true)
     private Integer userId;
 
 

@@ -137,18 +137,21 @@ public class OssController extends BaseController {
         oss.setUserId(loginUser.getId());
         oss.setSort(sort);
         oss.setState(2);
+        if ("sign".equals(objectType)){
+           oss.setObjectId(loginUser.getId());
+        }
         ossMapper.insert(oss);
         UploadOssVo data = new UploadOssVo();
         data.setId(oss.getId());
         data.setFileName(oss.getUrl());
         data.setFileUrl(ossProperties.getYunUrl() +"/" +oss.getUrl());
         data.setObjectId(objectId);
-        if ("sign".equals(objectType)){
-            User user = new User();
-            user.setId(loginUser.getId());
-            user.setSignUrl(data.getFileUrl());
-            userMapper.updateById(user);
-        }
+        //if ("sign".equals(objectType)){
+        //    User user = new User();
+        //    user.setId(loginUser.getId());
+        //    user.setSignUrl(data.getFileUrl());
+        //    userMapper.updateById(user);
+        //}
         return Result.success(data);
     }
 

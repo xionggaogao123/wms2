@@ -27,7 +27,7 @@ import java.util.Map;
 @ApiSort()
 @Api(tags = "消息表")
 @RestController
-@RequestMapping("/message")
+@RequestMapping("/v1/message")
 public class MessageController extends BaseController {
 
     @Resource
@@ -43,7 +43,9 @@ public class MessageController extends BaseController {
     @GetMapping("/page")
     public Result<Page<Message>> page(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size,
                                       @RequestParam Map<String, Object> search) {
+        LoginUser loginUser = this.getLoginUser();
         QueryWrapper<Message> query = new QueryWrapper<>();
+        query.eq("user_id",loginUser.getId());
         query.orderByDesc("id");
         if (search.containsKey("search")) {
             String text = search.get("search").toString();
@@ -69,7 +71,7 @@ public class MessageController extends BaseController {
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "更新消息为已读")
     @PostMapping("/read")
-    public Result<Integer> updateStatus(@Valid @RequestBody Integer id) {
+    public Result<Integer> updateStatus(@Valid @RequestParam Integer id) {
         LoginUser loginUser = this.getLoginUser();
         Message message = messageService.getById(id);
         if (!loginUser.getId().equals(message.getUserId())){

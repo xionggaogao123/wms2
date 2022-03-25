@@ -64,6 +64,8 @@ public class ProcessAssignmentController extends BaseController {
     @ApiOperation(value = "审批")
     @PostMapping("/approve")
     public Result<Integer> approve(@Valid @RequestBody ApproveParam param) {
+        LoginUser loginUser = this.getLoginUser();
+        param.setUserId(loginUser.getId());
         return processAssignmentService.approveTaskByParam(param);
     }
 

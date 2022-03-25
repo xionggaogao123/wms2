@@ -307,7 +307,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
             if (complete.isOk()) {
                 update = processAssignmentMapper.updateById(pa);
             } else {
-                return Result.failure("驳回失败，请稍后重试");
+                return Result.failure("审批失败，请稍后重试");
             }
         }
         //驳回

@@ -28,12 +28,12 @@ public class WarehouseManagementServiceImpl extends SuperServiceImpl<WarehouseMa
     @Resource
     private WarehouseManagementMapper warehouseManagementMapper;
 
+
     @Override
-    public List<WarehouseManagement> getWarehouseByCompanyId(String CompanyId) {
-        QueryWrapper<WarehouseManagement> wrapper = new QueryWrapper<>();
-        wrapper.eq("company_id", CompanyId);
-        List<WarehouseManagement> warehouseManagementList = warehouseManagementMapper.selectList(wrapper);
-        return warehouseManagementList;
+    public List<WarehouseManagement> getWarehouseByCompanyId(Integer CompanyId) {
+        QueryWrapper<WarehouseManagement>  queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("company_id", CompanyId);
+        return warehouseManagementMapper.selectList(queryWrapper);
     }
 
     @Override
@@ -83,4 +83,5 @@ public class WarehouseManagementServiceImpl extends SuperServiceImpl<WarehouseMa
         WarehouseManagement warehouseManagement = getWarehouseByWarehouseId(warehouseId);
         return warehouseManagement.getStopUsing();
     }
+
 }

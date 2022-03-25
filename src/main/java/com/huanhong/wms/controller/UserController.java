@@ -13,12 +13,14 @@ import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.User;
+import com.huanhong.wms.entity.WarehouseManagement;
 import com.huanhong.wms.entity.dto.AddUserDTO;
 import com.huanhong.wms.entity.dto.SignPasswordDTO;
 import com.huanhong.wms.entity.dto.UpUserDTO;
 import com.huanhong.wms.mapper.UserMapper;
 import com.huanhong.wms.service.IDeptService;
 import com.huanhong.wms.service.IUserService;
+import com.huanhong.wms.service.IWarehouseManagementService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -28,6 +30,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 
@@ -46,6 +50,9 @@ public class UserController extends BaseController {
 
     @Resource
     private IDeptService deptService;
+
+    @Resource
+    private IWarehouseManagementService warehouseManagementService;
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -193,4 +200,21 @@ public class UserController extends BaseController {
         return render(i > 0);
     }
 
+
+    @ApiOperationSupport(order = 9)
+    @ApiOperation("根据登录用户获取仓库Id")
+    @GetMapping("/getWarehouseIdByUser")
+    public Result getWarehouseIdByUserId(LoginUser loginUser) {
+        Integer companyId = loginUser.getCompanyId();
+        List<WarehouseManagement> warehouseManagementList = warehouseManagementService.getWarehouseByCompanyId(companyId);
+        if (ObjectUtil.isEmpty(warehouseManagementList)){
+            return Result.success("未找到仓库信息");
+        }
+        List<String> listWarehouseId = new ArrayList<>();
+        for (WarehouseManagement warehouse : warehouseManagementList
+             ) {
+            listWarehouseId.add(warehouse.getWarehouseId());
+        }
+        return Result.success(listWarehouseId);
+    }
 }

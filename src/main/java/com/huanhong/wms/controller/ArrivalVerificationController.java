@@ -30,7 +30,7 @@ import java.util.List;
 @Api(tags = "到货检验主表")
 @RestController
 @Slf4j
-@RequestMapping("/arrival-verification")
+@RequestMapping("/v1//arrival-verification")
 public class ArrivalVerificationController extends BaseController {
 
     @Resource

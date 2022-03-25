@@ -19,7 +19,7 @@ public interface IWarehouseManagementService extends SuperService<WarehouseManag
 
 
     //根据公司ID获取所属库房信息
-    List<WarehouseManagement> getWarehouseByCompanyId(String CompanyId);
+    List<WarehouseManagement> getWarehouseByCompanyId(Integer CompanyId);
 
     //根据库房编号获取获取库房信息
     WarehouseManagement getWarehouseByWarehouseId(String WarehouseId);
@@ -36,5 +36,6 @@ public interface IWarehouseManagementService extends SuperService<WarehouseManag
      * @return
      */
     int isStopUsing(String warehouseId);
+
 
 }

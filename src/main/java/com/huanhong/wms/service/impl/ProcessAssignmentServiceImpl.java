@@ -1,5 +1,6 @@
 package com.huanhong.wms.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -8,12 +9,17 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.common.units.StrUtils;
 import com.huanhong.common.units.task.HistoryTaskVo;
+import com.huanhong.common.units.task.RejectParam;
+import com.huanhong.common.units.task.TaskCompleteParam;
 import com.huanhong.common.units.task.TaskQueryUtil;
+import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.UpPaStatus;
+import com.huanhong.wms.entity.param.ApproveParam;
 import com.huanhong.wms.entity.param.ProcessAssignmentParam;
 import com.huanhong.wms.mapper.*;
+import com.huanhong.wms.service.IMessageService;
 import com.huanhong.wms.service.IProcessAssignmentService;
 import com.huanhong.wms.SuperServiceImpl;
 import org.springframework.stereotype.Service;
@@ -51,6 +57,8 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
     private EnterWarehouseMapper enterWarehouseMapper;
     @Resource
     private UserMapper userMapper;
+    @Resource
+    private IMessageService messageService;
 
     @Override
     public Result<Integer> syncProcessAssignment() {
@@ -218,7 +226,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
         } else {
             query.eq("status", param.getStatus());
         }
-        if (param.getObjectType() != null && param.getObjectType() >0 && param.getObjectType() < 5) {
+        if (param.getObjectType() != null && param.getObjectType() > 0 && param.getObjectType() < 5) {
             query.eq("object_type", param.getObjectType());
         }
         if (StrUtil.isNotBlank(param.getDocumentNumber())) {
@@ -252,6 +260,110 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
             return Result.success();
         }
         return Result.failure("请稍后重试");
+    }
+
+    @Override
+    public Result<Integer> approveTaskByParam(ApproveParam param) {
+        if (param.getType() != 1 && param.getType() != 2) {
+            return Result.failure(ErrorCode.PARAM_ERROR, "请选择类型");
+        }
+        if (StrUtil.isBlank(param.getSignPassWord())) {
+            return Result.failure(ErrorCode.PARAM_ERROR, "签名密码为空");
+        }
+        User user = userMapper.selectById(param.getUserId());
+        if (StrUtil.isBlank(user.getSignUrl())) {
+            return Result.failure(ErrorCode.PARAM_ERROR, "未设置用户签名");
+        }
+        if (StrUtil.isBlank(user.getSignPassword())) {
+            return Result.failure(ErrorCode.PARAM_ERROR, "未设置签名密码");
+        }
+        if (!user.getSignPassword().equals(param.getSignPassWord())) {
+            return Result.failure(ErrorCode.PARAM_ERROR, "签名密码不正确");
+        }
+        if (StrUtil.isBlank(param.getTaskId())) {
+            return Result.failure("任务ID不得为空");
+        }
+        String taskId = param.getTaskId();
+        ProcessAssignment processAssignment = processAssignmentMapper.selectList(new QueryWrapper<ProcessAssignment>().eq("task_id", taskId).eq("status", 0)).get(0);
+        if (processAssignment == null) {
+            return Result.failure("该任务不存在");
+        }
+        ProcessAssignment pa = new ProcessAssignment();
+        pa.setId(processAssignment.getId());
+        pa.setStatus(param.getType());
+        pa.setRemark(param.getMessage() == null ? "" : param.getMessage());
+        int update = 0;
+        //审批通过
+        if (param.getType() == 1) {
+            TaskCompleteParam completeParam = new TaskCompleteParam();
+            completeParam.setTaskId(taskId);
+            completeParam.setMessage(param.getMessage());
+            completeParam.setVariables(param.getVariables());
+            completeParam.setUsername(param.getUsername());
+            Result complete = TaskQueryUtil.complete(completeParam);
+            if (complete.isOk()) {
+                update = processAssignmentMapper.updateById(pa);
+            } else {
+                return Result.failure("驳回失败，请稍后重试");
+            }
+        }
+        //驳回
+        if (param.getType() == 2) {
+            RejectParam rejectParam = new RejectParam();
+            rejectParam.setTaskId(taskId);
+            rejectParam.setIsFirst(param.getIsFirst());
+            rejectParam.setUsername(param.getUsername());
+            rejectParam.setMessage(param.getMessage());
+            rejectParam.setVariables(param.getVariables());
+            Result rejectResult = TaskQueryUtil.reject(rejectParam);
+            if (rejectResult.isOk()) {
+                update = processAssignmentMapper.updateById(pa);
+            } else {
+                return Result.failure("驳回失败，请稍后重试");
+            }
+
+        }
+        if (update > 0) {
+            if (param.getAccounts() != null) {
+                if (param.getAccounts().size() > 0) {
+                    // TODO 推送抄送消息
+                    List<String> accounts = param.getAccounts();
+                    List<Message> messages = new ArrayList<>();
+                    for (String account : accounts) {
+                        User receiver = userMapper.getUserByAccount(account);
+                        if (receiver == null) {
+                            continue;
+                        }
+                        Message message = new Message();
+                        message.setStatus(0);
+                        message.setUserName(receiver.getUserName());
+                        message.setUserId(receiver.getId());
+                        message.setDocumentNumber(processAssignment.getDocumentNumber());
+                        message.setObjectId(processAssignment.getObjectId());
+                        message.setObjectType(processAssignment.getObjectType());
+                        message.setType(0);
+                        message.setHandleUserId(user.getId());
+                        message.setHandleUserName(user.getUserName());
+                        message.setPlanClassification(processAssignment.getPlanClassification());
+                        message.setProcessInstanceId(processAssignment.getProcessInstanceId());
+                        messages.add(message);
+                    }
+                    if (messages.size() > 0) {
+                        boolean batchAdd = messageService.saveBatch(messages);
+                        if (batchAdd) {
+                            //TODO 推送消息
+                            return Result.success();
+                        } else {
+                            return Result.failure("消息抄送失败");
+                        }
+                    }
+
+                }
+            }
+            return Result.success();
+        }
+        return Result.failure("请稍后重试");
+
     }
 
     public Map<String, List<HistoryTaskVo>> groupByProcessInstanceId(List<HistoryTaskVo> historyTaskVos) {

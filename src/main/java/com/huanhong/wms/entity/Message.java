@@ -26,7 +26,7 @@ public class Message extends SuperEntity {
     private Integer objectId;
 
     @ApiModelProperty(value = "计划类别-正常、加急、补计划、请选择（默认）")
-    private Boolean planClassification;
+    private Integer planClassification;
 
     @ApiModelProperty(value = "编号")
     private String documentNumber;

@@ -10,6 +10,7 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.ProcessAssignment;
 import com.huanhong.wms.entity.User;
 import com.huanhong.wms.entity.dto.UpPaStatus;
+import com.huanhong.wms.entity.param.ApproveParam;
 import com.huanhong.wms.entity.param.ProcessAssignmentParam;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -59,6 +60,13 @@ public class ProcessAssignmentController extends BaseController {
         int i = processAssignmentMapper.deleteById(id);
         return render(i > 0);
     }
+
+    @ApiOperation(value = "审批")
+    @PostMapping("/approve")
+    public Result<Integer> approve(@Valid @RequestBody ApproveParam param) {
+        return processAssignmentService.approveTaskByParam(param);
+    }
+
 
 
 }

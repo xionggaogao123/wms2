@@ -22,13 +22,16 @@ public class AddMessageDTO{
     @ApiModelProperty(value = "计划id")
     private Integer objectId;
 
+    @ApiModelProperty(value = "任务id")
+    private String taskId;
+
     @ApiModelProperty(value = "操作人ID",hidden = true)
     private Integer handleUserId;
 
     @ApiModelProperty(value = "操作人名称",hidden = true)
     private String handleUserName;
 
-    @ApiModelProperty(value = "用户id")
+    @ApiModelProperty(value = "用户id",hidden = true)
     private Integer userId;
 
 

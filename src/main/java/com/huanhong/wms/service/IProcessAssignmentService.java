@@ -5,6 +5,7 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.ProcessAssignment;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.entity.dto.UpPaStatus;
+import com.huanhong.wms.entity.param.ApproveParam;
 import com.huanhong.wms.entity.param.ProcessAssignmentParam;
 
 /**
@@ -22,4 +23,6 @@ public interface IProcessAssignmentService extends SuperService<ProcessAssignmen
     Result<Page<ProcessAssignment>> selectPage(Page<ProcessAssignment> page, ProcessAssignmentParam param);
 
     Result<Integer> updateProcessAssignmentStatusByParam(UpPaStatus up);
+
+    Result<Integer> approveTaskByParam(ApproveParam param);
 }

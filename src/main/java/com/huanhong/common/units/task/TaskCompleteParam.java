@@ -10,6 +10,7 @@ public class TaskCompleteParam {
     private String message;
     private String username;
     private Map<String, Object> variables;
+    private String name;
 
 
 }

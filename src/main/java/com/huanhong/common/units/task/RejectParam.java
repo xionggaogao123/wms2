@@ -11,6 +11,7 @@ public class RejectParam {
     private String username;
     private Boolean isFirst;
     private Map<String, Object> variables;
+    private String name;
 
 
 }

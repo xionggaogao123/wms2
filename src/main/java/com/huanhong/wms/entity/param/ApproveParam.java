@@ -17,6 +17,9 @@ public class ApproveParam {
     private Map<String, Object> variables;
     private Boolean isFirst;
 
+    @ApiModelProperty(value = "用户名",hidden = true)
+    private String name;
+
     @ApiModelProperty(value = "抄送人账号")
     private List<String> accounts;
 

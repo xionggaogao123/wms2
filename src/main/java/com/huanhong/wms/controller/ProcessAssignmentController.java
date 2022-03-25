@@ -66,6 +66,7 @@ public class ProcessAssignmentController extends BaseController {
     public Result<Integer> approve(@Valid @RequestBody ApproveParam param) {
         LoginUser loginUser = this.getLoginUser();
         param.setUserId(loginUser.getId());
+        param.setName(loginUser.getUserName());
         return processAssignmentService.approveTaskByParam(param);
     }
 

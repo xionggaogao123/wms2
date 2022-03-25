@@ -303,6 +303,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
             completeParam.setMessage(param.getMessage());
             completeParam.setVariables(param.getVariables());
             completeParam.setUsername(param.getUsername());
+            completeParam.setName(param.getName());
             Result complete = TaskQueryUtil.complete(completeParam);
             if (complete.isOk()) {
                 update = processAssignmentMapper.updateById(pa);
@@ -318,6 +319,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
             rejectParam.setUsername(param.getUsername());
             rejectParam.setMessage(param.getMessage());
             rejectParam.setVariables(param.getVariables());
+            rejectParam.setName(param.getName());
             Result rejectResult = TaskQueryUtil.reject(rejectParam);
             if (rejectResult.isOk()) {
                 update = processAssignmentMapper.updateById(pa);

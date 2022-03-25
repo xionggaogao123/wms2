@@ -1,17 +1,20 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.InventoryDocument;
+import com.huanhong.wms.entity.Material;
 import com.huanhong.wms.entity.dto.AddInventoryDocumentDTO;
 import com.huanhong.wms.entity.dto.UpdateInventoryDocumentDTO;
 import com.huanhong.wms.entity.vo.InventoryDocumentVO;
 import com.huanhong.wms.mapper.InventoryDocumentMapper;
 import com.huanhong.wms.service.IInventoryDocumentService;
+import com.huanhong.wms.service.IMaterialService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -34,6 +37,8 @@ public class InventoryDocumentController extends BaseController {
     private IInventoryDocumentService inventoryDocumentService;
     @Resource
     private InventoryDocumentMapper inventoryDocumentMapper;
+    @Resource
+    private IMaterialService materialService;
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -104,6 +109,26 @@ public class InventoryDocumentController extends BaseController {
     public InventoryDocument getInventoryDocumentByDocNumAndWarhouseId(@PathVariable String docNum, @PathVariable String warehouseId){
         InventoryDocument inventoryDocument = inventoryDocumentService.getInventoryDocumentByDocumentNumberAndWarehouseId(docNum, warehouseId);
         return ObjectUtil.isNotNull(inventoryDocument) ? inventoryDocument : null;
+    }
+
+
+
+
+    @ApiOperationSupport(order = 7)
+    @ApiOperation(value = "PDA-通过单据号和仓库id查询清点单")
+    @GetMapping("/getInventoryDocumentForPda")
+    public Result getInventoryDocumentForPda(@RequestParam String docNum,
+                                             @RequestParam String warehouseId
+    ){
+        InventoryDocument inventoryDocument = inventoryDocumentService.getInventoryDocumentByDocumentNumberAndWarehouseId(docNum, warehouseId);
+        if (ObjectUtil.isEmpty(inventoryDocument)) {
+            return Result.success("未查到相关数据！");
+        }
+        Material material = materialService.getMeterialByMeterialCode(inventoryDocument.getMaterialCoding());
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("doc",inventoryDocument );
+        jsonObject.put("material",material);
+        return Result.success(jsonObject);
     }
 }
 

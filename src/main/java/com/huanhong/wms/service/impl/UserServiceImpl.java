@@ -17,10 +17,7 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.Company;
 import com.huanhong.wms.entity.Dept;
 import com.huanhong.wms.entity.User;
-import com.huanhong.wms.entity.dto.AddUserDTO;
-import com.huanhong.wms.entity.dto.LoginDTO;
-import com.huanhong.wms.entity.dto.SignPasswordDTO;
-import com.huanhong.wms.entity.dto.UpUserDTO;
+import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.mapper.CompanyMapper;
 import com.huanhong.wms.mapper.DeptMapper;
 import com.huanhong.wms.mapper.UserMapper;
@@ -212,7 +209,7 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
     }
 
     @Override
-    public Result<Integer> setSingPassword(SignPasswordDTO dto) {
+    public Result<Integer> setSignPassword(SignPasswordDTO dto) {
         User user = userMapper.selectById(dto.getId());
         User upUser = new User();
         upUser.setId(dto.getId());
@@ -247,6 +244,22 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         }
         return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常，请稍后重试");
 
+    }
+
+    @Override
+    public Result<Integer> setSignPic(SignPicDTO dto) {
+        User user0 = userMapper.selectById(dto.getId());
+        if (!dto.getSignPassword().equals(user0.getSignPassword())){
+            return Result.failure(ErrorCode.PARAM_ERROR,"签名密码有误");
+        }
+        User user = new User();
+        user.setId(dto.getId());
+        user.setSignUrl(dto.getSignURL());
+        int update = userMapper.updateById(user);
+        if (update>0){
+            return Result.success();
+        }
+        return Result.failure(ErrorCode.SYSTEM_ERROR,"系统异常，请稍后重试");
     }
 
     private void getDeptUp(List<Map<String, Object>> depts, Integer deptId) {

@@ -15,6 +15,7 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.User;
 import com.huanhong.wms.entity.dto.AddUserDTO;
 import com.huanhong.wms.entity.dto.SignPasswordDTO;
+import com.huanhong.wms.entity.dto.SignPicDTO;
 import com.huanhong.wms.entity.dto.UpUserDTO;
 import com.huanhong.wms.mapper.UserMapper;
 import com.huanhong.wms.service.IDeptService;
@@ -173,7 +174,24 @@ public class UserController extends BaseController {
             return Result.failure("参数有误");
         }
         dto.setId(loginUser.getId());
-        return userService.setSingPassword(dto);
+        return userService.setSignPassword(dto);
+    }
+
+    @ApiOperationSupport(order = 10)
+    @ApiOperation("设置、修改签名图片")
+    @PostMapping("/signPic")
+    public Result<Integer> setSignPic(@Valid @RequestBody SignPicDTO dto) {
+
+        LoginUser loginUser = this.getLoginUser();
+        if (StrUtil.isBlank(dto.getSignPassword())) {
+            return Result.failure("签名密码为空");
+        }
+        if (StrUtil.isBlank(dto.getSignURL())) {
+            return Result.failure("签名图片地址为空");
+        }
+        dto.setId(loginUser.getId());
+        return userService.setSignPic(dto);
+        
     }
 
     @ApiOperationSupport(order = 9)

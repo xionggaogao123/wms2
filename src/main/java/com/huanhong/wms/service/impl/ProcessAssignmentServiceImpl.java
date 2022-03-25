@@ -277,6 +277,9 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
         if (StrUtil.isBlank(user.getSignPassword())) {
             return Result.failure(ErrorCode.PARAM_ERROR, "未设置签名密码");
         }
+        if (StrUtil.isBlank(param.getSignPassWord())) {
+            return Result.failure(ErrorCode.PARAM_ERROR, "请输入签名密码");
+        }
         if (!user.getSignPassword().equals(param.getSignPassWord())) {
             return Result.failure(ErrorCode.PARAM_ERROR, "签名密码不正确");
         }

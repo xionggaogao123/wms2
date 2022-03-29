@@ -1,5 +1,6 @@
 package com.huanhong.wms.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
@@ -14,42 +15,38 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ApiModel(description="调拨计划主表")
-public class AllocationPlan extends SuperEntity {
+@ApiModel(description="调拨计划明细表")
+public class AllocationPlanDetail extends SuperEntity {
 
     private static final long serialVersionUID=1L;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "调拨申请单据编号")
+    @ApiModelProperty(value = "调拨单编号")
     private String allocationNumber;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "流程id")
-    private String processInstanceId;
+    @ApiModelProperty(value = "物料编码")
+    private String materialCoding;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "业务类型：1 计划调拨 2 预备调拨")
-    private Integer businessType;
+    @ApiModelProperty(value = "请调数量")
+    private Double requestQuantity;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "计划状态-状态: 1草拟 2审批中 3审批生效 4作废")
-    private Integer planStatus;
+    @ApiModelProperty(value = "准调数量")
+    private Double calibrationQuantity;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "批次")
+    private String batch;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "调拨日期")
-    private LocalDateTime assignmentDate;
+    @ApiModelProperty(value = "单价")
+    private BigDecimal unitPrice;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "调出仓库")
-    private String sendWarehouse;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "调入仓库")
-    private String receiveWarehouse;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "申请人")
-    private String applicant;
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "总金额")
+    private BigDecimal totalAmount;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "备注")
@@ -66,5 +63,6 @@ public class AllocationPlan extends SuperEntity {
     @TableField(value = "last_update",fill = FieldFill.INSERT_UPDATE)
     @ApiModelProperty(value = "最后更新时间")
     private LocalDateTime lastUpdate;
+
 
 }

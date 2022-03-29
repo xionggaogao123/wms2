@@ -2,6 +2,7 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -16,6 +17,7 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
 import com.huanhong.wms.entity.CargoSpaceManagement;
 import com.huanhong.wms.entity.InventoryInformation;
+import com.huanhong.wms.entity.Material;
 import com.huanhong.wms.entity.ShelfManagement;
 import com.huanhong.wms.entity.dto.AddCargoSpacedDTO;
 import com.huanhong.wms.entity.dto.UpdateCargoSpaceDTO;
@@ -23,6 +25,7 @@ import com.huanhong.wms.entity.vo.CargoSpaceVO;
 import com.huanhong.wms.mapper.CargoSpaceManagementMapper;
 import com.huanhong.wms.service.ICargoSpaceManagementService;
 import com.huanhong.wms.service.IInventoryInformationService;
+import com.huanhong.wms.service.IMaterialService;
 import com.huanhong.wms.service.IShelfManagementService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -54,6 +57,9 @@ public class CargoSpaceManagementController extends BaseController {
 
     @Resource
     private CargoSpaceManagementMapper cargoSpaceManagementMapper;
+
+    @Resource
+    private IMaterialService materialService;
 
     public static final Logger LOGGER = LoggerFactory.getLogger(CargoSpaceManagementController.class);
 
@@ -104,8 +110,8 @@ public class CargoSpaceManagementController extends BaseController {
             }
 
             //判断货架是否停用
-            if(shelfManagementService.isStopUsing(addCargoSpacedDTO.getShelfId())!=0){
-                return Result.failure(ErrorCode.SYSTEM_ERROR,"货架停用中,无法新增货位");
+            if (shelfManagementService.isStopUsing(addCargoSpacedDTO.getShelfId()) != 0) {
+                return Result.failure(ErrorCode.SYSTEM_ERROR, "货架停用中,无法新增货位");
             }
 
             //货位编号重复判定
@@ -121,7 +127,7 @@ public class CargoSpaceManagementController extends BaseController {
                 } else {
                     LOGGER.error("添加货位失败");
                 }
-                return render(insert>0);
+                return render(insert > 0);
             } catch (Exception e) {
                 LOGGER.error("添加货位错误--（插入数据）失败,异常：" + e);
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--插入数据失败，请稍后再试或联系管理员");
@@ -154,13 +160,13 @@ public class CargoSpaceManagementController extends BaseController {
              */
             //父级停用无法手动单独启用
             CargoSpaceManagement cargoSpaceManagement = cargoSpaceManagementService.getCargoSpaceByCargoSpaceId(updateCargoSpaceDTO.getCargoSpaceId());
-            if(shelfManagementService.isStopUsing(cargoSpaceManagement.getShelfId())==1){
-                return Result.failure(ErrorCode.SYSTEM_ERROR,"货架停用中,货位无法编辑！");
+            if (shelfManagementService.isStopUsing(cargoSpaceManagement.getShelfId()) == 1) {
+                return Result.failure(ErrorCode.SYSTEM_ERROR, "货架停用中,货位无法编辑！");
             }
 
             //单独停用可以手动修改更新为启用状态
-            if(cargoSpaceManagementService.isStopUsing(updateCargoSpaceDTO.getCargoSpaceId())==1){
-                if (updateCargoSpaceDTO.getStopUsing()!=0) {
+            if (cargoSpaceManagementService.isStopUsing(updateCargoSpaceDTO.getCargoSpaceId()) == 1) {
+                if (updateCargoSpaceDTO.getStopUsing() != 0) {
                     return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "货位已停用,禁止编辑！");
                 }
             }
@@ -190,8 +196,8 @@ public class CargoSpaceManagementController extends BaseController {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "操作失败：货位不存在");
             }
 
-            if(cargoSpaceManagementService.isStopUsing(cargoId)!=0){
-                    return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "货位已停用,无法删除！");
+            if (cargoSpaceManagementService.isStopUsing(cargoId) != 0) {
+                return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "货位已停用,无法删除！");
             }
 
             /**
@@ -242,12 +248,23 @@ public class CargoSpaceManagementController extends BaseController {
     public Result getAllInventoryForPDA(@PathVariable String cargoSpaceId) {
         try {
             JSONObject jsonObject = new JSONObject();
+            JSONArray jsonArray = new JSONArray();
             //库存信息
             List<InventoryInformation> inventoryInformationList = iventoryInformationService.getInventoryInformationByCargoSpaceId(cargoSpaceId);
             //货位信息
             CargoSpaceManagement cargoSpaceManagement = cargoSpaceManagementService.getCargoSpaceByCargoSpaceId(cargoSpaceId);
-            jsonObject.put("cargoSpace",cargoSpaceManagement);
-            jsonObject.put("inventory",inventoryInformationList);
+            jsonObject.put("cargoSpace", cargoSpaceManagement);
+            if (ObjectUtil.isNotEmpty(inventoryInformationList)) {
+                for (InventoryInformation inventoryInformation : inventoryInformationList
+                ) {
+                    JSONObject jsonObjectInventory = new JSONObject();
+                    Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
+                    jsonObjectInventory.put("inventory", inventoryInformation);
+                    jsonObjectInventory.put("material", material);
+                    jsonArray.add(jsonObjectInventory);
+                }
+            }
+            jsonObject.put("inventoryList", jsonArray);
             return Result.success(jsonObject);
         } catch (Exception e) {
             return Result.failure(ErrorCode.SYSTEM_ERROR, "获取库存信息失败");

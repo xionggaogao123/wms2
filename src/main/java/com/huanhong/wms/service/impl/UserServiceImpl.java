@@ -10,7 +10,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.huanhong.wms.SuperEntity;
 import com.huanhong.wms.SuperServiceImpl;
-import com.huanhong.wms.bean.Constant;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
@@ -33,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -249,17 +247,17 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
     @Override
     public Result<Integer> setSignPic(SignPicDTO dto) {
         User user0 = userMapper.selectById(dto.getId());
-        if (!dto.getSignPassword().equals(user0.getSignPassword())){
-            return Result.failure(ErrorCode.PARAM_ERROR,"签名密码有误");
+        if (!dto.getSignPassword().equals(user0.getSignPassword())) {
+            return Result.failure(ErrorCode.PARAM_ERROR, "签名密码有误");
         }
         User user = new User();
         user.setId(dto.getId());
         user.setSignUrl(dto.getSignURL());
         int update = userMapper.updateById(user);
-        if (update>0){
+        if (update > 0) {
             return Result.success();
         }
-        return Result.failure(ErrorCode.SYSTEM_ERROR,"系统异常，请稍后重试");
+        return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常，请稍后重试");
     }
 
     @Override
@@ -286,6 +284,11 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         return result;
     }
 
+    @Override
+    public Result<List<User>> list(Integer roleId, Integer deptId, String name) {
+        List<User> users = userMapper.list(roleId, deptId, name);
+        return Result.success(users);
+    }
     private void getDeptUp(List<Map<String, Object>> depts, Integer deptId) {
         Map<String, Object> dept = deptMapper.getDeptById(deptId);
         if (ObjectUtil.isNotEmpty(dept)) {

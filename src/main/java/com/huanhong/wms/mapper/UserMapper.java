@@ -7,6 +7,8 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 
 @Repository
 public interface UserMapper extends BaseMapper<User> {
@@ -19,4 +21,7 @@ public interface UserMapper extends BaseMapper<User> {
 
     @Select("select *  from `user` where del = 0 and wx_open_id = #{openid}")
     User getByWxOpenId(String openid);
+
+    List<User> list(@Param("roleId") Integer roleId, @Param("deptId") Integer deptId, @Param("name") String name);
+
 }

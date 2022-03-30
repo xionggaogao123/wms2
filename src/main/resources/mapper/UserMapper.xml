@@ -3,4 +3,13 @@
 <mapper namespace="com.huanhong.wms.mapper.UserMapper">
 
 
+    <select id="list" resultType="com.huanhong.wms.entity.User">
+        select u.*
+        from sys_user_role ur left join user u on ur.user_id = u.id
+        where u.del = 0 and ur.del = 0
+        <if test="deptId != null">and u.dept_id = #{deptId}</if>
+        <if test="roleId != null">and ur.role_id = #{roleId}</if>
+        <if test="name != null">and u.user_name like concat('%',#{name},'%')</if>
+        limit 50
+    </select>
 </mapper>

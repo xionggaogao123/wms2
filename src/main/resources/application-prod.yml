@@ -11,6 +11,16 @@ spring:
     username: wms
     password: FpLSHCiY66KaMxz7
     url: jdbc:mysql://wms.aiairy.com:3316/wms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&autoReconnect=true&tinyInt1isBit=false&timezone=utc&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    password: ''
+    jedis:
+      pool:
+        max-idle: 30
+        max-wait: -1ms
+        min-idle: 10
 # Socket Config
 wss:
   server:

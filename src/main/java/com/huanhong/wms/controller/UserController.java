@@ -2,18 +2,13 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
-import com.huanhong.common.units.MsgUtil;
-import com.huanhong.common.units.sms.AliSmsTool;
-import com.huanhong.common.units.sms.SMSResult;
 import com.huanhong.wms.BaseController;
-import com.huanhong.wms.bean.Constant;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
@@ -32,7 +27,6 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -40,7 +34,6 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 
 @Slf4j
@@ -125,8 +118,8 @@ public class UserController extends BaseController {
         }
 
         //true 为启用  false 为停用
-        if (deptService.isStopUsing(dto.getDeptId())){
-                return Result.failure("部门停用中,无法添加用户");
+        if (deptService.isStopUsing(dto.getDeptId())) {
+            return Result.failure("部门停用中,无法添加用户");
         }
 
         // 账号-大小写字母及数字
@@ -161,8 +154,8 @@ public class UserController extends BaseController {
         }
 
         //true 为启用  false 为停用
-        if(ObjectUtil.isNotNull(dto.getDeptId())){
-            if (deptService.isStopUsing(dto.getDeptId())){
+        if (ObjectUtil.isNotNull(dto.getDeptId())) {
+            if (deptService.isStopUsing(dto.getDeptId())) {
                 return Result.failure("部门停用中,无法转入用户");
             }
         }
@@ -182,7 +175,7 @@ public class UserController extends BaseController {
 
         LoginUser loginUser = this.getLoginUser();
         if (StrUtil.isBlank(dto.getSignPassword())) {
-           return Result.failure("签名密码为空");
+            return Result.failure("签名密码为空");
         }
         if (StrUtil.isNotBlank(dto.getOldPassword()) && StrUtil.isNotBlank(dto.getCommitPassword())) {
             return Result.failure("参数有误");
@@ -205,7 +198,7 @@ public class UserController extends BaseController {
         }
         dto.setId(loginUser.getId());
         return userService.setSignPic(dto);
-        
+
     }
 
     @ApiOperationSupport(order = 9)
@@ -232,15 +225,26 @@ public class UserController extends BaseController {
     public Result getWarehouseIdByUserId(LoginUser loginUser) {
         Integer companyId = loginUser.getCompanyId();
         List<WarehouseManagement> warehouseManagementList = warehouseManagementService.getWarehouseByCompanyId(companyId);
-        if (ObjectUtil.isEmpty(warehouseManagementList)){
+        if (ObjectUtil.isEmpty(warehouseManagementList)) {
             return Result.success("未找到仓库信息");
         }
         List<String> listWarehouseId = new ArrayList<>();
         for (WarehouseManagement warehouse : warehouseManagementList
-             ) {
+        ) {
             listWarehouseId.add(warehouse.getWarehouseId());
         }
         return Result.success(listWarehouseId);
     }
 
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "roleId", value = "角色id"),
+            @ApiImplicitParam(name = "deptId", value = "部门id"),
+            @ApiImplicitParam(name = "name", value = "姓名"),
+    })
+    @ApiOperationSupport(order = 10)
+    @ApiOperation(value = "查询用户列表-角色、部门、姓名")
+    @GetMapping("/list")
+    public Result<List<User>> list(Integer roleId, Integer deptId, String name) {
+        return userService.list(roleId, deptId, name);
+    }
 }

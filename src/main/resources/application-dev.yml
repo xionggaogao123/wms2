@@ -4,13 +4,13 @@ spring:
   scheduling:
     enabled: false
   # DataSource Config
-#  datasource:
-#    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
-#    type: com.zaxxer.hikari.HikariDataSource
-#    platform: mysql
-#    username: root
-#    password: Wsad123456.
-#    url: jdbc:p6spy:mysql://47.100.1.173:3306/meike_test?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&autoReconnect=true&tinyInt1isBit=false&timezone=utc&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+  #  datasource:
+  #    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+  #    type: com.zaxxer.hikari.HikariDataSource
+  #    platform: mysql
+  #    username: root
+  #    password: Wsad123456.
+  #    url: jdbc:p6spy:mysql://47.100.1.173:3306/meike_test?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&autoReconnect=true&tinyInt1isBit=false&timezone=utc&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
   # DataSource Config
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -19,6 +19,16 @@ spring:
     username: wms
     password: FpLSHCiY66KaMxz7
     url: jdbc:mysql://wms.aiairy.com:3316/wms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&autoReconnect=true&tinyInt1isBit=false&timezone=utc&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    password: ''
+    jedis:
+      pool:
+        max-idle: 30
+        max-wait: -1ms
+        min-idle: 10
 # Socket Config
 wss:
   server:
@@ -40,3 +50,9 @@ project:
     url: http://127.0.0.1/oss/
     yun-url: wmsobs.obs.cn-southwest-2.myhuaweicloud.com
     path: D:\project\visitor\oss\
+  hik-cloud:
+    clientId: 42d328eeebfe44c5a4edd6a0a5238e01
+    clientSecret: b79f98be0dd44408b035fc82dbf94158
+    host: https://api2.hik-cloud.com
+    tokenUrl: /oauth/token
+    ezvizTokenUrl: /v1/ezviz/account/info

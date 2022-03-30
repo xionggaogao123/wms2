@@ -6,6 +6,8 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.User;
 import com.huanhong.wms.entity.dto.*;
 
+import java.util.List;
+
 /**
  * <p>
  * 用户表 服务类
@@ -38,10 +40,13 @@ public interface IUserService extends SuperService<User> {
     boolean isStopUsing(Integer userId);
 
     Result<Integer> setSignPassword(SignPasswordDTO dto);
-    
+
     Result<Integer> setSignPic(SignPicDTO dto);
 
     Result<Object> delOpenIdById(Integer id);
 
     Result<User> selectByOpenid(String openid);
+
+    Result<List<User>> list(Integer roleId, Integer deptId, String name);
+
 }

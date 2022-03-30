@@ -1,21 +1,18 @@
 package com.huanhong.wms.controller;
 
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
+import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.entity.SysUserRole;
+import com.huanhong.wms.service.ISysUserRoleService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.RestController;
-import com.huanhong.wms.BaseController;
-import com.huanhong.wms.entity.SysUserRole;
-import com.huanhong.wms.mapper.SysUserRoleMapper;
-import com.huanhong.wms.service.ISysUserRoleService;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -66,6 +63,7 @@ public class SysUserRoleController extends BaseController {
     public Result delete(@PathVariable Integer id) {
         return render(sysUserRoleService.removeById(id));
     }
+
 
 
 }

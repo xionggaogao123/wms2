@@ -1,6 +1,7 @@
 package com.huanhong.wms.entity;
 
 import cn.hutool.core.lang.Dict;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.huanhong.wms.SuperBsEntity;
 import io.swagger.annotations.ApiModel;
@@ -82,5 +83,23 @@ public class User extends SuperBsEntity {
 
     @ApiModelProperty(value = "上次输入密码时间")
     private String lastSign;
+
+    @ApiModelProperty(value = "微信openid")
+    private String wxOpenId;
+
+    @ApiModelProperty(value = "头像地址")
+    private String profilePic;
+
+    public void completionPicURL(String host) {
+        if (StrUtil.isNotEmpty(this.profilePic) && !this.profilePic.startsWith("http")) {
+            this.profilePic = host + this.profilePic;
+        }
+    }
+
+    public void removePicURL(String host) {
+        if (StrUtil.isNotEmpty(this.profilePic) && this.profilePic.contains(host)) {
+            this.profilePic = this.profilePic.substring(host.length());
+        }
+    }
 
 }

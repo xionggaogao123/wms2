@@ -262,6 +262,30 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         return Result.failure(ErrorCode.SYSTEM_ERROR,"系统异常，请稍后重试");
     }
 
+    @Override
+    public Result<Object> delOpenIdById(Integer id) {
+        int count = userMapper.delOpenIdById(id);
+        if (count < 1) {
+            return Result.failure("无效操作");
+        }
+        return Result.success();
+    }
+
+    @Override
+    public Result<User> selectByOpenid(String openid) {
+        User user = this.baseMapper.getByWxOpenId(openid);
+        if (user == null) {
+            return Result.failure(1024, "登录失败，请确认账号是否正确");
+        } else if (user.getDeptId().equals("-1")) {
+            return Result.failure(402, "非员工账号不可登陆");
+        }
+        Result<User> result = new Result<>();
+        user.setPassword(null);
+        result.setData(user);
+        result.setOk(true);
+        return result;
+    }
+
     private void getDeptUp(List<Map<String, Object>> depts, Integer deptId) {
         Map<String, Object> dept = deptMapper.getDeptById(deptId);
         if (ObjectUtil.isNotEmpty(dept)) {

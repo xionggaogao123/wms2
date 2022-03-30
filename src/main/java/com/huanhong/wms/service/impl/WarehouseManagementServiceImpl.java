@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperServiceImpl;
+import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.WarehouseManagement;
 import com.huanhong.wms.entity.vo.WarehouseVo;
 import com.huanhong.wms.mapper.WarehouseManagementMapper;
@@ -82,6 +83,12 @@ public class WarehouseManagementServiceImpl extends SuperServiceImpl<WarehouseMa
     public int isStopUsing(String warehouseId) {
         WarehouseManagement warehouseManagement = getWarehouseByWarehouseId(warehouseId);
         return warehouseManagement.getStopUsing();
+    }
+
+    @Override
+    public Result<Object> selectWarehouseInfo(Integer id) {
+
+        return null;
     }
 
 }

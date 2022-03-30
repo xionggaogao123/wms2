@@ -40,4 +40,8 @@ public interface IUserService extends SuperService<User> {
     Result<Integer> setSignPassword(SignPasswordDTO dto);
     
     Result<Integer> setSignPic(SignPicDTO dto);
+
+    Result<Object> delOpenIdById(Integer id);
+
+    Result<User> selectByOpenid(String openid);
 }

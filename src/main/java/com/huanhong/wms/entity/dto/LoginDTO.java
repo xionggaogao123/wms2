@@ -24,7 +24,7 @@ public class LoginDTO implements Serializable {
     private String type;
 
     @NotNull
-    @ApiModelProperty(value = "登录平台", required = true, notes = "PC iOS Android")
+    @ApiModelProperty(value = "登录平台", required = true, notes = "PC iOS Android miniProgram")
     private String terminal;
 
     @NotNull
@@ -35,6 +35,9 @@ public class LoginDTO implements Serializable {
      * IP地址
      */
     private String ip;
+
+    private String openid;
+    private String js_code;
 
 
     public void setAccount(String account) {

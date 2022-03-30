@@ -27,6 +27,7 @@ public interface Constant {
 
     String OK = "OK";
 
+    String SMS_CODE_PREFIX = "SmsCode-";
     /**
      * 逗号分隔符
      */

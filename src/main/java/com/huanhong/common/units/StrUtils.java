@@ -2,6 +2,7 @@ package com.huanhong.common.units;
 
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -154,4 +155,15 @@ public class StrUtils extends StrUtil {
             return "";
         }
     }
+
+
+    public static JSONObject toJSONObject(String str) {
+        try {
+            return JSON.parseObject(str);
+        } catch (Exception e) {
+            log.error("JSON Exchange Error", e);
+            return null;
+        }
+    }
+
 }

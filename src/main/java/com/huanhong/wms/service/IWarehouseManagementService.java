@@ -2,6 +2,7 @@ package com.huanhong.wms.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperService;
+import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.WarehouseManagement;
 import com.huanhong.wms.entity.vo.WarehouseVo;
 
@@ -38,4 +39,5 @@ public interface IWarehouseManagementService extends SuperService<WarehouseManag
     int isStopUsing(String warehouseId);
 
 
+    Result<Object> selectWarehouseInfo(Integer id);
 }

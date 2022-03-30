@@ -421,8 +421,10 @@ public class PlanUseOutController extends BaseController {
                 JSONObject jsonObject = new JSONObject();
                 String materialCoding = material.getMaterialCoding();
                 Double num = inventoryInformationService.getNumByMaterialCodingAndWarehouseId(materialCoding, warehouseId);
+                List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(materialCoding,warehouseId);
                 jsonObject.put("material", material);
                 jsonObject.put("inventory", num);
+                jsonObject.put("inventoryList", inventoryInformationList);
                 jsonArray.add(jsonObject);
             }
             return Result.success(jsonArray);
@@ -431,6 +433,7 @@ public class PlanUseOutController extends BaseController {
             return Result.failure("查询失败--系统异常，请联系管理员");
         }
     }
+
 
     @ApiOperationSupport(order = 13)
     @ApiOperation(value = "根据出库单和仓库编号获取出库明细加出库记录（预生成、锁库）包含物料详情")

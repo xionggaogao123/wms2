@@ -50,7 +50,7 @@ public class AllocationPlanController extends BaseController {
 
     @ApiImplicitParams({
         @ApiImplicitParam(name = "current", value = "当前页码"),
-        @ApiImplicitParam(name = "size", value = "每页行数"),
+        @ApiImplicitParam(name = "size", value = "每页行数")
     })
     @ApiOperationSupport(order = 1)
     @ApiOperation(value = "分页查询调拨计划主表", notes = "生成代码")

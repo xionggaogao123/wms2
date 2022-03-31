@@ -15,6 +15,7 @@ import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
+import com.huanhong.wms.entity.vo.PdaMaterialVO;
 import com.huanhong.wms.entity.vo.PdaUpdateOutVO;
 import com.huanhong.wms.entity.vo.PlanUseOutVO;
 import com.huanhong.wms.mapper.PlanUseOutMapper;
@@ -407,11 +408,10 @@ public class PlanUseOutController extends BaseController {
     @ApiOperationSupport(order = 12)
     @ApiOperation(value = "物料编码和物料名称模糊查询信息及库存")
     @GetMapping("/pagingFuzzyQueryByMaterialCodingOrName")
-    public Result page(@RequestParam String key,
-                       @RequestParam String warehouseId
-    ) {
+    public Result page(PdaMaterialVO pdaMaterialVO
+                       ) {
         try {
-            List<Material> materialslist = materialService.getMaterialListByKey(key);
+            List<Material> materialslist = materialService.getMaterialListByKey(pdaMaterialVO);
             if (ObjectUtil.isNull(materialslist)) {
                 return Result.failure("未找到对应信息");
             }
@@ -420,8 +420,8 @@ public class PlanUseOutController extends BaseController {
             ) {
                 JSONObject jsonObject = new JSONObject();
                 String materialCoding = material.getMaterialCoding();
-                Double num = inventoryInformationService.getNumByMaterialCodingAndWarehouseId(materialCoding, warehouseId);
-                List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(materialCoding,warehouseId);
+                Double num = inventoryInformationService.getNumByMaterialCodingAndWarehouseId(materialCoding, pdaMaterialVO.getWarehouseId());
+                List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(materialCoding,pdaMaterialVO.getWarehouseId());
                 jsonObject.put("material", material);
                 jsonObject.put("inventory", num);
                 jsonObject.put("inventoryList", inventoryInformationList);

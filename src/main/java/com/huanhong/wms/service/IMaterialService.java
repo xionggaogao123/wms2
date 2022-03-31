@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.entity.Material;
 import com.huanhong.wms.entity.vo.MaterialVO;
+import com.huanhong.wms.entity.vo.PdaMaterialVO;
 
 import java.util.List;
 
@@ -37,6 +38,6 @@ public interface IMaterialService extends SuperService<Material> {
      * 根据物料编码或物料名称模糊查询物料
      * @return
      */
-   List<Material> getMaterialListByKey(String key);
+   List<Material> getMaterialListByKey(PdaMaterialVO pdaMaterialVO);
 
 }

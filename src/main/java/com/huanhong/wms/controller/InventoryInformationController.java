@@ -114,6 +114,7 @@ public class InventoryInformationController extends BaseController {
             log.error("库存更新失败，异常：", e);
             return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常：更新失败，请稍后再试或联系管理员");
         }
+
     }
 
     /**
@@ -138,7 +139,7 @@ public class InventoryInformationController extends BaseController {
             return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常：物料下架失败，请稍后再试或联系管理员");
         }
     }
-
+    
     @ApiOperationSupport(order = 5)
     @ApiOperation(value = "移动库存")
     @PutMapping("/movingInventory")

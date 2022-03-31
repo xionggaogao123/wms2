@@ -133,7 +133,7 @@ public class AllocationOutController extends BaseController {
 
 
         @ApiOperationSupport(order = 6)
-        @ApiOperation(value = "根据单据编号获取到货检验单及其明细")
+        @ApiOperation(value = "根据单据编号获取调拨出库及其明细")
         @GetMapping("/getAllocationOutAndDetailsByDocNum")
         public Result getAllocationOutAndDetailsByDocNum(@RequestParam String docNum) {
         JSONObject jsonObject = new JSONObject();

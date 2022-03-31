@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.entity.Material;
 import com.huanhong.wms.entity.vo.MaterialVO;
+import com.huanhong.wms.entity.vo.PdaMaterialVO;
 import com.huanhong.wms.mapper.MaterialMapper;
 import com.huanhong.wms.service.IMaterialService;
 import org.springframework.stereotype.Service;
@@ -85,9 +86,11 @@ public class MaterialServiceImpl extends SuperServiceImpl<MaterialMapper, Materi
      * @return
      */
     @Override
-    public List<Material> getMaterialListByKey(String key) {
+    public List<Material> getMaterialListByKey(PdaMaterialVO pdaMaterialVO) {
         QueryWrapper<Material> queryWrapper = new QueryWrapper<>();
-        queryWrapper.like("material_coding",key).or().like("material_name",key);
+//        queryWrapper.like("material_coding",key).or().like("material_name",key);
+        queryWrapper.like(StringUtils.isNotBlank(pdaMaterialVO.getMaterialCoding()), "material_coding", pdaMaterialVO.getMaterialCoding());
+        queryWrapper.like(StringUtils.isNotBlank(pdaMaterialVO.getMaterialName()), "material_name", pdaMaterialVO.getMaterialName());
         List<Material> materialslist = materialMapper.selectList(queryWrapper);
         return materialslist;
     }

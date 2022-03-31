@@ -6,14 +6,20 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.entity.ProcessAssignment;
+import com.huanhong.wms.entity.SublibraryManagement;
+import com.huanhong.wms.entity.User;
 import com.huanhong.wms.entity.WarehouseManagement;
 import com.huanhong.wms.entity.vo.WarehouseVo;
-import com.huanhong.wms.mapper.WarehouseManagementMapper;
+import com.huanhong.wms.mapper.*;
 import com.huanhong.wms.service.IWarehouseManagementService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -28,6 +34,19 @@ public class WarehouseManagementServiceImpl extends SuperServiceImpl<WarehouseMa
 
     @Resource
     private WarehouseManagementMapper warehouseManagementMapper;
+
+    @Resource
+    private UserMapper userMapper;
+    @Resource
+    private SublibraryManagementMapper sublibraryManagementMapper;
+    @Resource
+    private WarehouseAreaManagementMapper warehouseAreaManagementMapper;
+    @Resource
+    private ShelfManagementMapper shelfManagementMapper;
+    @Resource
+    private CargoSpaceManagementMapper cargoSpaceManagementMapper;
+    @Resource
+    private ProcessAssignmentMapper processAssignmentMapper;
 
 
     @Override
@@ -87,8 +106,36 @@ public class WarehouseManagementServiceImpl extends SuperServiceImpl<WarehouseMa
 
     @Override
     public Result<Object> selectWarehouseInfo(Integer id) {
+        Map<String, Object> map = new HashMap<>();
+        User user = userMapper.selectById(id);
+        List<ProcessAssignment> processAssignments = processAssignmentMapper.selectList(new QueryWrapper<ProcessAssignment>().eq("user_account",user.getLoginName()).orderByDesc("id").last("limit 5"));
+        map.put("task",processAssignments);
+        if (user.getCompanyId() == null){
+            return Result.success(map);
+        }
+        List<Map<String,Object>> mapList = new ArrayList<>();
+        QueryWrapper<WarehouseManagement> qw = new QueryWrapper<>();
+        qw.eq("company_id",user.getCompanyId());
+        List<WarehouseManagement> warehouseManagements = warehouseManagementMapper.selectList(qw);
+        if (warehouseManagements.size()>0){
+            for (WarehouseManagement wm:warehouseManagements) {
+                //    TODO 查询仓库占用率
+                //    查询子库
+                //    查询库区
+                //    查询货架
+                Map<String, Object> warehouseMap = new HashMap<>();
+                List<Map<String, Object>> list = warehouseManagementMapper.countWarehouseOccupationByWarehouse(wm.getWarehouseId());
+                warehouseMap.put("warehouseName",wm.getWarehouseName());
+                warehouseMap.put("occupation",list);
 
-        return null;
+                //    TODO 查询品类占用情况
+                List<Map<String, Object>> cas = warehouseManagementMapper.selectMaterialByWarehouse(wm.getWarehouseId());
+                warehouseMap.put("material",cas);
+                mapList.add(warehouseMap);
+            }
+            map.put("warehouseList",mapList);
+        }
+        return Result.success(map);
     }
 
 }

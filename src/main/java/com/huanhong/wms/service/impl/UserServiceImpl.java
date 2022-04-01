@@ -278,6 +278,9 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
             return Result.failure(402, "非员工账号不可登陆");
         }
         Result<User> result = new Result<>();
+        // 角色信息
+        List<Dict> roles = sysRoleService.getLoginRoles(user.getId());
+        user.setRoles(roles);
         user.setPassword(null);
         result.setData(user);
         result.setOk(true);

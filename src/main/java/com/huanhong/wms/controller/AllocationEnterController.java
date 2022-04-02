@@ -25,6 +25,7 @@ import com.huanhong.wms.BaseController;
 import com.huanhong.wms.entity.AllocationEnter;
 import com.huanhong.wms.mapper.AllocationEnterMapper;
 import com.huanhong.wms.service.IAllocationEnterService;
+
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.List;
@@ -44,8 +45,8 @@ public class AllocationEnterController extends BaseController {
     private IAllocationEnterDetailsService allocationEnterDetailsService;
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "current", value = "当前页码"),
-        @ApiImplicitParam(name = "size", value = "每页行数")
+            @ApiImplicitParam(name = "current", value = "当前页码"),
+            @ApiImplicitParam(name = "size", value = "每页行数")
     })
     @ApiOperationSupport(order = 1)
     @ApiOperation(value = "分页查询", notes = "生成代码")
@@ -64,55 +65,55 @@ public class AllocationEnterController extends BaseController {
             log.error("分页查询异常", e);
             return Result.failure("查询失败--系统异常，请联系管理员");
         }
-        }
+    }
 
-        @ApiOperationSupport(order = 2)
-        @ApiOperation(value = "添加", notes = "生成代码")
-        @PostMapping("/add")
-        public Result add(@Valid @RequestBody AddAllocationEnterAndDetailsDTO addAllocationEnterAndDetailsDTO) {
-            try {
-                AddAllocationEnterDTO addAllocationEnterDTO = addAllocationEnterAndDetailsDTO.getAddAllocationEnterDTO();
-                List<AddAllocationEnterDetailsDTO> addAllocationEnterDetailsDTOList = addAllocationEnterAndDetailsDTO.getAddAllocationEnterDetailsDTOList();
-                Result result = allocationEnterService.addAllocationEnterDTO(addAllocationEnterDTO);
-                if (!result.isOk()) {
-                    return Result.failure("新增调拨入库失败！");
-                }
-                AllocationEnter allocationEnter = (AllocationEnter) result.getData();
-                String docNum = allocationEnter.getAllocationEnterNumber();
-                for (AddAllocationEnterDetailsDTO addAllocationEnterDetailsDTO : addAllocationEnterDetailsDTOList) {
-                    addAllocationEnterDetailsDTO.setAllocationEnterNumber(docNum);
-                }
-                return allocationEnterDetailsService.addAllocationEnterDetails(addAllocationEnterDetailsDTOList);
-            } catch (Exception e) {
-                log.error("新增调拨出库失败");
-                return Result.failure("系统异常，新增调拨入库失败！");
+    @ApiOperationSupport(order = 2)
+    @ApiOperation(value = "添加", notes = "生成代码")
+    @PostMapping("/add")
+    public Result add(@Valid @RequestBody AddAllocationEnterAndDetailsDTO addAllocationEnterAndDetailsDTO) {
+        try {
+            AddAllocationEnterDTO addAllocationEnterDTO = addAllocationEnterAndDetailsDTO.getAddAllocationEnterDTO();
+            List<AddAllocationEnterDetailsDTO> addAllocationEnterDetailsDTOList = addAllocationEnterAndDetailsDTO.getAddAllocationEnterDetailsDTOList();
+            Result result = allocationEnterService.addAllocationEnterDTO(addAllocationEnterDTO);
+            if (!result.isOk()) {
+                return Result.failure("新增调拨入库失败！");
             }
-        }
-
-        @ApiOperationSupport(order = 3)
-        @ApiOperation(value = "更新", notes = "生成代码")
-        @PutMapping("/update")
-        public Result update(@Valid @RequestBody UpdateAllocationEnterAndDetailsDTO updateAllocationEnterAndDetailsDTO) {
-            try {
-                UpdateAllocationEnterDTO updateAllocationEnterDTO = updateAllocationEnterAndDetailsDTO.getUpdateAllocationEnterDTO();
-                List<UpdateAllocationEnterDetailsDTO> updateAllocationEnterDetailsDTOList = updateAllocationEnterAndDetailsDTO.getUpdateAllocationEnterDetailsDTOList();
-                Result result = allocationEnterService.update(updateAllocationEnterDTO);
-                if (!result.isOk()) {
-                    return Result.failure("更新调拨入库失败！");
-                }
-                return allocationEnterDetailsService.updateAllocationEnterDetails(updateAllocationEnterDetailsDTOList);
-            } catch (Exception e) {
-                log.error("更新调拨入库失败");
-                return Result.failure("系统异常：更新调拨入库失败!");
+            AllocationEnter allocationEnter = (AllocationEnter) result.getData();
+            String docNum = allocationEnter.getAllocationEnterNumber();
+            for (AddAllocationEnterDetailsDTO addAllocationEnterDetailsDTO : addAllocationEnterDetailsDTOList) {
+                addAllocationEnterDetailsDTO.setAllocationEnterNumber(docNum);
             }
+            return allocationEnterDetailsService.addAllocationEnterDetails(addAllocationEnterDetailsDTOList);
+        } catch (Exception e) {
+            log.error("新增调拨出库失败");
+            return Result.failure("系统异常，新增调拨入库失败！");
         }
+    }
 
-        @ApiOperationSupport(order = 4)
-        @ApiOperation(value = "删除", notes = "生成代码")
-        @DeleteMapping("delete/{id}")
-        public Result delete(@PathVariable Integer id) {
-            return render(allocationEnterService.removeById(id));
+    @ApiOperationSupport(order = 3)
+    @ApiOperation(value = "更新", notes = "生成代码")
+    @PutMapping("/update")
+    public Result update(@Valid @RequestBody UpdateAllocationEnterAndDetailsDTO updateAllocationEnterAndDetailsDTO) {
+        try {
+            UpdateAllocationEnterDTO updateAllocationEnterDTO = updateAllocationEnterAndDetailsDTO.getUpdateAllocationEnterDTO();
+            List<UpdateAllocationEnterDetailsDTO> updateAllocationEnterDetailsDTOList = updateAllocationEnterAndDetailsDTO.getUpdateAllocationEnterDetailsDTOList();
+            Result result = allocationEnterService.update(updateAllocationEnterDTO);
+            if (!result.isOk()) {
+                return Result.failure("更新调拨入库失败！");
+            }
+            return allocationEnterDetailsService.updateAllocationEnterDetails(updateAllocationEnterDetailsDTOList);
+        } catch (Exception e) {
+            log.error("更新调拨入库失败");
+            return Result.failure("系统异常：更新调拨入库失败!");
         }
+    }
+
+    @ApiOperationSupport(order = 4)
+    @ApiOperation(value = "删除", notes = "生成代码")
+    @DeleteMapping("delete/{id}")
+    public Result delete(@PathVariable Integer id) {
+        return render(allocationEnterService.removeById(id));
+    }
 
     @ApiOperationSupport(order = 5)
     @ApiOperation(value = "根据ID获取调拨入库及其明细")
@@ -135,7 +136,7 @@ public class AllocationEnterController extends BaseController {
     @GetMapping("/getAllocationOutAndDetailsByDocNum")
     public Result getAllocationOutAndDetailsByDocNum(@RequestParam String docNum) {
         JSONObject jsonObject = new JSONObject();
-        AllocationEnter allocationEnter  = allocationEnterService.getAllocationEnterByDocNumber(docNum);
+        AllocationEnter allocationEnter = allocationEnterService.getAllocationEnterByDocNumber(docNum);
         if (ObjectUtil.isEmpty(allocationEnter)) {
             return Result.failure("未找到对应信息！");
         }

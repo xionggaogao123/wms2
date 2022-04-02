@@ -2,6 +2,8 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -13,6 +15,7 @@ import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
+import com.huanhong.wms.entity.CargoSpaceManagement;
 import com.huanhong.wms.entity.ShelfManagement;
 import com.huanhong.wms.entity.SublibraryManagement;
 import com.huanhong.wms.entity.WarehouseAreaManagement;
@@ -256,6 +259,31 @@ public class WarehouseAreaManagementController extends BaseController {
         try {
             List<ShelfManagement> ShelfManagementList = shelfManagementService.getShelfListByWarehouseAreaId(warehouseAreaId);
             return Result.success(ShelfManagementList);
+        } catch (Exception e) {
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "获取货架信息失败");
+        }
+    }
+
+
+    @ApiOperationSupport(order = 7)
+    @ApiOperation(value = "获取对应库区的所有货架及货位")
+    @GetMapping("/getAllShelfAndCargoSpaceByWarehouseId/{warehouseAreaId}")
+    public Result getAllShelfAndCargoSpaceByWarehouseAreaId(@PathVariable String warehouseAreaId) {
+        try {
+            List<ShelfManagement> shelfManagementList = shelfManagementService.getShelfListByWarehouseAreaId(warehouseAreaId);
+            if (ObjectUtil.isEmpty(shelfManagementList)){
+                return Result.failure("未查询到对应信息");
+            }
+            JSONArray jsonArray = new JSONArray();
+            for (ShelfManagement shelfManagement : shelfManagementList){
+                JSONObject jsonObject = new JSONObject();
+                String shelfId = shelfManagement.getShelfId();
+                List<CargoSpaceManagement> cargoSpaceManagementList = cargoSpaceManagementService.getCargoSpaceListByShelfId(shelfId);
+                jsonObject.put("shelf", shelfManagement);
+                jsonObject.put("cargoSpace", cargoSpaceManagementList);
+                jsonArray.add(jsonObject);
+            }
+            return Result.success(jsonArray);
         } catch (Exception e) {
             return Result.failure(ErrorCode.SYSTEM_ERROR, "获取货架信息失败");
         }

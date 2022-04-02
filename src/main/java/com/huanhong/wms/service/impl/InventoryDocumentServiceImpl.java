@@ -11,6 +11,7 @@ import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.InventoryDocument;
+import com.huanhong.wms.entity.InventoryDocumentDetails;
 import com.huanhong.wms.entity.dto.AddInventoryDocumentDTO;
 import com.huanhong.wms.entity.dto.UpdateInventoryDocumentDTO;
 import com.huanhong.wms.entity.vo.InventoryDocumentVO;
@@ -179,21 +180,6 @@ public class InventoryDocumentServiceImpl extends SuperServiceImpl<InventoryDocu
             inventoryDocumentOld.setRfqNumber(updateInventoryDocumentDTO.getRfqNumber());
         }
 
-        //物料编码
-        if (StringUtils.isNotBlank(updateInventoryDocumentDTO.getMaterialCoding())) {
-            inventoryDocumentOld.setMaterialCoding(updateInventoryDocumentDTO.getMaterialCoding());
-        }
-
-        //应到数量
-        if (ObjectUtil.isNotNull(updateInventoryDocumentDTO.getReceivableQuantity())) {
-            inventoryDocumentOld.setReceivableQuantity(updateInventoryDocumentDTO.getReceivableQuantity());
-        }
-
-        //到货数量
-        if (ObjectUtil.isNotNull(updateInventoryDocumentDTO.getArrivalQuantity())) {
-            inventoryDocumentOld.setArrivalQuantity(updateInventoryDocumentDTO.getArrivalQuantity());
-        }
-
         //清点 0-未清点 1-已请你单
         if(ObjectUtil.isNotNull(updateInventoryDocumentDTO.getComplete())){
             inventoryDocumentOld.setComplete(updateInventoryDocumentDTO.getComplete());
@@ -234,5 +220,8 @@ public class InventoryDocumentServiceImpl extends SuperServiceImpl<InventoryDocu
         InventoryDocument inventoryDocument = inventoryDocumentMapper.selectOne(queryWrapper);
         return inventoryDocument;
     }
+
+
+
 
 }

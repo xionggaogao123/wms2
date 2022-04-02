@@ -110,33 +110,6 @@ public class EnterWarehouseController extends BaseController {
                 if (!resultAdd.isOk()) {
                     return Result.failure("新增入库明细单失败");
                 }
-
-                AddInventoryInformationDTO addInventoryInformationDTO = new AddInventoryInformationDTO();
-                int count = 0;
-                for (AddEnterWarehouseDetailsDTO enterWarehouseDetails :
-                        addEnterWarehouseDetailsDTOList) {
-                    addInventoryInformationDTO.setMaterialCoding(enterWarehouseDetails.getMaterialCoding());
-                    Material material = materialService.getMeterialByMeterialCode(enterWarehouseDetails.getMaterialCoding());
-                    addInventoryInformationDTO.setMaterialName(material.getMaterialName());
-                    addInventoryInformationDTO.setMeasurementUnit(material.getMeasurementUnit());
-                    if (ObjectUtil.isNotNull(material.getAuxiliaryUnit())) {
-                        addInventoryInformationDTO.setAuxiliaryUnit(material.getAuxiliaryUnit());
-                    }
-                    addInventoryInformationDTO.setCargoSpaceId(enterWarehouseDetails.getWarehouse() + "01AA0000");
-                    addInventoryInformationDTO.setInventoryCredit(enterWarehouseDetails.getActualQuantity());
-                    addInventoryInformationDTO.setSafeQuantity((double) 0);
-                    addInventoryInformationDTO.setBatch(enterWarehouseDetails.getBatch());
-                    addInventoryInformationDTO.setConsignor(0);
-                    addInventoryInformationDTO.setUnitPrice(enterWarehouseDetails.getUnitPriceIncludingTax());
-                    addInventoryInformationDTO.setManagementFeeRate(1.1);
-                    addInventoryInformationDTO.setSalesUnitPrice(NumberUtil.mul(enterWarehouseDetails.getUnitPriceIncludingTax(), 1.1));
-                    addInventoryInformationDTO.setSupplier("待补");
-                    Result resultAddIventory = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
-                    if (resultAddIventory.isOk()) {
-                        count++;
-                    }
-                }
-                return count == addEnterWarehouseDetailsDTOList.size() ? Result.success()  : Result.failure("变动库存失败！");
             }
         } catch (Exception e) {
             log.error("添加入库单出错，异常", e);

@@ -23,20 +23,6 @@ public class AddInventoryDocumentDTO {
     @ApiModelProperty(value = "询价单编号")
     private String rfqNumber;
 
-    @NotEmpty
-    @ApiModelProperty(value = "物料编码")
-    private String materialCoding;
-
-    @NotNull
-    @Min(0)
-    @ApiModelProperty(value = "应到数量")
-    private Double receivableQuantity;
-
-    @NotNull
-    @Min(0)
-    @ApiModelProperty(value = "到货数量")
-    private Double arrivalQuantity;
-
     @Min(0)
     @Max(1)
     @ApiModelProperty(value = "清点 0-未清点(默认) 1-已清点")

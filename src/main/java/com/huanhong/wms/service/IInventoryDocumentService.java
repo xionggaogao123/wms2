@@ -64,4 +64,7 @@ public interface IInventoryDocumentService extends SuperService<InventoryDocumen
      */
     InventoryDocument getInventoryDocumentByDocumentNumberAndWarehouseId(String documentNumber, String warehouseId);
 
+
+
+
 }

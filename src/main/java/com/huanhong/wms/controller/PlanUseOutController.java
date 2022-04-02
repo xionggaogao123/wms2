@@ -475,6 +475,10 @@ public class PlanUseOutController extends BaseController {
         /**
          * 更新出库明细
          */
+        /**
+         * 总领用数量不能大于批准数量
+         */
+
         try {
             OutboundRecordDetails outboundRecordDetails = new OutboundRecordDetails();
             List<OutboundRecordDetails> outboundRecordDetailsList = new ArrayList<>();

@@ -3,33 +3,29 @@
 <mapper namespace="com.huanhong.wms.mapper.WarehouseManagementMapper">
 
     <select id="countOccupationByCompany" resultType="java.util.Map">
-        SELECT
-            csm.`full`,
-            COUNT(*) as num
-        FROM
-            cargo_space_management csm
-                LEFT JOIN warehouse_management wm ON wm.company_id = #{companyId}
-                LEFT JOIN sublibrary_management sm ON sm.warehouse_id = wm.warehouse_id
-                AND sm.del = 0
-                LEFT JOIN warehouse_area_management wam ON wam.sublibrary_id = sm.sublibrary_id
-                AND wam.del = 0
-                LEFT JOIN shelf_management shelf ON shelf.warehouse_area_id = wam.warehouse_area_id
-                AND shelf.del = 0
-        WHERE
-            csm.del = 0
+        SELECT csm.`full`,
+               COUNT(*) as num
+        FROM cargo_space_management csm
+                 LEFT JOIN warehouse_management wm ON wm.company_id = #{companyId}
+                 LEFT JOIN sublibrary_management sm ON sm.warehouse_id = wm.warehouse_id
+            AND sm.del = 0
+                 LEFT JOIN warehouse_area_management wam ON wam.sublibrary_id = sm.sublibrary_id
+            AND wam.del = 0
+                 LEFT JOIN shelf_management shelf ON shelf.warehouse_area_id = wam.warehouse_area_id
+            AND shelf.del = 0
+        WHERE csm.del = 0
           AND csm.shelf_id = shelf.shelf_id
-        GROUP BY
-            csm.`full`
+        GROUP BY csm.`full`
     </select>
     <select id="selectMaterialByCompany" resultType="java.util.Map">
-        SELECT
-            ii.material_coding ,
-            ii.material_name ,
-            ii.Inventory_credit ,
-            COUNT(ii.id) as count
+        SELECT ii.material_coding,
+               ii.material_name,
+               ii.Inventory_credit,
+               COUNT(ii.id) as count
         FROM
             inventory_information ii
-            LEFT JOIN warehouse_management wm ON wm.company_id = #{companyId}
+            LEFT JOIN warehouse_management wm
+        ON wm.company_id = #{companyId}
             LEFT JOIN sublibrary_management sm ON sm.warehouse_id = wm.warehouse_id
             AND sm.del = 0
             LEFT JOIN warehouse_area_management wam ON wam.sublibrary_id = sm.sublibrary_id
@@ -45,32 +41,28 @@
             ii.material_coding
     </select>
     <select id="countWarehouseOccupationByWarehouse" resultType="java.util.Map">
-        SELECT
-            csm.`full`,
-            COUNT(*) as num
-        FROM
-            cargo_space_management csm
-                LEFT JOIN sublibrary_management sm ON sm.warehouse_id = #{warehouseId}
-                AND sm.del = 0
-                LEFT JOIN warehouse_area_management wam ON wam.sublibrary_id = sm.sublibrary_id
-                AND wam.del = 0
-                LEFT JOIN shelf_management shelf ON shelf.warehouse_area_id = wam.warehouse_area_id
-                AND shelf.del = 0
-        WHERE
-            csm.del = 0
+        SELECT csm.`full`,
+               COUNT(*) as num
+        FROM cargo_space_management csm
+                 LEFT JOIN sublibrary_management sm ON sm.warehouse_id = #{warehouseId}
+            AND sm.del = 0
+                 LEFT JOIN warehouse_area_management wam ON wam.sublibrary_id = sm.sublibrary_id
+            AND wam.del = 0
+                 LEFT JOIN shelf_management shelf ON shelf.warehouse_area_id = wam.warehouse_area_id
+            AND shelf.del = 0
+        WHERE csm.del = 0
           AND csm.shelf_id = shelf.shelf_id
-        GROUP BY
-            csm.`full`
+        GROUP BY csm.`full`
     </select>
     <select id="selectMaterialByWarehouse" resultType="java.util.Map">
-        SELECT
-            ii.material_coding ,
-            ii.material_name ,
-            ii.Inventory_credit ,
-            COUNT(ii.id) as count
+        SELECT ii.material_coding,
+               ii.material_name,
+               ii.Inventory_credit as inventory_credit,
+               COUNT(ii.id) as count
         FROM
             inventory_information ii
-            LEFT JOIN sublibrary_management sm ON sm.warehouse_id = #{warehouseId}
+            LEFT JOIN sublibrary_management sm
+        ON sm.warehouse_id = #{warehouseId}
             AND sm.del = 0
             LEFT JOIN warehouse_area_management wam ON wam.sublibrary_id = sm.sublibrary_id
             AND wam.del = 0

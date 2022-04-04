@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huanhong.wms.mapper.OutboundRecordMapper">
+
+    <select id="countOutboundRecordByWarehouse" resultType="java.util.Map">
+        SELECT
+            outr.*, m.material_name
+        FROM
+            outbound_record outr
+                LEFT JOIN material m ON m.material_coding = outr.material_coding
+        WHERE
+            outr.warehouse_id = #{warehouseId}
+          AND outr.`status` = 1
+          AND outr.del = 0
+    </select>
+</mapper>

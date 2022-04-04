@@ -70,7 +70,7 @@ public class OssController extends BaseController {
             @ApiImplicitParam(name = "objectType",value="对象表名",paramType = "form")
     })
     @ApiOperationSupport(order = 1)
-    @ApiOperation(value = "上传文件", notes = "请用form表单上传 type in（avatar、face、feedback、repair）")
+    @ApiOperation(value = "上传文件", notes = "请用form表单上传 type in（avatar、face、feedback、repair,sign）")
     @PostMapping("/upload")
     public Result<UploadOssVo> upload(@RequestParam String objectType,
                                       @RequestParam MultipartFile file,

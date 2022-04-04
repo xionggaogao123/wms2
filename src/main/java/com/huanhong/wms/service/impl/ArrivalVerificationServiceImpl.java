@@ -67,6 +67,8 @@ public class ArrivalVerificationServiceImpl extends SuperServiceImpl<ArrivalVeri
 
         query.like(StringUtils.isNotBlank(arrivalVerificationVO.getWarehouseId()), "warehouse_id", arrivalVerificationVO.getWarehouseId());
 
+        query.like(ObjectUtil.isNotNull(arrivalVerificationVO.getVerificationStatus()), "verification_status",arrivalVerificationVO.getVerificationStatus());
+
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         /**

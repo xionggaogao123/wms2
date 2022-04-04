@@ -680,6 +680,11 @@ public class EntityUtils {
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "readOnly");
                 return jsonObject;
+            case "verificationStatus":
+                jsonObject.put("name", "检验状态");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
             case "contractNumber":
                 jsonObject.put("name", "采购合同编号");
                 jsonObject.put("type", "text");

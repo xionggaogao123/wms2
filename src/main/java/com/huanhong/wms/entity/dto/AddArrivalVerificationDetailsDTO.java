@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -26,6 +27,11 @@ public class AddArrivalVerificationDetailsDTO {
     @NotBlank
     @ApiModelProperty(value = "物料编码")
     private String materialCoding;
+
+    @Min(0)
+    @Max(2)
+    @ApiModelProperty(value = "检验状态：0-未检验，1-部分检验，2-全部检验")
+    private Integer verificationStatus;
 
     @NotBlank
     @ApiModelProperty(value = "批次")

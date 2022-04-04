@@ -152,31 +152,7 @@ public class OnShelfServiceImpl extends SuperServiceImpl<OnShelfMapper, OnShelf>
         /**
          * vesion 对比veision 如果一致则更新并加一  不一致则不更新
          */
-
-        //物料编码
-        if (StringUtils.isNotBlank(updateOnShelfDTO.getMaterialCoding())){
-            onShelfOld.setMaterialCoding(updateOnShelfDTO.getMaterialCoding());
-        }
-        //库存数量
-        if (ObjectUtil.isNotNull(updateOnShelfDTO.getInventoryCredit())){
-            onShelfOld.setInventoryCredit(updateOnShelfDTO.getInventoryCredit());
-        }
-        //待上数量/已上数量
-        if (ObjectUtil.isNotNull(updateOnShelfDTO.getWaitingQuantity())){
-            onShelfOld.setWaitingQuantity(updateOnShelfDTO.getWaitingQuantity());
-        }
-        //仓库
-        if (StringUtils.isNotBlank(updateOnShelfDTO.getWarehouse())){
-            onShelfOld.setWarehouse(updateOnShelfDTO.getWarehouse());
-        }
-        //库区编码
-        if (StringUtils.isNotBlank(updateOnShelfDTO.getWarehouseAreaId())){
-            onShelfOld.setWarehouseAreaId(updateOnShelfDTO.getWarehouseAreaId());
-        }
-        //货位编码
-        if (StringUtils.isNotBlank(updateOnShelfDTO.getCargoSpaceId())){
-            onShelfOld.setCargoSpaceId(updateOnShelfDTO.getCargoSpaceId());
-        }
+        BeanUtil.copyProperties(updateOnShelfDTO,onShelfOld);
 
         int update = onShelfMapper.updateById(onShelfOld);
 

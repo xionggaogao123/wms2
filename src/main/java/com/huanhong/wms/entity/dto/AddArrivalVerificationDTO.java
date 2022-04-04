@@ -26,11 +26,15 @@ public class AddArrivalVerificationDTO {
     @ApiModelProperty(value = "计划类别-1正常、2加急、3补计划、请选择（默认）")
     private Integer planClassification;
 
-
     @Min(1)
     @Max(4)
     @ApiModelProperty(value = "状态: 1草拟 2审批中 3审批生效 4作废")
     private Integer planStatus;
+
+    @Min(0)
+    @Max(2)
+    @ApiModelProperty(value = "检验状态：0-未检验，1-部分检验，2-全部检验")
+    private Integer verificationStatus;
 
     @NotNull
     @ApiModelProperty(value = "到货日期")

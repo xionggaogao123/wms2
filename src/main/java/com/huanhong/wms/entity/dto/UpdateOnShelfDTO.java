@@ -24,6 +24,10 @@ public class UpdateOnShelfDTO {
     private String materialCoding;
 
 
+    @ApiModelProperty(value = "批次")
+    private String batch;
+
+
     @Min(0)
     @ApiModelProperty(value = "库存数量")
     @TableField("Inventory_credit")

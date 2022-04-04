@@ -27,6 +27,10 @@ public class ArrivalVerificationDetails extends SuperEntity {
     @ApiModelProperty(value = "仓库编号")
     private String warehouseId;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "检验状态：0-未检验，1-部分检验，2-全部检验")
+    private Integer verificationStatus;
+
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "物料编码")
     private String materialCoding;

@@ -1,5 +1,6 @@
 package com.huanhong.wms.entity.dto;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -20,6 +21,9 @@ public class AddOnShelfDTO {
     @ApiModelProperty(value = "物料编码")
     private String materialCoding;
 
+    @ApiModelProperty(value = "批次")
+    private String batch;
+
     @NotNull
     @Min(0)
     @ApiModelProperty(value = "库存数量")
@@ -35,11 +39,21 @@ public class AddOnShelfDTO {
     @ApiModelProperty(value = "仓库")
     private String warehouse;
 
+
+    @ApiModelProperty(value = "库区编号")
+    private String warehouseAreaId;
+
+
+    @ApiModelProperty(value = "货位编码")
+    private String cargoSpaceId;
+
+
     @NotNull
     @Min(0)
     @Max(1)
     @ApiModelProperty(value = "是否完成上架（0-未上架 1-已上架）")
     private Integer complete;
+
 
     @ApiModelProperty(value = "备注")
     private String remark;

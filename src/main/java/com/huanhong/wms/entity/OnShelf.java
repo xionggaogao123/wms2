@@ -27,6 +27,10 @@ public class OnShelf extends SuperEntity {
     @ApiModelProperty(value = "物料编码")
     private String materialCoding;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "批次")
+    private String batch;
+
     @ApiModelProperty(value = "库存数量")
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     private Double inventoryCredit;

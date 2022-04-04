@@ -44,6 +44,10 @@ public class ArrivalVerification extends SuperEntity {
     private Integer planStatus;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "检验状态：0-未检验，1-部分检验，2-全部检验")
+    private Integer verificationStatus;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "到货日期")
     private LocalDateTime deliveryDate;
 

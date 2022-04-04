@@ -35,6 +35,12 @@ public class UpdateArrivalVerificationDTO {
     @ApiModelProperty(value = "状态: 1草拟 2审批中 3审批生效 4作废")
     private Integer planStatus;
 
+    @Min(0)
+    @Max(2)
+    @ApiModelProperty(value = "检验状态：0-未检验，1-部分检验，2-全部检验")
+    private Integer verificationStatus;
+
+
     @ApiModelProperty(value = "到货日期")
     private LocalDateTime deliveryDate;
 

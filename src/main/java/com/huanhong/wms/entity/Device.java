@@ -72,4 +72,8 @@ public class Device extends SuperEntity {
 
     @ApiModelProperty(value = "序号")
     private Integer sort;
+
+
+    @ApiModelProperty(value = "其他平台唯一标识")
+    private String otherId;
 }

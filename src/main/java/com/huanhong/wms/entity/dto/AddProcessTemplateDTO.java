@@ -1,9 +1,12 @@
 package com.huanhong.wms.entity.dto;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -28,7 +31,19 @@ public class AddProcessTemplateDTO {
     private Integer step;
 
     @NotEmpty
-    @ApiModelProperty(value = "登录账号")
+    @ApiModelProperty(value = "登录账号或角色 id")
     private String loginName;
+
+    @NotNull
+    @Min(1)
+    @Max(2)
+    @ApiModelProperty(value = "模版类型 1.审批人 2.抄送人")
+    private Integer templateType;
+
+    @NotNull
+    @Min(1)
+    @Max(2)
+    @ApiModelProperty(value = "用户类型 1.用户 2.角色")
+    private Integer userType;
 
 }

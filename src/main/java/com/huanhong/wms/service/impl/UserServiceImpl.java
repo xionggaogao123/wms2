@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.huanhong.wms.SuperEntity;
 import com.huanhong.wms.SuperServiceImpl;
+import com.huanhong.wms.bean.Constant;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
@@ -20,9 +21,7 @@ import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.mapper.CompanyMapper;
 import com.huanhong.wms.mapper.DeptMapper;
 import com.huanhong.wms.mapper.UserMapper;
-import com.huanhong.wms.service.IDeptService;
-import com.huanhong.wms.service.ISysRoleService;
-import com.huanhong.wms.service.IUserService;
+import com.huanhong.wms.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -32,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -62,6 +62,12 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
 
     @Resource
     private ISysRoleService sysRoleService;
+
+    @Resource
+    private ISysMenuService sysMenuService;
+
+    @Resource
+    private ISysRoleMenuService sysRoleMenuService;
 
     @Override
     public Result<User> checkLogin(LoginDTO login) {
@@ -99,6 +105,14 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         List<Dict> roles = sysRoleService.getLoginRoles(user.getId());
         user.setRoles(roles);
 
+        // 获取角色id集合
+        List<Integer> roleIdList = roles.stream().map(dict -> Convert.toInt(dict.get(Constant.ID))).collect(Collectors.toList());
+
+        // 获取菜单id集合
+        List<Integer> menuIdList = sysRoleMenuService.getRoleMenuIdList(roleIdList);
+        // 权限信息
+        List<String> permissions = sysMenuService.getLoginPermissions(user.getId(), menuIdList);
+        user.setPermissions(permissions);
         user.setPassword(null);
         return Result.success(user);
     }
@@ -281,6 +295,15 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         // 角色信息
         List<Dict> roles = sysRoleService.getLoginRoles(user.getId());
         user.setRoles(roles);
+
+        // 获取角色id集合
+        List<Integer> roleIdList = roles.stream().map(dict -> Convert.toInt(dict.get(Constant.ID))).collect(Collectors.toList());
+
+        // 获取菜单id集合
+        List<Integer> menuIdList = sysRoleMenuService.getRoleMenuIdList(roleIdList);
+        // 权限信息
+        List<String> permissions = sysMenuService.getLoginPermissions(user.getId(), menuIdList);
+        user.setPermissions(permissions);
         user.setPassword(null);
         result.setData(user);
         result.setOk(true);
@@ -292,6 +315,13 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         List<User> users = userMapper.list(roleId, deptId, name);
         return Result.success(users);
     }
+
+    @Override
+    public Result<List<User>> listByRoleIdsAndDeptId(String roleIds, Integer deptId) {
+        List<User> users = userMapper.selectListByRoleIdsAndDeptId(roleIds, deptId);
+        return Result.success(users);
+    }
+
     private void getDeptUp(List<Map<String, Object>> depts, Integer deptId) {
         Map<String, Object> dept = deptMapper.getDeptById(deptId);
         if (ObjectUtil.isNotEmpty(dept)) {

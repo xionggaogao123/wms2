@@ -8,10 +8,12 @@ import cn.hutool.core.lang.tree.TreeNode;
 import cn.hutool.core.lang.tree.TreeNodeConfig;
 import cn.hutool.core.lang.tree.TreeUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.huanhong.common.units.ThreadLocalUtil;
 import com.huanhong.wms.bean.enums.CommonStatusEnum;
 import com.huanhong.wms.bean.enums.MenuTypeEnum;
+import com.huanhong.wms.bean.enums.SymbolConstant;
 import com.huanhong.wms.entity.SysMenu;
 import com.huanhong.wms.entity.param.SysMenuParam;
 import com.huanhong.wms.mapper.SysMenuMapper;
@@ -23,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>
@@ -162,6 +165,27 @@ public class SysMenuServiceImpl extends SuperServiceImpl<SysMenuMapper, SysMenu>
                     tree.setName(treeNode.getName());
                 });
         return treeNodes;
+    }
+
+    @Override
+    public List<String> getLoginPermissions(Integer userId, List<Integer> menuIdList) {
+        Set<String> permissions = CollectionUtil.newHashSet();
+        if (ObjectUtil.isNotEmpty(menuIdList)) {
+            LambdaQueryWrapper<SysMenu> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(SysMenu::getId, menuIdList).ne(SysMenu::getType, MenuTypeEnum.DIR.getCode())
+                    .eq(SysMenu::getStatus, CommonStatusEnum.ENABLE.getCode());
+
+            this.list(queryWrapper).forEach(sysMenu -> {
+                if(MenuTypeEnum.BTN.getCode().equals(sysMenu.getType())) {
+                    permissions.add(sysMenu.getPermission());
+                } else {
+                    String removePrefix = StrUtil.removePrefix(sysMenu.getRouter(), SymbolConstant.LEFT_DIVIDE);
+                    String permission = removePrefix.replaceAll(SymbolConstant.LEFT_DIVIDE, SymbolConstant.COLON);
+                    permissions.add(permission);
+                }
+            });
+        }
+        return CollectionUtil.newArrayList(permissions);
     }
 
     public static void main(String[] args) {

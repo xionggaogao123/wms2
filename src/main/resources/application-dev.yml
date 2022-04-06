@@ -56,3 +56,10 @@ project:
     host: https://api2.hik-cloud.com
     tokenUrl: /oauth/token
     ezvizTokenUrl: /v1/ezviz/account/info
+    mqConsumerGroupUrl: /api/v1/mq/consumer/group1
+    mqConsumerMessageUrl: /api/v1/mq/consumer/messages
+    mqConsumerOffsetUrl: /api/v1/mq/consumer/offsets
+    deviceCreateUrl: /api/v1/open/basic/devices/create
+    devicegetUrl: /api/v1/open/basic/devices/get?deviceSerial={}
+    groupGetUrl: /api/v1/open/basic/groups/get?groupNo={}
+    groupCreateUrl: /api/v1/open/basic/groups/create

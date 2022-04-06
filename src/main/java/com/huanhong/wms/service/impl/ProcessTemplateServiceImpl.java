@@ -8,10 +8,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.ProcessTemplate;
+import com.huanhong.wms.entity.User;
 import com.huanhong.wms.entity.dto.AddProcessTemplateDTO;
 import com.huanhong.wms.entity.dto.UpdateProcessTemplateDTO;
 import com.huanhong.wms.entity.vo.ProcessTemplateVO;
 import com.huanhong.wms.mapper.ProcessTemplateMapper;
+import com.huanhong.wms.mapper.UserMapper;
 import com.huanhong.wms.service.IProcessTemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -36,6 +39,8 @@ public class ProcessTemplateServiceImpl extends SuperServiceImpl<ProcessTemplate
 
     @Resource
     private ProcessTemplateMapper processTemplateMapper;
+    @Resource
+    private UserMapper userMapper;
 
 
     /**
@@ -65,7 +70,7 @@ public class ProcessTemplateServiceImpl extends SuperServiceImpl<ProcessTemplate
         query.like(StringUtils.isNotBlank(processTemplateVO.getProcessCode()), "process_code", processTemplateVO.getProcessCode());
 
         query.like(StringUtils.isNotBlank(processTemplateVO.getWarehouseId()), "warehouse_id", processTemplateVO.getWarehouseId());
-
+        query.eq(null != processTemplateVO.getTemplateType(), "template_type", processTemplateVO.getTemplateType());
         return processTemplateMapper.selectPage(processTemplatePage, query);
     }
 
@@ -82,6 +87,7 @@ public class ProcessTemplateServiceImpl extends SuperServiceImpl<ProcessTemplate
                 BeanUtil.copyProperties(addProcessTemplateDTO, processTemplate);
                 int add = processTemplateMapper.insert(processTemplate);
                 if (add > 0) {
+                    successAddList.add(processTemplate);
                     count++;
                 } else {
                     falseAddList.add(addProcessTemplateDTO);
@@ -91,7 +97,7 @@ public class ProcessTemplateServiceImpl extends SuperServiceImpl<ProcessTemplate
                 return Result.success("添加成功！");
             } else {
                 HashMap map = new HashMap();
-                map.put("success", getProcessTemplateListByProcessCodeAndWarhouseId(listAddProcessTemplateDTO.get(0).getProcessCode(), listAddProcessTemplateDTO.get(0).getWarehouseId()));
+                map.put("success", successAddList);
                 map.put("false", falseAddList);
                 return Result.success(map, "部分步骤添加失败！");
             }
@@ -125,12 +131,20 @@ public class ProcessTemplateServiceImpl extends SuperServiceImpl<ProcessTemplate
 
 
     @Override
-    public List<ProcessTemplate> getProcessTemplateListByProcessCodeAndWarhouseId(String processCode, String warehosueId) {
+    public List<ProcessTemplate> getProcessTemplateListByProcessCodeAndWarhouseId(String processCode, String warehosueId, Integer templateType, Integer deptId) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("process_code", processCode);
         queryWrapper.eq("warehouse_id", warehosueId);
+        queryWrapper.eq(null != templateType, "template_type", templateType);
         queryWrapper.orderByAsc("step");
         List<ProcessTemplate> processTemplateList = processTemplateMapper.selectList(queryWrapper);
+        processTemplateList.forEach(p -> {
+            // 模版用户为角色  根据角色和部门 id 查询用户
+            if (p.getUserType() == 2) {
+                List<User> users = userMapper.selectListByRoleIdsAndDeptId(p.getLoginName(), deptId);
+                p.setLoginName(users.stream().map(User::getLoginName).collect(Collectors.joining(",")));
+            }
+        });
         return processTemplateList;
     }
 }

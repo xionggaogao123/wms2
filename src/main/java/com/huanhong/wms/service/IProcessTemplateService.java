@@ -60,6 +60,6 @@ public interface IProcessTemplateService extends SuperService<ProcessTemplate> {
      * 根据流程代码和仓库名获取本仓库某流程的完整List
      */
 
-    List<ProcessTemplate> getProcessTemplateListByProcessCodeAndWarhouseId(String processCode, String warehosueId);
+    List<ProcessTemplate> getProcessTemplateListByProcessCodeAndWarhouseId(String processCode, String warehosueId, Integer templateType, Integer deptId);
 
 }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 public class HikCloudProperties {
     public static final String TOKEN_FORMAT = "hik-cloud:token:{}";
     public static final String EZVIZ_TOKEN_FORMAT = "hik-cloud:token:ezviz:{}";
+    public static final String CONSUMER_GROUP_FORMAT = "hik-cloud:consumer:message:{}";
 
     private String clientId;
 
@@ -21,6 +22,13 @@ public class HikCloudProperties {
     private String tokenUrl;
 
     private String ezvizTokenUrl;
+    private String mqConsumerGroupUrl;
+    private String mqConsumerMessageUrl;
+    private String mqConsumerOffsetUrl;
+    private String deviceCreateUrl;
+    private String deviceGetUrl;
+    private String groupGetUrl;
+    private String groupCreateUrl;
 
 
 }

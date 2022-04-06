@@ -74,6 +74,9 @@ public class User extends SuperBsEntity {
     @TableField(exist = false)
     @ApiModelProperty(value = "用户角色")
     private List<Dict> roles;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "用户权限")
+    private List<String> permissions;
 
     @ApiModelProperty(value = "签名图片")
     private String signUrl;

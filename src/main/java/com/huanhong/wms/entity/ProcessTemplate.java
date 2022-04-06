@@ -30,16 +30,16 @@ public class ProcessTemplate extends SuperEntity {
     @ApiModelProperty(value = "步骤")
     private Integer step;
 
+
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "登录账号")
+    @ApiModelProperty(value = "登录账号或角色 id")
     private String loginName;
 
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
-    @ApiModelProperty(value = "申请日期")
-    private LocalDateTime createTime;
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "模版类型 1.审批人 2.抄送人")
+    private Integer templateType;
 
-    @TableField(value = "last_update", fill = FieldFill.INSERT_UPDATE)
-    @ApiModelProperty(value = "最后更新时间")
-    private LocalDateTime lastUpdate;
-
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "用户类型 1.用户 2.角色")
+    private Integer userType;
 }

@@ -1,12 +1,14 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
@@ -67,7 +69,8 @@ public class PlanUseOutController extends BaseController {
 
     @Resource
     private IWarehouseManagementService warehouseManagementService;
-
+    @Resource
+    private IVariableService variableService;
 
 
     @ApiImplicitParams({
@@ -102,12 +105,12 @@ public class PlanUseOutController extends BaseController {
     @ApiOperation(value = ("PDA端分页查询"))
     @GetMapping("/PDApage")
     public Result<Page<PlanUseOut>> pagePda(@RequestParam(defaultValue = "1") Integer current,
-                                         @RequestParam(defaultValue = "10") Integer size,
-                                         PlanUseOutVO planUseOutVO
-    ){
+                                            @RequestParam(defaultValue = "10") Integer size,
+                                            PlanUseOutVO planUseOutVO
+    ) {
         try {
             //调用服务层方法，传入page对象和查询条件对象
-            Page<PlanUseOut> pageResult = planUseOutService.pageFuzzyQueryPDA(new Page<>(current,size),planUseOutVO);
+            Page<PlanUseOut> pageResult = planUseOutService.pageFuzzyQueryPDA(new Page<>(current, size), planUseOutVO);
             if (ObjectUtil.isEmpty(pageResult.getRecords())) {
                 return Result.success(pageResult, "未查询到出库单据信息");
             }
@@ -273,7 +276,15 @@ public class PlanUseOutController extends BaseController {
                  */
                 JSONObject jsonResult = new JSONObject();
                 jsonResult.put("tableName", "plan_use_out");
-                jsonResult.put("processTemplate", processTemplateService.getProcessTemplateListByProcessCodeAndWarhouseId("plan_use_out", planUseOut.getWarehouseId()));
+                // 根据领料用途获取对应部门信息
+                Variable variable = variableService.getOne(
+                        Wrappers.<Variable>lambdaQuery().eq(Variable::getKey, "material_use")
+                                .eq(Variable::getValue, planUseOut.getMaterialUse()).last("limit 1"));
+                Integer deptId = null;
+                if (null != variable) {
+                    deptId = Convert.toInt(variable.getRemark());
+                }
+                jsonResult.put("processTemplate", processTemplateService.getProcessTemplateListByProcessCodeAndWarhouseId("plan_use_out", planUseOut.getWarehouseId(), null, deptId));
                 jsonResult.put("main", entityUtils.jsonField("planUseOut", new PlanUseOut()));
                 jsonResult.put("details", entityUtils.jsonField("planUseOut", new PlanUseOutDetails()));
                 jsonResult.put("mainValue", planUseOut);
@@ -409,7 +420,7 @@ public class PlanUseOutController extends BaseController {
     @ApiOperation(value = "物料编码和物料名称模糊查询信息及库存")
     @GetMapping("/pagingFuzzyQueryByMaterialCodingOrName")
     public Result page(PdaMaterialVO pdaMaterialVO
-                       ) {
+    ) {
         try {
             List<Material> materialslist = materialService.getMaterialListByKey(pdaMaterialVO);
             if (ObjectUtil.isNull(materialslist)) {
@@ -421,7 +432,7 @@ public class PlanUseOutController extends BaseController {
                 JSONObject jsonObject = new JSONObject();
                 String materialCoding = material.getMaterialCoding();
                 Double num = inventoryInformationService.getNumByMaterialCodingAndWarehouseId(materialCoding, pdaMaterialVO.getWarehouseId());
-                List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(materialCoding,pdaMaterialVO.getWarehouseId());
+                List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(materialCoding, pdaMaterialVO.getWarehouseId());
                 jsonObject.put("material", material);
                 jsonObject.put("inventory", num);
                 jsonObject.put("inventoryList", inventoryInformationList);
@@ -441,7 +452,7 @@ public class PlanUseOutController extends BaseController {
     public Result getPlanUseOutAndOutboundRecordByDocNumAndWarehouseId(
             @RequestParam String docNum,
             @RequestParam String warehouseId
-            ) {
+    ) {
         List listResult = new ArrayList();
         List<PlanUseOutDetails> planUseOutDetailsList;
         //加一层主表数据
@@ -452,7 +463,7 @@ public class PlanUseOutController extends BaseController {
          * 判断out_status
          * 0-未出库   1-部分出库   2-全部出库
          */
-        for (int i = 0; i < 3; i++ ){
+        for (int i = 0; i < 3; i++) {
             planUseOutDetailsList = planUseOutDetailsService.getListPlanUseOutDetailsByDocNumberAndWarehosueAndOutStatus(docNum, warehouseId, i);
             if (ObjectUtil.isNotNull(planUseOutDetailsList)) {
                 jsonObjectList.put(String.valueOf(i), getOut(planUseOutDetailsList));
@@ -460,18 +471,18 @@ public class PlanUseOutController extends BaseController {
         }
         listResult.add(jsonObjectList);
         //主表
-        PlanUseOut planUseOut = planUseOutService.getPlanUseOutByDocNumAndWarhouseId(docNum,warehouseId);
+        PlanUseOut planUseOut = planUseOutService.getPlanUseOutByDocNumAndWarhouseId(docNum, warehouseId);
         String warehouseName = warehouseManagementService.getWarehouseByWarehouseId(planUseOut.getWarehouseId()).getWarehouseName();
-        jsonObjectMain.put("warehouseName",warehouseName);
-        jsonObjectMain.put("panUseOut",planUseOut);
-        jsonObjectMain.put("list",listResult);
+        jsonObjectMain.put("warehouseName", warehouseName);
+        jsonObjectMain.put("panUseOut", planUseOut);
+        jsonObjectMain.put("list", listResult);
         return Result.success(jsonObjectMain);
     }
 
     @ApiOperationSupport(order = 14)
     @ApiOperation(value = "更新出库记录")
     @PutMapping("/updateOutboundList")
-    public Result updateOutboundList(@Valid @RequestBody List<PdaUpdateOutVO> pdaUpdateOutVOList){
+    public Result updateOutboundList(@Valid @RequestBody List<PdaUpdateOutVO> pdaUpdateOutVOList) {
         /**
          * 更新出库明细
          */
@@ -485,68 +496,67 @@ public class PlanUseOutController extends BaseController {
             for (PdaUpdateOutVO pdaUpdateOutVO : pdaUpdateOutVOList) {
                 UpdatePlanUseOutDetailsDTO updatePlanUseOutDetailsDTO = pdaUpdateOutVO.getUpdatePlanUseOutDetailsDTO();
                 Result result = planUseOutDetailsService.updatePlanUseOutDetails(updatePlanUseOutDetailsDTO);
-                if (result.isOk()){
+                if (result.isOk()) {
                     //明细更新成功后，回滚全部库存
                     PlanUseOutDetails planUseOutDetails = planUseOutDetailsService.getPlanUseOutDetailsByDetailsId(updatePlanUseOutDetailsDTO.getId());
                     String docNum = planUseOutDetails.getUsePlanningDocumentNumber();
                     String warehousId = planUseOutDetails.getWarehouseId();
                     String materialCoding = planUseOutDetails.getMaterialCoding();
-                    OutboundRecord outboundRecord = outboundRecordService.getOutboundRecordByDocNumAndWarehouseIdAndMaterialCoding(docNum,warehousId,materialCoding);
-                    if (ObjectUtil.isEmpty(outboundRecord)){
+                    OutboundRecord outboundRecord = outboundRecordService.getOutboundRecordByDocNumAndWarehouseIdAndMaterialCoding(docNum, warehousId, materialCoding);
+                    if (ObjectUtil.isEmpty(outboundRecord)) {
                         return Result.failure("未找到出库记录！");
                     }
                     int id = outboundRecord.getId();
                     Result resultUpdateOutbond = upDateOutboundRecordAndInventory(outboundRecordService.getOutboundRecordById(id), (double) 0);
-                    if (resultUpdateOutbond.isOk()){
+                    if (resultUpdateOutbond.isOk()) {
                         //回滚库存成功，使用新的出库记录更新库存
                         for (OutboundRecordDetailsVO outboundRecordDetailsVONew : pdaUpdateOutVO.getOutboundRecordDetailsVOList()
-                             ) {
+                        ) {
                             String batch = outboundRecordDetailsVONew.getBatch();
-                            String cargoSpaceId= outboundRecordDetailsVONew.getCargoSpaceId();
+                            String cargoSpaceId = outboundRecordDetailsVONew.getCargoSpaceId();
                             Double inventoryCreditWant = outboundRecordDetailsVONew.getInventoryCredit();
-                            InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(materialCoding,batch,cargoSpaceId);
-                            if (ObjectUtil.isEmpty(inventoryInformation)){
+                            InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(materialCoding, batch, cargoSpaceId);
+                            if (ObjectUtil.isEmpty(inventoryInformation)) {
                                 return Result.failure("未找到库存信息");
                             }
                             Double inventoryReal = inventoryInformation.getInventoryCredit();
-                            Double inventoryNum = NumberUtil.sub(inventoryReal,inventoryCreditWant);
-                            if (BigDecimal.valueOf(inventoryNum).compareTo(BigDecimal.valueOf(0))>0){
+                            Double inventoryNum = NumberUtil.sub(inventoryReal, inventoryCreditWant);
+                            if (BigDecimal.valueOf(inventoryNum).compareTo(BigDecimal.valueOf(0)) > 0) {
                                 UpdateInventoryInformationDTO updateInventoryInformationDTO = new UpdateInventoryInformationDTO();
-                                BeanUtil.copyProperties(inventoryInformation,updateInventoryInformationDTO);
+                                BeanUtil.copyProperties(inventoryInformation, updateInventoryInformationDTO);
                                 updateInventoryInformationDTO.setInventoryCredit(inventoryNum);
                                 Result resultUpdateInventory = inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
-                                if (resultUpdateInventory.isOk()){
+                                if (resultUpdateInventory.isOk()) {
                                     outboundRecordDetails.setBatch(batch);
                                     outboundRecordDetails.setCargoSpaceId(cargoSpaceId);
                                     outboundRecordDetails.setInventoryCredit(inventoryCreditWant);
                                     outboundRecordDetails.setId(inventoryInformation.getId());
                                     outboundRecordDetailsList.add(outboundRecordDetails);
-                                }else {
+                                } else {
                                     return Result.failure("库存更新失败");
                                 }
-                            }else {
-                                return Result.failure("货位:"+cargoSpaceId+",  物料:"+materialCoding+ " , 批次："+batch+",  库存数量不不足");
+                            } else {
+                                return Result.failure("货位:" + cargoSpaceId + ",  物料:" + materialCoding + " , 批次：" + batch + ",  库存数量不不足");
                             }
                         }
                         //更新出库记录
                         UpdateOutboundRecordDTO updateOutboundRecordDTO = new UpdateOutboundRecordDTO();
-                        BeanUtil.copyProperties(outboundRecord,updateOutboundRecordDTO);
+                        BeanUtil.copyProperties(outboundRecord, updateOutboundRecordDTO);
                         updateOutboundRecordDTO.setDetails(JSON.toJSONString(outboundRecordDetailsList));
                         return outboundRecordService.updateOutboundRecord(updateOutboundRecordDTO);
-                    }else {
+                    } else {
                         return resultUpdateOutbond;
                     }
-                }else {
+                } else {
                     return result;
                 }
             }
-        }catch (Exception e){
-           log.error("用户");
+        } catch (Exception e) {
+            log.error("用户");
             return Result.failure("系统异常");
         }
         return Result.failure("未知错误");
     }
-
 
 
     public List<JSONObject> getOut(List<PlanUseOutDetails> planUseOutDetailsList) {
@@ -561,8 +571,8 @@ public class PlanUseOutController extends BaseController {
             jsonObject.put("planUseOutDetails", planUseOutDetails);
             jsonObject.put("outboundDetails", outboundRecord.getDetails());
             jsonObject.put("material", materialService.getMeterialByMeterialCode(outboundRecord.getMaterialCoding()));
-            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(outboundRecord.getMaterialCoding(),outboundRecord.getWarehouseId());
-            jsonObject.put("inventory",inventoryInformationList);
+            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(outboundRecord.getMaterialCoding(), outboundRecord.getWarehouseId());
+            jsonObject.put("inventory", inventoryInformationList);
             listResult.add(jsonObject);
         }
         return listResult;
@@ -731,7 +741,7 @@ public class PlanUseOutController extends BaseController {
 
                         //存入新数量
                         InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(outboundRecord.getMaterialCoding(), outboundRecordDetails.getBatch(), outboundRecordDetails.getCargoSpaceId());
-                        if (ObjectUtil.isEmpty(inventoryInformation)){
+                        if (ObjectUtil.isEmpty(inventoryInformation)) {
                             return Result.failure("未找到库存信息");
                         }
                         BeanUtil.copyProperties(inventoryInformation, addInventoryInformationDTO);
@@ -755,7 +765,7 @@ public class PlanUseOutController extends BaseController {
                     //当tempNum等于0,剩余的出库记录全部回滚库存--失败无补偿手段
                     AddInventoryInformationDTO addInventoryInformationDTO = new AddInventoryInformationDTO();
                     InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(outboundRecord.getMaterialCoding(), outboundRecordDetails.getBatch(), outboundRecordDetails.getCargoSpaceId());
-                    if (ObjectUtil.isEmpty(inventoryInformation)){
+                    if (ObjectUtil.isEmpty(inventoryInformation)) {
                         return Result.failure("未找到库存信息");
                     }
                     BeanUtil.copyProperties(inventoryInformation, addInventoryInformationDTO);

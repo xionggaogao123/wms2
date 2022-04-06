@@ -24,4 +24,6 @@ public interface UserMapper extends BaseMapper<User> {
 
     List<User> list(@Param("roleId") Integer roleId, @Param("deptId") Integer deptId, @Param("name") String name);
 
+    List<User> selectListByRoleIdsAndDeptId(@Param("roleIds") String roleIds, @Param("deptId") Integer deptId);
+
 }

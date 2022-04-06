@@ -247,4 +247,15 @@ public class UserController extends BaseController {
     public Result<List<User>> list(Integer roleId, Integer deptId, String name) {
         return userService.list(roleId, deptId, name);
     }
+
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "roleIds", value = "角色ids 例： 1,2,3"),
+            @ApiImplicitParam(name = "deptId", value = "部门id"),
+    })
+    @ApiOperationSupport(order = 10)
+    @ApiOperation(value = "流程引擎 过程中 根据选择的部门信息，查询用户列表-角色数组、部门")
+    @GetMapping("/listByRoleIdsAndDeptId")
+    public Result<List<User>> listByRoleIdsAndDeptId(String roleIds, Integer deptId) {
+        return userService.listByRoleIdsAndDeptId(roleIds, deptId);
+    }
 }

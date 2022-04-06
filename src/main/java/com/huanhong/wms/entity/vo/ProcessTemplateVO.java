@@ -1,5 +1,7 @@
 package com.huanhong.wms.entity.vo;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -15,5 +17,9 @@ public class ProcessTemplateVO {
 
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;
+
+    @ApiModelProperty(value = "模版类型 1.审批人 2.抄送人")
+    private Integer templateType;
+
 
 }

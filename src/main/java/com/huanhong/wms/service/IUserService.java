@@ -49,4 +49,5 @@ public interface IUserService extends SuperService<User> {
 
     Result<List<User>> list(Integer roleId, Integer deptId, String name);
 
+    Result<List<User>> listByRoleIdsAndDeptId(String roleIds, Integer deptId);
 }

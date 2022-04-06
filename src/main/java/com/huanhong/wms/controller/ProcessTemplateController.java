@@ -61,7 +61,6 @@ public class ProcessTemplateController extends BaseController {
     }
 
 
-
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "添加", notes = "生成代码")
     @PostMapping("/add")
@@ -93,6 +92,8 @@ public class ProcessTemplateController extends BaseController {
     }
 
     @ApiImplicitParams({
+            @ApiImplicitParam(name = "templateType", value = "模版类型 1.审批人 2.抄送人"),
+            @ApiImplicitParam(name = "deptId", value = "部门 id"),
             @ApiImplicitParam(name = "processCode", value = "流程代码"),
             @ApiImplicitParam(name = "warhouseId", value = "仓库编号")
     })
@@ -101,8 +102,10 @@ public class ProcessTemplateController extends BaseController {
     @GetMapping("/getProcessTemplateByProcessCodeAndWarhouseId")
     public Result getProcessTemplateByProcessCodeAndWarhouseId(
             @RequestParam String processCode,
+            @RequestParam Integer templateType,
+            @RequestParam Integer deptId,
             @RequestParam String warhouseId) {
-        List<ProcessTemplate> processTemplateList = processTemplateService.getProcessTemplateListByProcessCodeAndWarhouseId(processCode, warhouseId);
+        List<ProcessTemplate> processTemplateList = processTemplateService.getProcessTemplateListByProcessCodeAndWarhouseId(processCode, warhouseId, templateType, deptId);
         return ObjectUtil.isNotNull(processTemplateList) ? Result.success(processTemplateList) : Result.failure("查询到相关信息！");
     }
 }

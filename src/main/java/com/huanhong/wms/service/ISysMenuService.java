@@ -22,4 +22,6 @@ public interface ISysMenuService extends SuperService<SysMenu> {
     List<Tree<String>> tree4Menu(SysMenuParam sysMenuParam);
 
     List<Tree<String>> tree4Grant(SysMenuParam sysMenuParam);
+
+    List<String> getLoginPermissions(Integer userId, List<Integer> menuIdList);
 }

@@ -13,10 +13,7 @@ import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.InventoryDocumentVO;
 import com.huanhong.wms.mapper.InventoryDocumentMapper;
-import com.huanhong.wms.service.IInventoryDocumentDetailsService;
-import com.huanhong.wms.service.IInventoryDocumentService;
-import com.huanhong.wms.service.IInventoryInformationService;
-import com.huanhong.wms.service.IMaterialService;
+import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -53,6 +50,9 @@ public class InventoryDocumentController extends BaseController {
 
     @Resource
     private IInventoryInformationService inventoryInformationService;
+
+    @Resource
+    private IWarehousingRecordService warehousingRecordService;
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -173,6 +173,16 @@ public class InventoryDocumentController extends BaseController {
                 addInventoryInformationDTO.setSupplier("待补");
                 Result resultAddIventory = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
                 if (resultAddIventory.isOk()) {
+                    //库存新增成功后，新增入库记录
+                    AddWarehousingRecordDTO addWarehousingRecordDTO = new AddWarehousingRecordDTO();
+                    addWarehousingRecordDTO.setDocumentNumber(inventoryDocument.getDocumentNumber());
+                    addWarehousingRecordDTO.setBatch(addInventoryInformationDTO.getBatch());
+                    addWarehousingRecordDTO.setMaterialCoding(addWarehousingRecordDTO.getMaterialCoding());
+                    addWarehousingRecordDTO.setCargoSpaceId(addWarehousingRecordDTO.getCargoSpaceId());
+                    addWarehousingRecordDTO.setWarehouseId(inventoryDocument.getWarehouse());
+                    addWarehousingRecordDTO.setOutType(1);
+                    addWarehousingRecordDTO.setOutQuantity(addInventoryInformationDTO.getInventoryCredit());
+                    warehousingRecordService.addWarehousingRecord(addWarehousingRecordDTO);
                     count++;
                 } else {
                     listfalse.add(inventoryDocument);

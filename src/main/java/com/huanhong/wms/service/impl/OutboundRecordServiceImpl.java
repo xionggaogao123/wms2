@@ -63,7 +63,9 @@ public class OutboundRecordServiceImpl extends SuperServiceImpl<OutboundRecordMa
 
         query.like(StringUtils.isNotBlank(outboundRecordVO.getMaterialCoding()),"material_coding",outboundRecordVO.getMaterialCoding());
 
-        query.like(StringUtils.isNotBlank(outboundRecordVO.getDetails()),"details",outboundRecordVO.getDetails());
+        query.like(StringUtils.isNotBlank(outboundRecordVO.getCargoSpaceId()),"cargo_space_id",outboundRecordVO.getCargoSpaceId());
+
+        query.like(StringUtils.isNotBlank(outboundRecordVO.getBatch()),"batch",outboundRecordVO.getBatch());
 
         query.like(ObjectUtil.isNotNull(outboundRecordVO.getStatus()),"status",outboundRecordVO.getStatus());
 

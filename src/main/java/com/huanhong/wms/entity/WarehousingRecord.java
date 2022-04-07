@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ApiModel(description="出库记录")
-public class OutboundRecord extends SuperEntity {
+@ApiModel(description="")
+public class WarehousingRecord extends SuperEntity {
 
     private static final long serialVersionUID=1L;
 
@@ -22,8 +22,8 @@ public class OutboundRecord extends SuperEntity {
     @ApiModelProperty(value = "原单据编号")
     private String documentNumber;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "出库类型：1-领料出库 2-调拨出库")
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "出库类型：1-采购入库 2-调拨入库")
     private Integer outType;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
@@ -35,7 +35,7 @@ public class OutboundRecord extends SuperEntity {
     private String materialCoding;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "货位编号")
+    @ApiModelProperty(value = "货位编码")
     private String cargoSpaceId;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
@@ -43,12 +43,8 @@ public class OutboundRecord extends SuperEntity {
     private String batch;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "出货数量")
+    @ApiModelProperty(value = "入库数量")
     private Double outQuantity;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "状态：0-审批中（锁库存）1-审批生效（出库）")
-    private Integer status;
 
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     @ApiModelProperty(value = "创建日期")

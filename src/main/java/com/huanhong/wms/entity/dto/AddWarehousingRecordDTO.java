@@ -1,44 +1,45 @@
 package com.huanhong.wms.entity.dto;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
-@ApiModel("新建出库流水")
-public class AddOutboundRecordDTO {
+@ApiModel(description = "新增入库DTO")
+public class AddWarehousingRecordDTO {
 
     private static final long serialVersionUID = 1L;
 
-    @NotEmpty
     @ApiModelProperty(value = "原单据编号")
     private String documentNumber;
 
-    @ApiModelProperty(value = "出库类型：1-领料出库 2-调拨出库")
+    @ApiModelProperty(value = "出库类型：1-采购入库 2-调拨入库")
     private Integer outType;
 
-    @NotEmpty
+    @NotBlank
     @ApiModelProperty(value = "库房ID")
     private String warehouseId;
 
-    @NotEmpty
+    @NotBlank
     @ApiModelProperty(value = "物料编码")
     private String materialCoding;
 
-    @ApiModelProperty(value = "货位编号")
+    @NotBlank
+    @ApiModelProperty(value = "货位编码")
     private String cargoSpaceId;
 
+    @NotBlank
     @ApiModelProperty(value = "批次")
     private String batch;
 
-    @NotNull
-    @ApiModelProperty(value = "出货数量")
+    @Min(0)
+    @ApiModelProperty(value = "入库数量")
     private Double outQuantity;
 
-    @NotNull
-    @ApiModelProperty(value = "状态：0-审批中（锁库存）1-审批生效（出库）")
-    private Integer status;
 }

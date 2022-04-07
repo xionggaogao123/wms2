@@ -19,11 +19,20 @@ public class UpdateOutboundRecordDTO {
     @ApiModelProperty(value = "入库单ID", required = true)
     private Integer id;
 
+    @ApiModelProperty(value = "出库类型：1-领料出库 2-调拨出库")
+    private Integer outType;
+
     @ApiModelProperty(value = "库房ID")
     private String warehouseId;
 
     @ApiModelProperty(value = "物料编码")
     private String materialCoding;
+
+    @ApiModelProperty(value = "货位编号")
+    private String cargoSpaceId;
+
+    @ApiModelProperty(value = "批次")
+    private String batch;
 
     @Min(0)
     @ApiModelProperty(value = "出货数量")

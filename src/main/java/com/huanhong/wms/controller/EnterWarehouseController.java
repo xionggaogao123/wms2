@@ -107,15 +107,13 @@ public class EnterWarehouseController extends BaseController {
                 // 01AA0000
                 Result resultAdd = enterWarehouseDetailsService.addEnterWarehouseDetails(addEnterWarehouseDetailsDTOList);
 
-                if (!resultAdd.isOk()) {
-                    return Result.failure("新增入库明细单失败");
-                }
+                return resultAdd;
             }
         } catch (Exception e) {
             log.error("添加入库单出错，异常", e);
             return Result.failure("系统异常：入库单添加失败。");
         }
-        return Result.failure("系统异常");
+        return Result.failure("系统异常，未知错误");
     }
 
     @ApiOperationSupport(order = 3)

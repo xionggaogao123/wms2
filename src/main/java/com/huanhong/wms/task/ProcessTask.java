@@ -23,7 +23,7 @@ public class ProcessTask {
     /**
      * 每5分钟同步任务
      */
-    @Scheduled(cron = "0 0/5 * * * ?")
+    @Scheduled(cron = "0/10 * * * * ?")
     public void syncTask() {
         TimeInterval timer = DateUtil.timer();
         log.info("***** 检查当前任务开始 *****");

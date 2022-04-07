@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huanhong.wms.mapper.PlanUseOutMapper">
+
+
+    <select id="getMaterialUseList" resultType="java.util.Map">
+        SELECT
+            d.`name` ,
+            SUM(puod.requisition_quantity) AS total ,
+            m.material_name ,
+            puo.requisitioning_unit ,
+            m.measurement_unit
+        FROM
+            plan_use_out puo
+                LEFT JOIN dept d ON d.id = puo.requisitioning_unit
+                LEFT JOIN plan_use_out_details puod ON puod.use_planning_document_number = puo.document_number
+                LEFT JOIN material m ON m.material_coding = puod.material_coding
+        WHERE
+            puo.del = 0
+          AND puo.`status` = 3
+        GROUP BY
+            puod.material_coding
+    </select>
+</mapper>

@@ -13,7 +13,9 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.RequirementsPlanning;
 import com.huanhong.wms.entity.dto.AddRequirementsPlanningDTO;
 import com.huanhong.wms.entity.dto.UpdateRequirementsPlanningDTO;
+import com.huanhong.wms.entity.param.DeptMaterialParam;
 import com.huanhong.wms.entity.vo.RequirementsPlanningVO;
+import com.huanhong.wms.mapper.PlanUseOutMapper;
 import com.huanhong.wms.mapper.RequirementsPlanningMapper;
 import com.huanhong.wms.service.IRequirementsPlanningService;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -36,6 +41,8 @@ public class RequirementsPlanningServiceImpl extends SuperServiceImpl<Requiremen
 
     @Resource
     private RequirementsPlanningMapper requirementsPlanningMapper;
+    @Resource
+    private PlanUseOutMapper planUseOutMapper;
 
 
     @Override
@@ -56,27 +63,27 @@ public class RequirementsPlanningServiceImpl extends SuperServiceImpl<Requiremen
         //若Vo对象不为空，分别获取其中的字段，
         //并对其进行判断是否为空，这一步类似动态SQL的拼装
         //需求单编号
-        query.like(StringUtils.isNotBlank(requirementsPlanningVO.getPlanNumber()), "plan_number",requirementsPlanningVO.getPlanNumber());
+        query.like(StringUtils.isNotBlank(requirementsPlanningVO.getPlanNumber()), "plan_number", requirementsPlanningVO.getPlanNumber());
         //计划部门
         query.like(StringUtils.isNotBlank(requirementsPlanningVO.getPlanUnit()), "plan_unit", requirementsPlanningVO.getPlanUnit());
         //仓库编号
-        query.like(StringUtils.isNotBlank(requirementsPlanningVO.getWarehouseId()),"warehouse_id",requirementsPlanningVO.getWarehouseId());
+        query.like(StringUtils.isNotBlank(requirementsPlanningVO.getWarehouseId()), "warehouse_id", requirementsPlanningVO.getWarehouseId());
         //申请人
-        query.like(StringUtils.isNotBlank(requirementsPlanningVO.getApplicant()),"applicant",requirementsPlanningVO.getApplicant());
+        query.like(StringUtils.isNotBlank(requirementsPlanningVO.getApplicant()), "applicant", requirementsPlanningVO.getApplicant());
         //计划类别
-        query.like(ObjectUtil.isNotNull(requirementsPlanningVO.getPlanClassification()),"plan_classification",requirementsPlanningVO.getPlanClassification());
+        query.like(ObjectUtil.isNotNull(requirementsPlanningVO.getPlanClassification()), "plan_classification", requirementsPlanningVO.getPlanClassification());
         //预估总金额
-        query.like(ObjectUtil.isNotNull(requirementsPlanningVO.getEstimatedTotalAmount()),"estimated_total_amount",requirementsPlanningVO.getEstimatedTotalAmount());
+        query.like(ObjectUtil.isNotNull(requirementsPlanningVO.getEstimatedTotalAmount()), "estimated_total_amount", requirementsPlanningVO.getEstimatedTotalAmount());
         //状态
-        query.like(ObjectUtil.isNotNull(requirementsPlanningVO.getPlanStatus()),"plan_status",requirementsPlanningVO.getPlanStatus());
+        query.like(ObjectUtil.isNotNull(requirementsPlanningVO.getPlanStatus()), "plan_status", requirementsPlanningVO.getPlanStatus());
         //物料用途
-        query.like(StringUtils.isNotBlank(requirementsPlanningVO.getMaterialUse()),"material_use",requirementsPlanningVO.getMaterialUse());
+        query.like(StringUtils.isNotBlank(requirementsPlanningVO.getMaterialUse()), "material_use", requirementsPlanningVO.getMaterialUse());
 
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         /**
          * 创建时间区间
          */
-        if (ObjectUtil.isNotEmpty(requirementsPlanningVO.getCreateDateStart())&&ObjectUtil.isNotEmpty(requirementsPlanningVO.getCreateDateEnd())){
+        if (ObjectUtil.isNotEmpty(requirementsPlanningVO.getCreateDateStart()) && ObjectUtil.isNotEmpty(requirementsPlanningVO.getCreateDateEnd())) {
             String createDateStart = dtf1.format(requirementsPlanningVO.getCreateDateStart());
             String createDateEnd = dtf1.format(requirementsPlanningVO.getCreateDateEnd());
             /**
@@ -144,18 +151,18 @@ public class RequirementsPlanningServiceImpl extends SuperServiceImpl<Requiremen
             } else {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "新增失败！");
             }
-        }catch (Exception e){
-            log.error("新增需求计划单异常",e);
-            return Result.failure(ErrorCode.SYSTEM_ERROR,"系统异常！");
+        } catch (Exception e) {
+            log.error("新增需求计划单异常", e);
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常！");
         }
     }
 
     @Override
     public Result updateRequirementsPlanning(UpdateRequirementsPlanningDTO updateRequirementsPlanningDTO) {
         RequirementsPlanning requirementsPlanningOld = getRequirementsPlanningById(updateRequirementsPlanningDTO.getId());
-        BeanUtil.copyProperties(updateRequirementsPlanningDTO,requirementsPlanningOld);
+        BeanUtil.copyProperties(updateRequirementsPlanningDTO, requirementsPlanningOld);
         int update = requirementsPlanningMapper.updateById(requirementsPlanningOld);
-        return update>0 ? Result.success():Result.failure("更新失败！");
+        return update > 0 ? Result.success() : Result.failure("更新失败！");
     }
 
     @Override
@@ -166,16 +173,26 @@ public class RequirementsPlanningServiceImpl extends SuperServiceImpl<Requiremen
     @Override
     public RequirementsPlanning getRequirementsPlanningByDocNumAndWarehouseId(String DocNum, String warehouseId) {
         QueryWrapper<RequirementsPlanning> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("plan_number",DocNum);
-        queryWrapper.eq("warehouse_id",warehouseId);
+        queryWrapper.eq("plan_number", DocNum);
+        queryWrapper.eq("warehouse_id", warehouseId);
         return requirementsPlanningMapper.selectOne(queryWrapper);
     }
 
     @Override
-    public RequirementsPlanning getRequirementsPlanningByProcessInstanceId(String processInstanceId){
+    public RequirementsPlanning getRequirementsPlanningByProcessInstanceId(String processInstanceId) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq("process_instance_id",processInstanceId);
+        queryWrapper.eq("process_instance_id", processInstanceId);
         RequirementsPlanning requirementsPlanning = requirementsPlanningMapper.selectOne(queryWrapper);
         return requirementsPlanning;
+    }
+
+    @Override
+    public Result<Object> getDeptMaterialNeedAndUseByParam(DeptMaterialParam param) {
+        Map<String, Object> map = new HashMap<>();
+        List<Map<String, Object>> needList = requirementsPlanningMapper.getMaterialNeedList(param);
+        map.put("need", needList);
+        List<Map<String, Object>> useList = planUseOutMapper.getMaterialUseList(param);
+        map.put("use", useList);
+        return Result.success(map);
     }
 }

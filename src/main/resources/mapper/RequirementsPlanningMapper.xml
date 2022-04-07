@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huanhong.wms.mapper.RequirementsPlanningMapper">
+
+    <select id="getMaterialNeedList" resultType="java.util.Map">
+        SELECT
+            d.`name` ,
+            SUM(rpd.required_quantity) AS total ,
+            m.material_name ,
+            rp.plan_unit
+        FROM
+            requirements_planning rp
+                LEFT JOIN dept d ON d.id = rp.plan_unit
+                LEFT JOIN requiremets_planning_details rpd ON rpd.plan_number = rp.plan_number
+                LEFT JOIN material m ON m.material_coding = rpd.material_coding
+        WHERE
+            rp.del = 0
+          AND rp.plan_status = 3
+        GROUP BY
+            rpd.material_coding
+    </select>
+</mapper>

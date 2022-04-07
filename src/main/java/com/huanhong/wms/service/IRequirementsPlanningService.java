@@ -6,6 +6,7 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.RequirementsPlanning;
 import com.huanhong.wms.entity.dto.AddRequirementsPlanningDTO;
 import com.huanhong.wms.entity.dto.UpdateRequirementsPlanningDTO;
+import com.huanhong.wms.entity.param.DeptMaterialParam;
 import com.huanhong.wms.entity.vo.RequirementsPlanningVO;
 
 /**
@@ -63,4 +64,6 @@ public interface IRequirementsPlanningService extends SuperService<RequirementsP
      * @return
      */
     RequirementsPlanning getRequirementsPlanningByProcessInstanceId(String processInstanceId);
+
+    Result<Object> getDeptMaterialNeedAndUseByParam(DeptMaterialParam param);
 }

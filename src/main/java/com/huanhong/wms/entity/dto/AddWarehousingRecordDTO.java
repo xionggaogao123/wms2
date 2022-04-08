@@ -19,8 +19,8 @@ public class AddWarehousingRecordDTO {
     @ApiModelProperty(value = "原单据编号")
     private String documentNumber;
 
-    @ApiModelProperty(value = "出库类型：1-采购入库 2-调拨入库")
-    private Integer outType;
+    @ApiModelProperty(value = "入库类型：1-采购入库 2-调拨入库")
+    private Integer enterType;
 
     @NotBlank
     @ApiModelProperty(value = "库房ID")
@@ -40,6 +40,6 @@ public class AddWarehousingRecordDTO {
 
     @Min(0)
     @ApiModelProperty(value = "入库数量")
-    private Double outQuantity;
+    private Double enterQuantity;
 
 }

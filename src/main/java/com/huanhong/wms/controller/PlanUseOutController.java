@@ -323,12 +323,6 @@ public class PlanUseOutController extends BaseController {
              */
             PlanUseOut planUseOut = planUseOutService.getPlanUseOutById(id);
 
-            //新增出库记录并减库存
-            Result resultAnoher = addOutboundRecordUpdateInventory(planUseOut);
-            if (!resultAnoher.isOk()) {
-                return resultAnoher;
-            }
-
             if (ObjectUtil.isNotNull(planUseOut)) {
                 UpdatePlanUseOutDTO updatePlanUseOutDTO = new UpdatePlanUseOutDTO();
                 updatePlanUseOutDTO.setId(id);
@@ -345,6 +339,11 @@ public class PlanUseOutController extends BaseController {
                 updatePlanUseOutDTO.setStatus(2);
                 Result result = planUseOutService.updatePlanUseOut(updatePlanUseOutDTO);
                 if (result.isOk()) {
+                    //新增出库记录并减库存
+                    Result resultAnoher = addOutboundRecordUpdateInventory(planUseOut);
+                    if (!resultAnoher.isOk()) {
+                        return resultAnoher;
+                    }
                     return Result.success("进入流程");
                 } else {
                     return Result.failure("未进入流程");
@@ -369,27 +368,29 @@ public class PlanUseOutController extends BaseController {
         try {
             //通过流程Id查询出单据Id
             PlanUseOut planUseOut = planUseOutService.getPlanUseOutByProcessInstanceId(processInstanceId);
-            //获取此单据下的明细单，校验批准数量是否等于应出数量，若不同回滚库存并更新详细信息
-            String docNum = planUseOut.getDocumentNumber();
-            String warehousId = planUseOut.getWarehouseId();
-            List<PlanUseOutDetails> planUseOutDetailsList = planUseOutDetailsService.getListPlanUseOutDetailsByDocNumberAndWarehosue(docNum, warehousId);
-            List<OutboundRecord> outboundRecordList = new ArrayList<>();
-            for (PlanUseOutDetails planUseOutDetails : planUseOutDetailsList
-            ) {
-                //如果批准数量不为空并不为零
-                if (ObjectUtil.isNotNull(planUseOutDetails.getApprovalsQuantity()) && BigDecimal.valueOf(planUseOutDetails.getApprovalsQuantity()).compareTo(BigDecimal.valueOf(0)) > 0) {
-                    //领用数量
-                    BigDecimal requisitionQuantity = BigDecimal.valueOf(planUseOutDetails.getRequisitionQuantity());
-                    //批准数量
-                    BigDecimal approvalsQuantity = BigDecimal.valueOf(planUseOutDetails.getApprovalsQuantity());
-                    if (requisitionQuantity.compareTo(approvalsQuantity) != 0) {
-                        outboundRecordList = outboundRecordService.getOutboundRecordListByDocNumAndWarehouseId(docNum, warehousId);
-                        upDateOutboundRecordAndInventory(outboundRecordList, planUseOutDetails.getApprovalsQuantity());
-                    }
-                }
-            }
 
             if (ObjectUtil.isNotNull(planUseOut)) {
+
+                //获取此单据下的明细单，校验批准数量是否等于应出数量，若不同回滚库存并更新详细信息
+                String docNum = planUseOut.getDocumentNumber();
+                String warehousId = planUseOut.getWarehouseId();
+                List<PlanUseOutDetails> planUseOutDetailsList = planUseOutDetailsService.getListPlanUseOutDetailsByDocNumberAndWarehosue(docNum, warehousId);
+                List<OutboundRecord> outboundRecordList = new ArrayList<>();
+                for (PlanUseOutDetails planUseOutDetails : planUseOutDetailsList
+                ) {
+                    //如果批准数量不为空并不为零
+                    if (ObjectUtil.isNotNull(planUseOutDetails.getApprovalsQuantity()) && BigDecimal.valueOf(planUseOutDetails.getApprovalsQuantity()).compareTo(BigDecimal.valueOf(0)) > 0) {
+                        //领用数量
+                        BigDecimal requisitionQuantity = BigDecimal.valueOf(planUseOutDetails.getRequisitionQuantity());
+                        //批准数量
+                        BigDecimal approvalsQuantity = BigDecimal.valueOf(planUseOutDetails.getApprovalsQuantity());
+                        if (requisitionQuantity.compareTo(approvalsQuantity) != 0) {
+                            outboundRecordList = outboundRecordService.getOutboundRecordListByDocNumAndWarehouseId(docNum, warehousId);
+                            upDateOutboundRecordAndInventory(outboundRecordList, planUseOutDetails.getApprovalsQuantity());
+                        }
+                    }
+                }
+
                 UpdatePlanUseOutDTO updatePlanUseOutDTO = new UpdatePlanUseOutDTO();
                 updatePlanUseOutDTO.setId(planUseOut.getId());
                 /**
@@ -684,5 +685,7 @@ public class PlanUseOutController extends BaseController {
         }
         return Result.success();
     }
+
+
 }
 

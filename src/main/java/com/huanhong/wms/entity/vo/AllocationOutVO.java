@@ -19,6 +19,10 @@ public class AllocationOutVO {
     @ApiModelProperty(value = "调拨计划单据编号")
     private String allocationNumber;
 
+
+    @ApiModelProperty(value = "出库状态：0-未出库，1-部分出库，2-全部出库")
+    private Integer outStatus;
+
     @ApiModelProperty(value = "调出仓库")
     private String sendWarehouse;
 

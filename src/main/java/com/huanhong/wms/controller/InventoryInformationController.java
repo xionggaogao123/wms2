@@ -10,6 +10,8 @@ import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.InventoryInformation;
+import com.huanhong.wms.entity.PlanUseOut;
+import com.huanhong.wms.entity.PlanUseOutDetails;
 import com.huanhong.wms.entity.dto.AddInventoryInformationDTO;
 import com.huanhong.wms.entity.dto.MovingInventoryDTO;
 import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
@@ -26,6 +28,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -198,6 +203,23 @@ public class InventoryInformationController extends BaseController {
             return Result.failure("操作失败----系统异常,请联系管理员。");
         }
         return Result.failure("操作失败----未知错误");
+    }
+
+
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "单据Id"),
+    })
+    @ApiOperationSupport(order = 6)
+    @ApiOperation(value = "根据ID获取库存信息")
+    @GetMapping("getgetInventoryById/{id}")
+    public Result getPlanUseOutById(@PathVariable Integer id) {
+        try {
+            InventoryInformation inventoryInformation = inventoryInformationService.getInventoryById(id);
+            return ObjectUtil.isNotNull(inventoryInformation)? Result.success(inventoryInformation):Result.failure("未查询到相关信息！");
+        } catch (Exception e) {
+            log.error("查询失败,异常：", e);
+            return Result.failure("查询失败，系统异常！");
+        }
     }
 
 }

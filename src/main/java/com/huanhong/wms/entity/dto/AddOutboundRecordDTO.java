@@ -6,6 +6,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 @Data
 @ApiModel("新建出库流水")
@@ -33,6 +34,9 @@ public class AddOutboundRecordDTO {
 
     @ApiModelProperty(value = "批次")
     private String batch;
+
+    @ApiModelProperty(value = "单价(使用单位)")
+    private BigDecimal salesUnitPrice;
 
     @NotNull
     @ApiModelProperty(value = "出货数量")

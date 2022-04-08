@@ -23,8 +23,8 @@ public class WarehousingRecord extends SuperEntity {
     private String documentNumber;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "出库类型：1-采购入库 2-调拨入库")
-    private Integer outType;
+    @ApiModelProperty(value = "入库类型：1-采购入库 2-调拨入库")
+    private Integer enterType;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "库房ID")
@@ -44,7 +44,7 @@ public class WarehousingRecord extends SuperEntity {
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "入库数量")
-    private Double outQuantity;
+    private Double enterQuantity;
 
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     @ApiModelProperty(value = "创建日期")

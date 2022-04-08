@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 @ApiSort()
-@Api(tags = "")
+@Api(tags = "入库记录单")
 @Slf4j
 @RestController
 @RequestMapping("/warehousing-record")

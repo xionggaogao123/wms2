@@ -30,6 +30,10 @@ public class AllocationOut extends SuperEntity {
     @ApiModelProperty(value = "调出仓库")
     private String sendWarehouse;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "出库状态：0-未出库，1-部分出库，2-全部出库")
+    private Integer outStatus;
+
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "调入仓库")
     private String enterWarehouse;

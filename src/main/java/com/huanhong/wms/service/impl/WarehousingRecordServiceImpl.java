@@ -51,7 +51,7 @@ public class WarehousingRecordServiceImpl extends SuperServiceImpl<WarehousingRe
 
         query.like(StringUtils.isNotBlank(warehousingRecordVO.getDocumentNumber()),"document_number",warehousingRecordVO.getDocumentNumber());
 
-        query.like(ObjectUtil.isNotNull(warehousingRecordVO.getOutType()),"out_type",warehousingRecordVO.getOutType());
+        query.like(ObjectUtil.isNotNull(warehousingRecordVO.getEnterType()),"out_type",warehousingRecordVO.getEnterType());
 
         query.like(StringUtils.isNotBlank(warehousingRecordVO.getWarehouseId()), "warehouse_id",warehousingRecordVO.getWarehouseId());
 

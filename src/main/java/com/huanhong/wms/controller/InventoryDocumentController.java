@@ -1,5 +1,6 @@
 package com.huanhong.wms.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONArray;
@@ -53,6 +54,12 @@ public class InventoryDocumentController extends BaseController {
 
     @Resource
     private IWarehousingRecordService warehousingRecordService;
+
+    @Resource
+    private IOutboundRecordService outboundRecordService;
+
+    @Resource
+    private IAllocationOutService allocationOutService;
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -151,41 +158,81 @@ public class InventoryDocumentController extends BaseController {
             AddInventoryInformationDTO addInventoryInformationDTO = new AddInventoryInformationDTO();
             int count = 0;
             List<InventoryDocument> listfalse = new ArrayList<>();
-            for (InventoryDocumentDetails inventoryDocumentDetails : inventoryDocumentDetailsList
-            ) {
-                addInventoryInformationDTO.setMaterialCoding(inventoryDocumentDetails.getMaterialCoding());
-                Material material = materialService.getMeterialByMeterialCode(inventoryDocumentDetails.getMaterialCoding());
-                addInventoryInformationDTO.setMaterialName(material.getMaterialName());
-                addInventoryInformationDTO.setMeasurementUnit(material.getMeasurementUnit());
-                if (ObjectUtil.isNotNull(material.getAuxiliaryUnit())) {
-                    addInventoryInformationDTO.setAuxiliaryUnit(material.getAuxiliaryUnit());
+
+            //判断询价单信息中填的是否是调拨出库单
+            String headKey = inventoryDocument.getRfqNumber().substring(0, 4);
+            if ("DBCK".equals(headKey)){
+                for (InventoryDocumentDetails inventoryDocumentDetails : inventoryDocumentDetailsList
+                ) {
+                    //查询出库单信息
+                    AllocationOut allocationOut = allocationOutService.getAllocationOutByDocNumber(inventoryDocument.getRfqNumber());
+                    if (ObjectUtil.isEmpty(allocationOut)){
+                        return Result.failure("未找到调拨出库单信息！");
+                    }
+
+                    //根据出库记录新增库存
+                    List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndBatchAndWarehouseId(inventoryDocumentDetails.getMaterialCoding(), inventoryDocumentDetails.getBatch(), inventoryDocument.getWarehouse());
+                    addInventoryInformationDTO.setMaterialCoding(inventoryDocumentDetails.getMaterialCoding());
+                    Material material = materialService.getMeterialByMeterialCode(inventoryDocumentDetails.getMaterialCoding());
+
+                    BeanUtil.copyProperties(inventoryInformationList.get(0), addInventoryInformationDTO);
+                    addInventoryInformationDTO.setCargoSpaceId(inventoryDocumentDetails.getWarehouse() + "01AA0000");
+                    addInventoryInformationDTO.setInventoryCredit(inventoryDocumentDetails.getArrivalQuantity());
+
+                    Result resultAddIventory = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
+                    if (resultAddIventory.isOk()) {
+                        //库存新增成功后，新增入库记录
+                        AddWarehousingRecordDTO addWarehousingRecordDTO = new AddWarehousingRecordDTO();
+                        addWarehousingRecordDTO.setDocumentNumber(inventoryDocument.getDocumentNumber());
+                        addWarehousingRecordDTO.setBatch(addInventoryInformationDTO.getBatch());
+                        addWarehousingRecordDTO.setMaterialCoding(addInventoryInformationDTO.getMaterialCoding());
+                        addWarehousingRecordDTO.setCargoSpaceId(addInventoryInformationDTO.getCargoSpaceId());
+                        addWarehousingRecordDTO.setWarehouseId(inventoryDocument.getWarehouse());
+                        addWarehousingRecordDTO.setEnterType(1);
+                        addWarehousingRecordDTO.setEnterQuantity(addInventoryInformationDTO.getInventoryCredit());
+                        warehousingRecordService.addWarehousingRecord(addWarehousingRecordDTO);
+                        count++;
+                    } else {
+                        listfalse.add(inventoryDocument);
+                    }
                 }
-                addInventoryInformationDTO.setCargoSpaceId(inventoryDocumentDetails.getWarehouse() + "01AA0000");
-                addInventoryInformationDTO.setInventoryCredit(inventoryDocumentDetails.getArrivalQuantity());
-                addInventoryInformationDTO.setSafeQuantity((double) 0);
-                addInventoryInformationDTO.setBatch(inventoryDocumentDetails.getBatch());
-                addInventoryInformationDTO.setConsignor(0);
-                //现将内部单价定为0 等后面改
-                addInventoryInformationDTO.setUnitPrice(BigDecimal.valueOf(0));
-                addInventoryInformationDTO.setManagementFeeRate(1.1);
-                //现将出卖单价定为0 等后面改
-                addInventoryInformationDTO.setSalesUnitPrice(BigDecimal.valueOf(0));
-                addInventoryInformationDTO.setSupplier("待补");
-                Result resultAddIventory = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
-                if (resultAddIventory.isOk()) {
-                    //库存新增成功后，新增入库记录
-                    AddWarehousingRecordDTO addWarehousingRecordDTO = new AddWarehousingRecordDTO();
-                    addWarehousingRecordDTO.setDocumentNumber(inventoryDocument.getDocumentNumber());
-                    addWarehousingRecordDTO.setBatch(addInventoryInformationDTO.getBatch());
-                    addWarehousingRecordDTO.setMaterialCoding(addWarehousingRecordDTO.getMaterialCoding());
-                    addWarehousingRecordDTO.setCargoSpaceId(addWarehousingRecordDTO.getCargoSpaceId());
-                    addWarehousingRecordDTO.setWarehouseId(inventoryDocument.getWarehouse());
-                    addWarehousingRecordDTO.setOutType(1);
-                    addWarehousingRecordDTO.setOutQuantity(addInventoryInformationDTO.getInventoryCredit());
-                    warehousingRecordService.addWarehousingRecord(addWarehousingRecordDTO);
-                    count++;
-                } else {
-                    listfalse.add(inventoryDocument);
+            }else {
+                for (InventoryDocumentDetails inventoryDocumentDetails : inventoryDocumentDetailsList
+                ) {
+                    addInventoryInformationDTO.setMaterialCoding(inventoryDocumentDetails.getMaterialCoding());
+                    Material material = materialService.getMeterialByMeterialCode(inventoryDocumentDetails.getMaterialCoding());
+                    addInventoryInformationDTO.setMaterialName(material.getMaterialName());
+                    addInventoryInformationDTO.setMeasurementUnit(material.getMeasurementUnit());
+                    if (ObjectUtil.isNotNull(material.getAuxiliaryUnit())) {
+                        addInventoryInformationDTO.setAuxiliaryUnit(material.getAuxiliaryUnit());
+                    }
+                    addInventoryInformationDTO.setCargoSpaceId(inventoryDocumentDetails.getWarehouse() + "01AA0000");
+                    addInventoryInformationDTO.setInventoryCredit(inventoryDocumentDetails.getArrivalQuantity());
+                    addInventoryInformationDTO.setSafeQuantity((double) 0);
+                    addInventoryInformationDTO.setBatch(inventoryDocumentDetails.getBatch());
+                    addInventoryInformationDTO.setConsignor(0);
+                    //现将内部单价定为0 等后面改
+                    addInventoryInformationDTO.setUnitPrice(BigDecimal.valueOf(0));
+                    addInventoryInformationDTO.setManagementFeeRate(1.1);
+                    //现将出卖单价定为0 等后面改
+                    addInventoryInformationDTO.setSalesUnitPrice(BigDecimal.valueOf(0));
+                    addInventoryInformationDTO.setSupplier("待补");
+                    Result resultAddIventory = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
+                    if (resultAddIventory.isOk()) {
+                        //库存新增成功后，新增入库记录
+                        AddWarehousingRecordDTO addWarehousingRecordDTO = new AddWarehousingRecordDTO();
+                        addWarehousingRecordDTO.setDocumentNumber(inventoryDocument.getDocumentNumber());
+                        addWarehousingRecordDTO.setBatch(addInventoryInformationDTO.getBatch());
+                        addWarehousingRecordDTO.setMaterialCoding(addInventoryInformationDTO.getMaterialCoding());
+                        addWarehousingRecordDTO.setCargoSpaceId(addInventoryInformationDTO.getCargoSpaceId());
+                        addWarehousingRecordDTO.setWarehouseId(inventoryDocument.getWarehouse());
+                        addWarehousingRecordDTO.setEnterType(1);
+                        addWarehousingRecordDTO.setEnterQuantity(addInventoryInformationDTO.getInventoryCredit());
+                        warehousingRecordService.addWarehousingRecord(addWarehousingRecordDTO);
+                        count++;
+                    } else {
+                        listfalse.add(inventoryDocument);
+                    }
                 }
             }
             return count == inventoryDocumentDetailsList.size() ? Result.success("库存新增成功！") : Result.success(listfalse, "若干点验单新增库存失败！");

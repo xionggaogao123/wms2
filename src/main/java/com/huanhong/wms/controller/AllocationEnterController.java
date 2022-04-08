@@ -97,6 +97,10 @@ public class AllocationEnterController extends BaseController {
         try {
             UpdateAllocationEnterDTO updateAllocationEnterDTO = updateAllocationEnterAndDetailsDTO.getUpdateAllocationEnterDTO();
             List<UpdateAllocationEnterDetailsDTO> updateAllocationEnterDetailsDTOList = updateAllocationEnterAndDetailsDTO.getUpdateAllocationEnterDetailsDTOList();
+            /**
+             * 判断
+             */
+
             Result result = allocationEnterService.update(updateAllocationEnterDTO);
             if (!result.isOk()) {
                 return Result.failure("更新调拨入库失败！");

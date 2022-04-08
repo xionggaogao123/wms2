@@ -9,7 +9,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
-@ApiModel(description = "新增入库DTO")
+@ApiModel(description = "更新入库记录DTO")
 public class UpdateWarehousingRecordDTO {
 
     private static final long serialVersionUID = 1L;
@@ -31,6 +31,6 @@ public class UpdateWarehousingRecordDTO {
     private String batch;
 
     @ApiModelProperty(value = "入库数量")
-    private Double outQuantity;
+    private Double enterQuantity;
 
 }

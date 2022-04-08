@@ -269,11 +269,32 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     }
 
     @Override
+    public Double getNumByMaterialCodingAndBatchAndWarehouseId(String materialCoding, String batch, String warehouseId) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.select("IFNULL(SUM(Inventory_credit),0) AS num");
+        queryWrapper.eq("material_coding",materialCoding);
+        queryWrapper.eq( "batch", batch);
+        queryWrapper.likeRight("cargo_space_id",warehouseId);
+        Map map =  this.getMap(queryWrapper);
+        Double num = (Double) map.get("num");
+        return num;
+    }
+
+    @Override
     public List<InventoryInformation> getInventoryInformationListByMaterialCodingAndWarehouseId(String materialCoding, String warehouseId) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.select("id,material_coding,Inventory_credit,batch,cargo_space_id");
         queryWrapper.eq("material_coding",materialCoding);
         queryWrapper.likeRight("cargo_space_id",warehouseId);
         return inventoryInformationMapper.selectList(queryWrapper);
     }
+
+    @Override
+    public List<InventoryInformation> getInventoryInformationListByMaterialCodingAndBatchAndWarehouseId(String materialCoding, String batch, String warehouseId) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("material_coding",materialCoding);
+        queryWrapper.eq("batch", batch);
+        queryWrapper.likeRight("cargo_space_id",warehouseId);
+        return inventoryInformationMapper.selectList(queryWrapper);
+    }
+
 }

@@ -131,11 +131,11 @@ public class OutboundRecordServiceImpl extends SuperServiceImpl<OutboundRecordMa
     }
 
     @Override
-    public OutboundRecord getOutboundRecordByDocNumAndWarehouseIdAndMaterialCoding(String docNum, String warehouseId, String materialCoding) {
+    public List<OutboundRecord> getOutboundRecordByDocNumAndWarehouseIdAndMaterialCoding(String docNum, String warehouseId, String materialCoding) {
         QueryWrapper queryWrapper =  new QueryWrapper();
         queryWrapper.eq("document_number",docNum);
         queryWrapper.eq("material_coding",materialCoding);
         queryWrapper.eq("warehouse_id",warehouseId);
-        return outboundRecordMapper.selectOne(queryWrapper);
+        return outboundRecordMapper.selectList(queryWrapper);
     }
 }

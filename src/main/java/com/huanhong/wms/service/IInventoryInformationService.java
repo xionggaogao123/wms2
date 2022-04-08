@@ -62,10 +62,30 @@ public interface IInventoryInformationService extends SuperService<InventoryInfo
 
 
     /**
+     * 根据物料编码和批次和仓库Id获取物料库存数量
+     * @return
+     */
+    Double getNumByMaterialCodingAndBatchAndWarehouseId(String materialCoding,String batch,String warehouseId);
+
+
+    /**
      * 根据物料编码和仓库Id获取物料库存List
      * @param materialCoding
      * @param warehouseId
      * @return
      */
     List<InventoryInformation> getInventoryInformationListByMaterialCodingAndWarehouseId(String materialCoding,String warehouseId);
+
+
+    /**
+     * 根据物料编码和批次和仓库Id获取物料库存List
+     * @param materialCoding
+     * @param batch
+     * @param warehouseId
+     * @return
+     */
+    List<InventoryInformation> getInventoryInformationListByMaterialCodingAndBatchAndWarehouseId(String materialCoding,String batch,String warehouseId);
+
+
+
 }

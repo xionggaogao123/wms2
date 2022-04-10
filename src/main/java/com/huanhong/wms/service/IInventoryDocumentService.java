@@ -8,6 +8,8 @@ import com.huanhong.wms.entity.dto.AddInventoryDocumentDTO;
 import com.huanhong.wms.entity.dto.UpdateInventoryDocumentDTO;
 import com.huanhong.wms.entity.vo.InventoryDocumentVO;
 
+import java.util.List;
+
 /**
  * <p>
  * 服务类
@@ -63,8 +65,5 @@ public interface IInventoryDocumentService extends SuperService<InventoryDocumen
      * @return
      */
     InventoryDocument getInventoryDocumentByDocumentNumberAndWarehouseId(String documentNumber, String warehouseId);
-
-
-
 
 }

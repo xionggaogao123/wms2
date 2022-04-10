@@ -1,6 +1,7 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -10,11 +11,13 @@ import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.ArrivalVerification;
 import com.huanhong.wms.entity.ArrivalVerificationDetails;
+import com.huanhong.wms.entity.Material;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.ArrivalVerificationVO;
 import com.huanhong.wms.mapper.ArrivalVerificationMapper;
 import com.huanhong.wms.service.IArrivalVerificationDetailsService;
 import com.huanhong.wms.service.IArrivalVerificationService;
+import com.huanhong.wms.service.IMaterialService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -41,6 +44,9 @@ public class ArrivalVerificationController extends BaseController {
 
     @Resource
     private IArrivalVerificationDetailsService arrivalVerificationDetailsService;
+
+    @Resource
+    private IMaterialService materialService;
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -114,6 +120,7 @@ public class ArrivalVerificationController extends BaseController {
         return render(arrivalVerificationService.removeById(id));
     }
 
+
     @ApiOperationSupport(order = 5)
     @ApiOperation(value = "根据ID获取到货检验计划表及其明细")
     @GetMapping("getArrivalVerificationDetailsById/{id}")
@@ -126,6 +133,31 @@ public class ArrivalVerificationController extends BaseController {
         List<ArrivalVerificationDetails> arrivalVerificationDetailsList = arrivalVerificationDetailsService.getArrivalVerificationDetailsByDocNumAndWarehouseId(arrivalVerification.getVerificationDocumentNumber(),arrivalVerification.getWarehouseId());
         jsonObject.put("doc", arrivalVerification);
         jsonObject.put("details", arrivalVerificationDetailsList);
+        return Result.success(jsonObject);
+    }
+
+    @ApiOperationSupport(order = 10)
+    @ApiOperation(value = "PDA-根据ID获取到货检验计划表及其明细包含物料详情")
+    @GetMapping("getArrivalVerificationDetailsIncludeMaterialById/{id}")
+    public Result getArrivalVerificationDetailsIncludeMaterialById(@PathVariable Integer id) {
+        JSONObject jsonObject = new JSONObject();
+        ArrivalVerification arrivalVerification = arrivalVerificationService.getArrivalVerificationById(id);
+        if (ObjectUtil.isEmpty(arrivalVerification)) {
+            return Result.failure("未找到对应信息！");
+        }
+        JSONArray jsonArray = new JSONArray();
+        List<ArrivalVerificationDetails> arrivalVerificationDetailsList = arrivalVerificationDetailsService.getArrivalVerificationDetailsByDocNumAndWarehouseId(arrivalVerification.getVerificationDocumentNumber(),arrivalVerification.getWarehouseId());
+        for (ArrivalVerificationDetails arrivalVerificationDetails:arrivalVerificationDetailsList
+             ) {
+             JSONObject jsonObjectDetails = new JSONObject();
+             Material material = materialService.getMeterialByMeterialCode(arrivalVerificationDetails.getMaterialCoding());
+             jsonObjectDetails.put("material",material);
+             jsonObjectDetails.put("details", arrivalVerificationDetails);
+             jsonArray.add(jsonObjectDetails);
+        }
+
+        jsonObject.put("doc", arrivalVerification);
+        jsonObject.put("detailsList", jsonArray);
         return Result.success(jsonObject);
     }
 

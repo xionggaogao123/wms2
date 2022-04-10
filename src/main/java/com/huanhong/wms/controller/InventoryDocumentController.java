@@ -265,6 +265,7 @@ public class InventoryDocumentController extends BaseController {
         return Result.success(jsonObject);
     }
 
+
     @ApiOperationSupport(order = 6)
     @ApiOperation(value = "通过单据号和仓库id查询清点单及明细")
     @GetMapping("getInventoryDocumentAndDetailsByDocNumAndWarhouseId/{docNum}&{warehouseId}")
@@ -338,7 +339,7 @@ public class InventoryDocumentController extends BaseController {
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("doc", inventoryDocument);
-        jsonObject.put("dateails", jsonArray);
+        jsonObject.put("dateailsList", jsonArray);
         return Result.success(jsonObject);
     }
 }

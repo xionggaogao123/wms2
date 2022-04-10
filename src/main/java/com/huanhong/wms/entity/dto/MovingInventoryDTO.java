@@ -30,9 +30,9 @@ public class MovingInventoryDTO {
 //    private String batch;
 
 
-    @NotBlank
-    @ApiModelProperty(value = "原货位编码")
-    private String preCargoSpaceId;
+//    @NotBlank
+//    @ApiModelProperty(value = "原货位编码")
+//    private String preCargoSpaceId;
 
 
     @NotBlank
@@ -40,10 +40,10 @@ public class MovingInventoryDTO {
     private String hindCargoSpaceId;
 
 
-    @Min(0)
-    @NotNull
-    @ApiModelProperty(value = "可移数量-此货位此批次的物料库存量")
-    private Double preInventoryCredit;
+//    @Min(0)
+//    @NotNull
+//    @ApiModelProperty(value = "可移数量-此货位此批次的物料库存量")
+//    private Double preInventoryCredit;
 
 
     @Min(0)

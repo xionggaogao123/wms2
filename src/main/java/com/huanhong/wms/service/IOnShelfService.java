@@ -8,6 +8,8 @@ import com.huanhong.wms.entity.dto.AddOnShelfDTO;
 import com.huanhong.wms.entity.dto.UpdateOnShelfDTO;
 import com.huanhong.wms.entity.vo.OnShelfVO;
 
+import java.util.List;
+
 /**
  * <p>
  * 服务类
@@ -58,4 +60,5 @@ public interface IOnShelfService extends SuperService<OnShelf> {
     OnShelf getOnshelfById(Integer id);
 
 
+    List<OnShelf> getOnshelfByMaterialCodingAndWarehouseId(String materialCoding,String warehouseId);
 }

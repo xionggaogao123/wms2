@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.ArrivalVerificationDetails;
+import com.huanhong.wms.entity.InventoryDocumentDetails;
 import com.huanhong.wms.entity.dto.AddArrivalVerificationDetailsDTO;
 import com.huanhong.wms.entity.dto.UpdateArrivalVerificationDetailsDTO;
 import com.huanhong.wms.mapper.ArrivalVerificationDetailsMapper;
@@ -83,6 +84,16 @@ public class ArrivalVerificationDetailsServiceImpl extends SuperServiceImpl<Arri
         QueryWrapper<ArrivalVerificationDetails> queryWrapper = new QueryWrapper();
         queryWrapper.eq("document_number", docNum);
         queryWrapper.eq("warehouse_id", warehouseId);
+        return arrivalVerificationDetailsMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<ArrivalVerificationDetails> getArrivalVerificationDetailsListByMaterialCodeAndWarehouseId(String materialCoding, String warehouseId) {
+        QueryWrapper<ArrivalVerificationDetails> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("document_number");
+        queryWrapper.eq("material_coding", materialCoding);
+        queryWrapper.eq("warehouse_id", warehouseId);
+        queryWrapper.eq("verification_status", 0).or().eq("verification_status", 1);
         return arrivalVerificationDetailsMapper.selectList(queryWrapper);
     }
 }

@@ -148,61 +148,65 @@ public class InventoryInformationController extends BaseController {
     @ApiOperationSupport(order = 5)
     @ApiOperation(value = "移动库存")
     @PutMapping("/movingInventory")
-    public Result movingInventory(@Valid @RequestBody MovingInventoryDTO movingInventoryDTO) {
+    public Result movingInventory(@Valid @RequestBody List<MovingInventoryDTO> movingInventoryDTOList) {
         try {
-            /**
-             * 判断可移数量和移动数量
-             * 1、可移数量=移动数量 直接更新此条数据货位编码
-             * 2、可移数量>移动数量 原数据更新库存数量为 原数量-移动数量  新增库存数据移动数量+新货位
-             * 3、 可移数量<移动数量 返回错误
-             */
-            BigDecimal preNum = BigDecimal.valueOf(movingInventoryDTO.getPreInventoryCredit());
-            BigDecimal hindNum = BigDecimal.valueOf(movingInventoryDTO.getHindInventoryCredit());
-            int event = preNum.compareTo(hindNum);
-            switch (event) {
-                case -1:
-                    //移动数量大于可移数量
-                    return Result.failure("移动数量不能超出可移数量！");
-                case 0:
-                    //移动数量等于可移数量
-                    UpdateInventoryInformationDTO updateInventoryInformationDTO = new UpdateInventoryInformationDTO();
-                    updateInventoryInformationDTO.setId(movingInventoryDTO.getId());
-                    updateInventoryInformationDTO.setCargoSpaceId(movingInventoryDTO.getHindCargoSpaceId());
-                    return inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
-                case 1:
-                    //移动数量<可移数量
-                    //更新元数据
-                    BigDecimal finalNum = preNum.subtract(hindNum);
-                    UpdateInventoryInformationDTO updateInventoryInformationDTOAnother = new UpdateInventoryInformationDTO();
-                    updateInventoryInformationDTOAnother.setId(movingInventoryDTO.getId());
-                    updateInventoryInformationDTOAnother.setInventoryCredit(finalNum.doubleValue());
-                    Result resultUpdate = inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTOAnother);
-                    if (resultUpdate.isOk()) {
-                        //新增数据
-                        AddInventoryInformationDTO addInventoryInformationDTO = new AddInventoryInformationDTO();
-                        InventoryInformation inventoryInformation = inventoryInformationService.getInventoryById(movingInventoryDTO.getId());
-                        BeanUtil.copyProperties(inventoryInformation, addInventoryInformationDTO);
-                        //新货位
-                        addInventoryInformationDTO.setCargoSpaceId(movingInventoryDTO.getHindCargoSpaceId());
-                        //移动数量
-                        addInventoryInformationDTO.setInventoryCredit(movingInventoryDTO.getHindInventoryCredit());
-                        Result resultAdd = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
-                        if (resultAdd.isOk()) {
-                            return Result.success("移动库存成功！");
+        for (MovingInventoryDTO movingInventoryDTO:movingInventoryDTOList
+             ) {
+                /**
+                 * 判断可移数量和移动数量
+                 * 1、可移数量=移动数量 直接更新此条数据货位编码
+                 * 2、可移数量>移动数量 原数据更新库存数量为 原数量-移动数量  新增库存数据移动数量+新货位
+                 * 3、 可移数量<移动数量 返回错误
+                 */
+                InventoryInformation preInventory = inventoryInformationService.getInventoryById(movingInventoryDTO.getId());
+                BigDecimal preNum = BigDecimal.valueOf(preInventory.getInventoryCredit());
+                BigDecimal hindNum = BigDecimal.valueOf(movingInventoryDTO.getHindInventoryCredit());
+                int event = preNum.compareTo(hindNum);
+                switch (event) {
+                    case -1:
+                        //移动数量大于可移数量
+                        return Result.failure("移动数量不能超出可移数量！");
+                    case 0:
+                        //移动数量等于可移数量
+                        UpdateInventoryInformationDTO updateInventoryInformationDTO = new UpdateInventoryInformationDTO();
+                        updateInventoryInformationDTO.setId(movingInventoryDTO.getId());
+                        updateInventoryInformationDTO.setCargoSpaceId(movingInventoryDTO.getHindCargoSpaceId());
+                        return inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
+                    case 1:
+                        //移动数量<可移数量
+                        //更新元数据
+                        BigDecimal finalNum = preNum.subtract(hindNum);
+                        UpdateInventoryInformationDTO updateInventoryInformationDTOAnother = new UpdateInventoryInformationDTO();
+                        updateInventoryInformationDTOAnother.setId(movingInventoryDTO.getId());
+                        updateInventoryInformationDTOAnother.setInventoryCredit(finalNum.doubleValue());
+                        Result resultUpdate = inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTOAnother);
+                        if (resultUpdate.isOk()) {
+                            //新增数据
+                            AddInventoryInformationDTO addInventoryInformationDTO = new AddInventoryInformationDTO();
+                            InventoryInformation inventoryInformation = inventoryInformationService.getInventoryById(movingInventoryDTO.getId());
+                            BeanUtil.copyProperties(inventoryInformation, addInventoryInformationDTO);
+                            //新货位
+                            addInventoryInformationDTO.setCargoSpaceId(movingInventoryDTO.getHindCargoSpaceId());
+                            //移动数量
+                            addInventoryInformationDTO.setInventoryCredit(hindNum.doubleValue());
+                            Result resultAdd = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
+                            if (resultAdd.isOk()) {
+                                continue;
+                            } else {
+                                return resultAdd;
+                            }
                         } else {
-                            return resultAdd;
+                            return resultUpdate;
                         }
-                    } else {
-                        return resultUpdate;
-                    }
-                default:
-                    log.error("系统异常：库存移动数量比较出错");
+                    default:
+                        log.error("系统异常：库存移动数量比较出错");
+                }
             }
-        } catch (Exception e) {
+        }catch (Exception e) {
             log.error("库存更新失败，异常：", e);
             return Result.failure("操作失败----系统异常,请联系管理员。");
         }
-        return Result.failure("操作失败----未知错误");
+        return Result.success();
     }
 
 

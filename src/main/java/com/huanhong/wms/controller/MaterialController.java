@@ -2,6 +2,7 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -14,8 +15,7 @@ import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
-import com.huanhong.wms.entity.Material;
-import com.huanhong.wms.entity.MaterialClassification;
+import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.AddMaterialDTO;
 import com.huanhong.wms.entity.dto.UpdateMaterialDTO;
 import com.huanhong.wms.entity.vo.MaterialDetailsVO;
@@ -25,20 +25,21 @@ import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.mapper.MaterialClassificationMapper;
 import com.huanhong.wms.mapper.MaterialMapper;
 import com.huanhong.wms.mapper.OssMapper;
-import com.huanhong.wms.service.IInventoryInformationService;
-import com.huanhong.wms.service.IMaterialClassificationService;
-import com.huanhong.wms.service.IMaterialService;
+import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.codec.IonJacksonCodec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -62,14 +63,31 @@ public class MaterialController extends BaseController {
     @Resource
     private IInventoryInformationService inventoryInformationService;
 
+
+    @Resource
+    private IInventoryDocumentService inventoryDocumentService;
+
     @Resource
     private InventoryInformationMapper inventoryInformationMapper;
 
     @Resource
+    private IArrivalVerificationService arrivalVerificationService;
+
+    @Resource
+    private IOnShelfService onShelfService;
+
+    @Resource
+    private IInventoryDocumentDetailsService inventoryDocumentDetailsService;
+
+    @Resource
+    private IArrivalVerificationDetailsService arrivalVerificationDetailsService;
+
+
+    @Resource
     private OssMapper ossMapper;
 
-    @Autowired
-    private JudgeConfig judgeConfig;
+//    @Autowired
+//    private JudgeConfig judgeConfig;
 
 
 
@@ -119,26 +137,26 @@ public class MaterialController extends BaseController {
          * 判断是否有必填参数为空
          */
         try {
-            /**
-             * 实体类转为json
-             */
-            String meterialToJoStr = JSONObject.toJSONString(addMaterialDTO);
-            JSONObject meterialJo = JSONObject.parseObject(meterialToJoStr);
-            /**
-             * 不能为空的参数list
-             * 配置于judge.properties
-             */
-            List<String> list = judgeConfig.getMeterialNotNullList();
-
-            /**
-             * 将MeterialNotNullList中的值当作key判断value是否为空
-             */
-            for (int i = 0; i < list.size(); i++) {
-                String key = list.get(i);
-                if (StringUtils.isBlank(meterialJo.getString(key)) || "null".equals(meterialJo.getString(key))) {
-                    return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, key + ": 不能为空");
-                }
-            }
+//            /**
+//             * 实体类转为json
+//             */
+//            String meterialToJoStr = JSONObject.toJSONString(addMaterialDTO);
+//            JSONObject meterialJo = JSONObject.parseObject(meterialToJoStr);
+//            /**
+//             * 不能为空的参数list
+//             * 配置于judge.properties
+//             */
+//            List<String> list = judgeConfig.getMeterialNotNullList();
+//
+//            /**
+//             * 将MeterialNotNullList中的值当作key判断value是否为空
+//             */
+//            for (int i = 0; i < list.size(); i++) {
+//                String key = list.get(i);
+//                if (StringUtils.isBlank(meterialJo.getString(key)) || "null".equals(meterialJo.getString(key))) {
+//                    return Result.failure(ErrorCode.PARAM_FORMAT_ERROR, key + ": 不能为空");
+//                }
+//            }
 
             /**
              * 查询物料分类是否存在
@@ -314,6 +332,87 @@ public class MaterialController extends BaseController {
         return Result.noDataError();
     }
 
+
+
+    @ApiOperationSupport(order = 6)
+    @ApiOperation(value="PDA根据物料编码获取未完成清点单、到货检验单、上架单")
+    @GetMapping("/getDocIdAndDocNumByMaterialCodeAndWareHouseId")
+    public Result getDocIdAndDocNumByMaterialCode(@RequestParam String materialCoding,@RequestParam String warehouseId){
+
+        JSONObject jsonObject = new JSONObject();
+
+        /**
+         * 清点单
+         */
+        List<String> inventoryDocumentDocNumList= new ArrayList<>();
+        List<InventoryDocumentDetails> inventoryDocumentDetailsList = inventoryDocumentDetailsService.getInventoryDocumentDetailsListByMaterialCodeAndWarehouseId(materialCoding, warehouseId);
+        for (InventoryDocumentDetails inventoryDocumentDetails:inventoryDocumentDetailsList
+             ) {
+            String docNum = inventoryDocumentDetails.getDocumentNumber();
+            inventoryDocumentDocNumList.add(docNum);
+        }
+        //去重
+        inventoryDocumentDocNumList=inventoryDocumentDocNumList.stream()
+                .distinct()
+                .collect(Collectors.toList());
+        JSONObject jsonObjectInventory = new JSONObject();
+        JSONArray  jsonArrayInventory = new JSONArray();
+        for (String docNum:inventoryDocumentDocNumList
+             ) {
+            InventoryDocument inventoryDocument = inventoryDocumentService.getInventoryDocumentByDocumentNumberAndWarehouseId(docNum, warehouseId);
+            if (ObjectUtil.isNotEmpty(inventoryDocument)){
+                jsonObjectInventory.put("id", inventoryDocument.getId());
+                jsonObjectInventory.put("docNum",docNum);
+                jsonArrayInventory.add(jsonObjectInventory);
+            }
+        }
+        jsonObject.put("inventoryDocument",jsonArrayInventory);
+
+        /**
+         * 到货检验
+         */
+        List<String> arrivalVerificationDocNumList = new ArrayList<>();
+        List<ArrivalVerificationDetails> arrivalVerificationDetailsList = arrivalVerificationDetailsService.getArrivalVerificationDetailsListByMaterialCodeAndWarehouseId(materialCoding, warehouseId);
+        for (ArrivalVerificationDetails  arrivalVerificationDetails : arrivalVerificationDetailsList
+             ) {
+            String docNum = arrivalVerificationDetails.getDocumentNumber();
+            arrivalVerificationDocNumList.add(docNum);
+        }
+        //去重
+        arrivalVerificationDocNumList = arrivalVerificationDocNumList.stream()
+                .distinct()
+                .collect(Collectors.toList());
+        JSONObject jsonObjectArrivalVerification = new JSONObject();
+        JSONArray  jsonArrayArrivalVerification= new JSONArray();
+        for (String docNum:arrivalVerificationDocNumList
+        ) {
+            ArrivalVerification arrivalVerification = arrivalVerificationService.getArrivalVerificationByDocNumberAndWarhouseId(docNum, warehouseId);
+            if (ObjectUtil.isNotNull(arrivalVerification)){
+                jsonObjectArrivalVerification.put("id", arrivalVerification.getId());
+                jsonObjectArrivalVerification.put("docNum",docNum);
+                jsonArrayArrivalVerification.add(jsonObjectArrivalVerification);
+            }
+        }
+        jsonObject.put("arrivalVerification",jsonArrayArrivalVerification);
+
+
+        /**
+         * 上架单
+         */
+        List<OnShelf> onShelfList = onShelfService.getOnshelfByMaterialCodingAndWarehouseId(materialCoding, warehouseId);
+        JSONObject jsonObjectOnShelf= new JSONObject();
+        JSONArray  jsonArrayOnShelf= new JSONArray();
+        for (OnShelf onshelf: onShelfList
+             ) {
+            jsonObjectOnShelf.put("id", onshelf.getId());
+            jsonObjectOnShelf.put("docNum", onshelf.getDocumentNumber());
+            jsonArrayOnShelf.add(jsonObjectOnShelf);
+        }
+        jsonObject.put("onShelf",jsonArrayOnShelf);
+
+
+        return ObjectUtil.isNotEmpty(jsonObject)?Result.success(jsonObject):Result.failure("未找对应信息！");
+    }
 
 
 //    /**

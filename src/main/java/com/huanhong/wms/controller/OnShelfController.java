@@ -3,6 +3,7 @@ package com.huanhong.wms.controller;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
@@ -10,6 +11,7 @@ import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.InventoryInformation;
+import com.huanhong.wms.entity.Material;
 import com.huanhong.wms.entity.OnShelf;
 import com.huanhong.wms.entity.dto.AddInventoryInformationDTO;
 import com.huanhong.wms.entity.dto.AddOnShelfDTO;
@@ -18,6 +20,7 @@ import com.huanhong.wms.entity.dto.UpdateOnShelfDTO;
 import com.huanhong.wms.entity.vo.OnShelfVO;
 import com.huanhong.wms.mapper.OnShelfMapper;
 import com.huanhong.wms.service.IInventoryInformationService;
+import com.huanhong.wms.service.IMaterialService;
 import com.huanhong.wms.service.IOnShelfService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -45,6 +48,9 @@ public class OnShelfController extends BaseController {
 
     @Resource
     private IInventoryInformationService inventoryInformationService;
+
+    @Resource
+    private IMaterialService materialService;
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -225,6 +231,21 @@ public class OnShelfController extends BaseController {
     public Result getOnshelfById(@PathVariable Integer id){
         OnShelf onShelf = onShelfService.getOnshelfById(id);
         return ObjectUtil.isNotNull(onShelf) ? Result.success(onShelf): Result.failure("未查询到相关数据");
+    }
+
+    @ApiOperationSupport(order = 8)
+    @ApiOperation(value = "PDA根据ID获取单据信息及物料详情")
+    @GetMapping("getOnshelfIncludeMaterialById/{id}")
+    public Result getOnshelfIncludeMaterialById(@PathVariable Integer id){
+        JSONObject jsonObject = new JSONObject();
+        OnShelf onShelf = onShelfService.getOnshelfById(id);
+        if (ObjectUtil.isEmpty(onShelf)) {
+            return Result.failure("未找到对应信息！");
+        }
+        Material material = materialService.getMeterialByMeterialCode(onShelf.getMaterialCoding());
+        jsonObject.put("doc", onShelf);
+        jsonObject.put("material", material);
+        return Result.success(jsonObject);
     }
 
 

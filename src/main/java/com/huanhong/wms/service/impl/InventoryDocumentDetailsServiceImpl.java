@@ -105,4 +105,14 @@ public class InventoryDocumentDetailsServiceImpl extends SuperServiceImpl<Invent
         queryWrapper.eq("complete", status);
         return inventoryDocumentDetailsMapper.selectCount(queryWrapper);
     }
+
+    @Override
+    public List<InventoryDocumentDetails> getInventoryDocumentDetailsListByMaterialCodeAndWarehouseId(String materialCoding,String warehouseId) {
+        QueryWrapper<InventoryDocumentDetails> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("document_number");
+        queryWrapper.eq("material_coding", materialCoding);
+        queryWrapper.eq("warehouse", warehouseId);
+        queryWrapper.eq("complete", 0);
+        return inventoryDocumentDetailsMapper.selectList(queryWrapper);
+    }
 }

@@ -2,6 +2,7 @@ package com.huanhong.wms.service;
 
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.EnterWarehouseDetails;
+import com.huanhong.wms.entity.InventoryDocument;
 import com.huanhong.wms.entity.InventoryDocumentDetails;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.entity.dto.AddEnterWarehouseDetailsDTO;
@@ -65,6 +66,15 @@ public interface IInventoryDocumentDetailsService extends SuperService<Inventory
      * @return
      */
     Integer getCompleteNum(String documentNumber, String warehouseId,Integer status);
+
+
+    /**
+     * 根据物料编码获取未完成单据单据
+     * @param materialCoding
+     * @param warehouseId
+     * @return
+     */
+    List<InventoryDocumentDetails> getInventoryDocumentDetailsListByMaterialCodeAndWarehouseId(String materialCoding,String warehouseId);
 
 
 }

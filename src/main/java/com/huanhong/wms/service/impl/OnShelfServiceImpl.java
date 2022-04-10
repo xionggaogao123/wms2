@@ -10,6 +10,7 @@ import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.entity.InventoryDocumentDetails;
 import com.huanhong.wms.entity.OnShelf;
 import com.huanhong.wms.entity.dto.AddOnShelfDTO;
 import com.huanhong.wms.entity.dto.UpdateOnShelfDTO;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * <p>
@@ -170,5 +172,16 @@ public class OnShelfServiceImpl extends SuperServiceImpl<OnShelfMapper, OnShelf>
     @Override
     public OnShelf getOnshelfById(Integer id) {
         return onShelfMapper.selectById(id);
+    }
+
+
+    @Override
+    public List<OnShelf> getOnshelfByMaterialCodingAndWarehouseId(String materialCoding, String warehouseId) {
+        QueryWrapper<OnShelf> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("id","document_number");
+        queryWrapper.eq("material_coding", materialCoding);
+        queryWrapper.eq("warehouse", warehouseId);
+        queryWrapper.eq("complete", 0);
+        return onShelfMapper.selectList(queryWrapper);
     }
 }

@@ -3,6 +3,7 @@ package com.huanhong.wms.service;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.ArrivalVerificationDetails;
+import com.huanhong.wms.entity.InventoryDocumentDetails;
 import com.huanhong.wms.entity.dto.AddArrivalVerificationDetailsDTO;
 import com.huanhong.wms.entity.dto.UpdateArrivalVerificationDetailsDTO;
 
@@ -46,6 +47,16 @@ public interface IArrivalVerificationDetailsService extends SuperService<Arrival
      * @return
      */
     List<ArrivalVerificationDetails> getArrivalVerificationDetailsByDocNumAndWarehouseId(String docNum, String warehouseId);
+
+
+    /**
+     * 根据物料编码获取未完成单据单据
+     * @param materialCoding
+     * @param warehouseId
+     * @return
+     */
+    List<ArrivalVerificationDetails> getArrivalVerificationDetailsListByMaterialCodeAndWarehouseId(String materialCoding, String warehouseId);
+
 
 
 }

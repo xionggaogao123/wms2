@@ -174,7 +174,7 @@ public class SysMenuServiceImpl extends SuperServiceImpl<SysMenuMapper, SysMenu>
             LambdaQueryWrapper<SysMenu> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.in(SysMenu::getId, menuIdList).ne(SysMenu::getType, MenuTypeEnum.DIR.getCode())
                     .eq(SysMenu::getStatus, CommonStatusEnum.ENABLE.getCode());
-
+            queryWrapper.orderByAsc(SysMenu::getSort);
             this.list(queryWrapper).forEach(sysMenu -> {
                 if(MenuTypeEnum.BTN.getCode().equals(sysMenu.getType())) {
                     permissions.add(sysMenu.getPermission());

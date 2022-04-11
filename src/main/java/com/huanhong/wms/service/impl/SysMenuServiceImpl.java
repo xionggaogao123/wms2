@@ -10,7 +10,7 @@ import cn.hutool.core.lang.tree.TreeUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.huanhong.common.units.ThreadLocalUtil;
+import com.huanhong.common.units.user.CurrentUserUtil;
 import com.huanhong.wms.bean.enums.CommonStatusEnum;
 import com.huanhong.wms.bean.enums.MenuTypeEnum;
 import com.huanhong.wms.bean.enums.SymbolConstant;
@@ -125,11 +125,11 @@ public class SysMenuServiceImpl extends SuperServiceImpl<SysMenuMapper, SysMenu>
             }
         }
         //如果是超级管理员给角色授权菜单时可选择所有菜单
-        if (ThreadLocalUtil.getCurrentUser().getIsAdmin() == 1) {
+        if (CurrentUserUtil.getCurrentUser().getIsAdmin() == 1) {
             queryWrapper.eq(SysMenu::getStatus, CommonStatusEnum.ENABLE.getCode());
         } else {
             //非超级管理员则获取自己拥有的菜单，分配给人员，防止越级授权
-            Integer userId = ThreadLocalUtil.getCurrentUser().getId();
+            Integer userId = CurrentUserUtil.getCurrentUser().getId();
             List<Integer> roleIdList = sysUserRoleService.getUserRoleIdList(userId);
             if (ObjectUtil.isNotEmpty(roleIdList)) {
                 List<Integer> menuIdList = sysRoleMenuService.getRoleMenuIdList(roleIdList);

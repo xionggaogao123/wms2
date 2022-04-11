@@ -2,17 +2,14 @@ package com.huanhong.wms.task;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.TimeInterval;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.huanhong.wms.service.IProcessAssignmentService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
-import java.util.List;
-
+@Profile("prod")
 @Slf4j
 @Component
 public class ProcessTask {

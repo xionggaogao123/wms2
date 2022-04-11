@@ -204,7 +204,7 @@
             <scope>test</scope>
         </dependency>
 
-<!--        阿里云oss-->
+        <!--        阿里云oss-->
         <dependency>
             <groupId>com.aliyun</groupId>
             <artifactId>aliyun-java-sdk-core</artifactId>
@@ -218,16 +218,18 @@
 
         <!--华为云对象存储服务OBS-->
         <dependency>
-        	<groupId>com.huaweicloud</groupId>
-        	<artifactId>esdk-obs-java</artifactId>
-        	<version>[3.21.8,)</version>
+            <groupId>com.huaweicloud</groupId>
+            <artifactId>esdk-obs-java</artifactId>
+            <version>[3.21.8,)</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
 
 
     </dependencies>
-
-
-
 
 
     <build>

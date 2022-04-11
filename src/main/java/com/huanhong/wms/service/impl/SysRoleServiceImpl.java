@@ -3,15 +3,12 @@ package com.huanhong.wms.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.Dict;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.huanhong.common.units.ThreadLocalUtil;
+import com.huanhong.common.units.user.CurrentUserUtil;
 import com.huanhong.wms.bean.Constant;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.bean.enums.CommonStatusEnum;
 import com.huanhong.wms.entity.SysRole;
-import com.huanhong.wms.entity.SysRoleMenu;
 import com.huanhong.wms.entity.param.SysRoleParam;
 import com.huanhong.wms.mapper.SysRoleMapper;
 import com.huanhong.wms.service.ISysRoleMenuService;
@@ -46,10 +43,10 @@ public class SysRoleServiceImpl extends SuperServiceImpl<SysRoleMapper, SysRole>
         List<Dict> dictList = CollectionUtil.newArrayList();
         LambdaQueryWrapper<SysRole> queryWrapper = new LambdaQueryWrapper<>();
         //如果当前登录用户不是超级管理员，则查询自己拥有的
-        if (ThreadLocalUtil.getCurrentUser().getIsAdmin() != 1) {
+        if (CurrentUserUtil.getCurrentUser().getIsAdmin() != 1) {
 
             //查询自己拥有的
-            List<String> loginUserRoleIds = ThreadLocalUtil.getCurrentUser().getLoginUserRoleIds();
+            List<String> loginUserRoleIds = CurrentUserUtil.getCurrentUser().getLoginUserRoleIds();
             if (ObjectUtil.isEmpty(loginUserRoleIds)) {
                 return dictList;
             }

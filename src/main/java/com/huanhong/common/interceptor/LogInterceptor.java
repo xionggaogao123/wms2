@@ -1,6 +1,7 @@
 package com.huanhong.common.interceptor;
 
 import cn.hutool.core.lang.id.NanoId;
+import com.huanhong.common.units.requestno.RequestNoUtil;
 import com.huanhong.wms.bean.Constant;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -29,6 +30,7 @@ public class LogInterceptor implements HandlerInterceptor {
             String nanoId = NanoId.randomNanoId(12);
             MDC.put(Constant.REQUEST_ID, nanoId);
             response.addHeader("request-id", nanoId);
+            RequestNoUtil.set(nanoId);
         }
         return true;
     }
@@ -36,6 +38,7 @@ public class LogInterceptor implements HandlerInterceptor {
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object o, ModelAndView modelAndView) {
         MDC.clear();
+        RequestNoUtil.clear();
     }
 
 }

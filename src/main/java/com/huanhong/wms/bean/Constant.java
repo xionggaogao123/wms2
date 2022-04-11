@@ -61,5 +61,14 @@ public interface Constant {
      * 值
      */
     String VALUE = "value";
+    /**
+     * 未知标识
+     */
+    String UNKNOWN = "Unknown";
+
+    /**
+     * 用户代理
+     */
+    String USER_AGENT = "User-Agent";
 }
 

@@ -1,8 +1,8 @@
-package com.huanhong.common.units;
+package com.huanhong.common.units.user;
 
 import com.huanhong.wms.bean.LoginUser;
 
-public class ThreadLocalUtil {
+public class CurrentUserUtil {
 
     /**
      * 保存用户对象的ThreadLocal  在拦截器操作 添加、删除相关用户数据

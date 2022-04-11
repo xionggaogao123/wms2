@@ -8,6 +8,7 @@ import com.huanhong.common.interceptor.UserInfoInterceptor;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.unit.DataSize;
@@ -27,6 +28,7 @@ import java.util.List;
  * @date 2018/1/11 14:27
  */
 @SpringBootConfiguration
+@Import({cn.hutool.extra.spring.SpringUtil.class})
 public class WebConfig implements WebMvcConfigurer {
 
     /**

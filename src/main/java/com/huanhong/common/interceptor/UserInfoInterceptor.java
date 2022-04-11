@@ -1,6 +1,6 @@
 package com.huanhong.common.interceptor;
 
-import com.huanhong.common.units.ThreadLocalUtil;
+import com.huanhong.common.units.user.CurrentUserUtil;
 import com.huanhong.wms.bean.LoginUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -34,7 +34,7 @@ public class UserInfoInterceptor implements HandlerInterceptor {
         }
         if (null != user) {
             log.info("***************************用户已登录，用户信息放入ThreadLocal***************************");
-            ThreadLocalUtil.addCurrentUser(user);
+            CurrentUserUtil.addCurrentUser(user);
             return true;
         }
         log.info("***************************用户未登录， ThreadLocal无信息***************************");
@@ -53,6 +53,6 @@ public class UserInfoInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         log.info("***************************接口调用结束， 从ThreadLocal删除用户信息***************************");
-        ThreadLocalUtil.remove();
+        CurrentUserUtil.remove();
     }
 }

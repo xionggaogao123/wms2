@@ -8,6 +8,9 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.huanhong.common.enums.LogSuccessStatus;
+import com.huanhong.common.exception.enums.AuthExceptionEnum;
+import com.huanhong.common.log.LogManager;
 import com.huanhong.wms.SuperEntity;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.Constant;
@@ -74,30 +77,37 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         // 域账号登录失败，进行普通账号验证
         User user = this.baseMapper.getUserByAccount(login.getAccount());
         if (user == null) {
+            LogManager.singleton().executeLoginLog(login.getAccount(), LogSuccessStatus.FAIL.getCode(), AuthExceptionEnum.NO_LOGIN_USER.getMessage());
             return Result.failure(1024, "登录失败，请确认账号是否正确");
         }
         if (!user.getState().equals(1)) {
+            LogManager.singleton().executeLoginLog(login.getAccount(), LogSuccessStatus.FAIL.getCode(), AuthExceptionEnum.ACCOUNT_FREEZE_ERROR.getMessage());
             return Result.failure(2003, "账号已禁用");
         }
         if (login.getType().equals("account")) {
             if (!user.getPassword().equals(SecureUtil.md5(login.getPassword()))) {
+                LogManager.singleton().executeLoginLog(login.getAccount(), LogSuccessStatus.FAIL.getCode(), AuthExceptionEnum.ACCOUNT_PWD_ERROR.getMessage());
                 return Result.failure(1025, "密码错误");
             }
         } else if (login.getType().equals("sms")) {
             String key = StrUtil.format("code_{}_{}", 2, login.getAccount());
             Object code = redisTemplate.opsForValue().get(key);
             if (code == null) {
+                LogManager.singleton().executeLoginLog(login.getAccount(), LogSuccessStatus.FAIL.getCode(), AuthExceptionEnum.CONSTANT_EMPTY_ERROR.getMessage());
                 return Result.failure(1023, "短信验证码已过期,请重新发送");
             }
             if (!code.toString().equals(login.getPassword())) {
+                LogManager.singleton().executeLoginLog(login.getAccount(), LogSuccessStatus.FAIL.getCode(), AuthExceptionEnum.CONSTANT_EMPTY_ERROR.getMessage());
                 return Result.failure(1025, "短信验证码错误");
             }
             redisTemplate.delete(key);
         } else {
+            LogManager.singleton().executeLoginLog(login.getAccount(), LogSuccessStatus.FAIL.getCode(), AuthExceptionEnum.ACCOUNT_FREEZE_ERROR.getMessage());
             return Result.failure("非法登陆");
         }
         Company company = companyMapper.selectById(user.getCompanyId());
         if (!company.getState().equals(1)) {
+            LogManager.singleton().executeLoginLog(login.getAccount(), LogSuccessStatus.FAIL.getCode(), AuthExceptionEnum.ACCOUNT_FREEZE_ERROR.getMessage());
             return Result.failure("公司账号已被禁用");
         }
 
@@ -114,6 +124,8 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         List<String> permissions = sysMenuService.getLoginPermissions(user.getId(), menuIdList);
         user.setPermissions(permissions);
         user.setPassword(null);
+        //登录成功，记录登录日志
+        LogManager.singleton().executeLoginLog(login.getAccount(), LogSuccessStatus.SUCCESS.getCode(), null);
         return Result.success(user);
     }
 

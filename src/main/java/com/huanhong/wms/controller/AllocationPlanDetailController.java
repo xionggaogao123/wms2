@@ -25,7 +25,7 @@ import java.util.Map;
 @ApiSort()
 @Api(tags = "调拨计划明细表")
 @RestController
-@RequestMapping("/allocation-plan-detail")
+@RequestMapping("/v1//allocation-plan-detail")
 public class AllocationPlanDetailController extends BaseController {
 
     @Resource

@@ -193,7 +193,7 @@ public class AllocationPlanController extends BaseController {
                 jsonResult.put("mainValue", allocationPlan);
                 jsonResult.put("detailsValue", allocationPlanDetails);
                 jsonResult.put("mainUpdate", "/wms/api/v1/allocation-plan/update");
-                jsonResult.put("detailsUpdate", "/wms/api/allocation-plan-detail/update");
+                jsonResult.put("detailsUpdate", "/wms/api/v1/allocation-plan-detail/update");
                 jsonResult.put("missionCompleted", "/wms/api/v1/allocation-plan/missionCompleted");
                 return Result.success(jsonResult);
             } else {

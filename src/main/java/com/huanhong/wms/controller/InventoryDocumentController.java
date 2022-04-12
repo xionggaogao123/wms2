@@ -188,7 +188,7 @@ public class InventoryDocumentController extends BaseController {
                         addWarehousingRecordDTO.setMaterialCoding(addInventoryInformationDTO.getMaterialCoding());
                         addWarehousingRecordDTO.setCargoSpaceId(addInventoryInformationDTO.getCargoSpaceId());
                         addWarehousingRecordDTO.setWarehouseId(inventoryDocument.getWarehouse());
-                        addWarehousingRecordDTO.setEnterType(1);
+                        addWarehousingRecordDTO.setEnterType(2);
                         addWarehousingRecordDTO.setEnterQuantity(addInventoryInformationDTO.getInventoryCredit());
                         warehousingRecordService.addWarehousingRecord(addWarehousingRecordDTO);
                         count++;
@@ -309,7 +309,7 @@ public class InventoryDocumentController extends BaseController {
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("doc", inventoryDocument);
-        jsonObject.put("dateails", jsonArray);
+        jsonObject.put("detailsList", jsonArray);
         return Result.success(jsonObject);
     }
 
@@ -339,7 +339,7 @@ public class InventoryDocumentController extends BaseController {
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("doc", inventoryDocument);
-        jsonObject.put("dateailsList", jsonArray);
+        jsonObject.put("detailsList", jsonArray);
         return Result.success(jsonObject);
     }
 }

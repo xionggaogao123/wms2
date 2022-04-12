@@ -17,8 +17,7 @@ import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
-import com.huanhong.wms.entity.vo.PdaMaterialVO;
-import com.huanhong.wms.entity.vo.PlanUseOutVO;
+import com.huanhong.wms.entity.vo.*;
 import com.huanhong.wms.mapper.PlanUseOutMapper;
 import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
@@ -71,6 +70,9 @@ public class PlanUseOutController extends BaseController {
 
     @Resource
     private IVariableService variableService;
+
+    @Resource
+    private IAllocationOutService allocationOutService;
 
 
     @ApiImplicitParams({
@@ -686,6 +688,45 @@ public class PlanUseOutController extends BaseController {
         return Result.success();
     }
 
+
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "current", value = "当前页码"),
+            @ApiImplicitParam(name = "size", value = "每页行数")
+    })
+    @ApiOperationSupport(order = 14)
+    @ApiOperation(value = "分页查询领料出库主表及调拨出库主表", notes = "生成代码")
+    @GetMapping("/outboundForPDA")
+    public Result page(@RequestParam(defaultValue = "1") Integer current,
+                                         @RequestParam(defaultValue = "10") Integer size,
+                                         OutboundDocOfPageQueryForPdaVO outboundDocOfPageQueryForPdaVO
+
+
+    ) {
+        try {
+            //查询领料出库
+            PlanUseOutVO planUseOutVO = new PlanUseOutVO();
+            BeanUtil.copyProperties(outboundDocOfPageQueryForPdaVO,planUseOutVO);
+            Page<PlanUseOut> pageResultPlanUseOut = planUseOutService.pageFuzzyQuery(new Page<>(current, size), planUseOutVO);
+
+            //查询调拨出库
+            AllocationOutVO allocationOutVO = new AllocationOutVO();
+            allocationOutVO.setAllocationOutNumber(outboundDocOfPageQueryForPdaVO.getDocumentNumber());
+            allocationOutVO.setSendWarehouse(outboundDocOfPageQueryForPdaVO.getWarehouseId());
+            Page<AllocationOut> pageResultAllocationOut = allocationOutService.pageFuzzyQuery(new Page<>(current,size),allocationOutVO);
+
+            if (ObjectUtil.isAllEmpty(pageResultAllocationOut.getRecords())&&ObjectUtil.isAllEmpty(pageResultAllocationOut)) {
+                return Result.success(null, "未查询到调拨入库单信息");
+            }
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("planUseOut",pageResultPlanUseOut);
+            jsonObject.put("allocationOut",pageResultAllocationOut);
+            return Result.success(jsonObject);
+
+        } catch (Exception e) {
+            log.error("分页查询异常", e);
+            return Result.failure("查询失败--系统异常，请联系管理员");
+        }
+    }
 
 }
 

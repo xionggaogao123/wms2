@@ -3,35 +3,41 @@ package com.huanhong.wms.controller;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONPatch;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.InventoryInformation;
-import com.huanhong.wms.entity.Material;
-import com.huanhong.wms.entity.OnShelf;
+import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.AddInventoryInformationDTO;
 import com.huanhong.wms.entity.dto.AddOnShelfDTO;
 import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
 import com.huanhong.wms.entity.dto.UpdateOnShelfDTO;
 import com.huanhong.wms.entity.vo.OnShelfVO;
+import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.mapper.OnShelfMapper;
-import com.huanhong.wms.service.IInventoryInformationService;
-import com.huanhong.wms.service.IMaterialService;
-import com.huanhong.wms.service.IOnShelfService;
+import com.huanhong.wms.service.*;
+import io.netty.util.internal.StringUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.persistence.criteria.Order;
 import javax.validation.Valid;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -50,7 +56,16 @@ public class OnShelfController extends BaseController {
     private IInventoryInformationService inventoryInformationService;
 
     @Resource
+    private InventoryInformationMapper inventoryInformationMapper;
+
+    @Resource
     private IMaterialService materialService;
+
+    @Resource
+    private ICargoSpaceManagementService iCargoSpaceManagementService;
+
+    @Resource
+    private IShelfManagementService shelfManagementService;
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -258,6 +273,86 @@ public class OnShelfController extends BaseController {
         queryWrapper.eq("complete",0);
         Integer count =  onShelfMapper.selectCount(queryWrapper);
         return ObjectUtil.isNotNull(count) ? Result.success(count) : Result.failure("未查询到相关数据") ;
+    }
+
+    /**
+    * 上架单新增 提供一个通过物料编码 返回历史货位 没有此编码的推荐货位 从小类开始推目前使用的 一个货架的范围
+    */
+    @ApiOperationSupport(order = 8)
+    @ApiOperation(value = "根据物料编码返回推荐或邻近货位")
+    @GetMapping("/getCargoSpaceByMaterialCoding")
+    public Result getCargoSpaceByMaterialCoding(@RequestParam String materialCoding,
+                                                @RequestParam String warehouseId
+                                                ){
+        //根据物料编码查询货位
+        QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("priority_storage_location");
+        queryWrapper.eq("material_coding", materialCoding);
+        queryWrapper.likeRight("cargo_space_id",warehouseId);
+        queryWrapper.last("limit 1");
+        InventoryInformation inventoryInformation = inventoryInformationMapper.selectOne(queryWrapper);
+        JSONObject jsonObjectResult = new JSONObject();
+        //判断历史货位是否为空
+        if (ObjectUtil.isAllEmpty(inventoryInformation)){
+            //判断历史货位是否为空，推荐物料分类小类的同货架的邻近货位
+            String materialType = materialCoding.substring(0,6);
+            QueryWrapper<InventoryInformation> wrapper = new QueryWrapper<>();
+            wrapper.select("priority_storage_location");
+            wrapper.likeRight("material_coding", materialType);
+            wrapper.likeRight("cargo_space_id",warehouseId);
+            List<InventoryInformation> inventoryInformationList = inventoryInformationMapper.selectList(wrapper);
+            List<String> cargoSpaceIdList = new ArrayList<>();
+            //模糊查询的库存list
+            for (InventoryInformation inventoryInformationAnother:inventoryInformationList
+            ) {
+                List<String> cargoSpaceIdListPre = Arrays.asList(StringUtils.commaDelimitedListToStringArray(inventoryInformationAnother.getPriorityStorageLocation()));
+                //同类物料的推荐货位
+                for (String cargoSpaceId : cargoSpaceIdListPre
+                     ) {
+                   cargoSpaceIdList.add(cargoSpaceId);
+                }
+            }
+            //去重
+            cargoSpaceIdList = cargoSpaceIdList.stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            JSONArray jsonArrayNearCargoSpaceId = new JSONArray();
+            //将去重后的货位进行遍历查询
+            for (String cargoSpaceId:cargoSpaceIdList
+                 ) {
+                String shelfId = cargoSpaceId.substring(0,10);
+                List<CargoSpaceManagement> cargoSpaceManagementList = iCargoSpaceManagementService.getCargoSpaceListByShelfId(shelfId);
+                for (CargoSpaceManagement cargoSpaceManagement:cargoSpaceManagementList
+                     ) {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("cargoSpaceId",cargoSpaceManagement.getCargoSpaceId());
+                    jsonObject.put("full",cargoSpaceManagement.getFull());
+                    jsonArrayNearCargoSpaceId.add(jsonObject);
+                }
+            }
+            jsonObjectResult.put("NearCargoSpaceId",jsonArrayNearCargoSpaceId);
+            return Result.success(jsonObjectResult);
+        }
+
+
+        String priorityStorageLocation = inventoryInformation.getPriorityStorageLocation();
+        //历史货位不为空，返回未满的货位ID list
+        List<String> cargoSpaceIdList = Arrays.asList(StringUtils.commaDelimitedListToStringArray(priorityStorageLocation));
+        JSONArray jsonArrayHistoryCargoSpace = new JSONArray();
+        for (String cargospaceId:cargoSpaceIdList
+        ) {
+            JSONObject jsonObject = new JSONObject();
+            CargoSpaceManagement cargoSpaceManagement = iCargoSpaceManagementService.getCargoSpaceByCargoSpaceId(cargospaceId);
+            //货位不存在且不为满
+            if (ObjectUtil.isNotEmpty(cargoSpaceManagement)&&cargoSpaceManagement.getFull()!=2){
+                jsonObject.put("cargoSpaceId",cargoSpaceManagement.getCargoSpaceId());
+                jsonObject.put("full",cargoSpaceManagement.getFull());
+                jsonArrayHistoryCargoSpace.add(jsonObject);
+            }
+        }
+        jsonObjectResult.put("HistoryCargoSpaceId",jsonArrayHistoryCargoSpace);
+        return Result.success(jsonObjectResult);
     }
 }
 

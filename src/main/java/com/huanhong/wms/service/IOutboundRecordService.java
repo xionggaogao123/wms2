@@ -69,7 +69,7 @@ public interface IOutboundRecordService extends SuperService<OutboundRecord> {
     List<OutboundRecord> getOutboundRecordListByDocNumAndWarehouseId(String docNum,String warehouseId);
 
     /**
-     * 根据原单据编号（出库单）和仓库编号和物料编码查询无苦记录
+     * 根据原单据编号（出库单）和仓库编号和物料编码查询出库记录
      * @param docNum
      * @param warehouseId
      * @param materialCoding

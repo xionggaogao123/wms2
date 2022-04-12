@@ -61,4 +61,6 @@ public interface IOnShelfService extends SuperService<OnShelf> {
 
 
     List<OnShelf> getOnshelfByMaterialCodingAndWarehouseId(String materialCoding,String warehouseId);
+
+
 }

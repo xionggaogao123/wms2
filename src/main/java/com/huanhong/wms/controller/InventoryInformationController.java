@@ -13,11 +13,13 @@ import com.huanhong.wms.entity.InventoryInformation;
 import com.huanhong.wms.entity.PlanUseOut;
 import com.huanhong.wms.entity.PlanUseOutDetails;
 import com.huanhong.wms.entity.dto.AddInventoryInformationDTO;
+import com.huanhong.wms.entity.dto.AddMovingInventoryRecordsDTO;
 import com.huanhong.wms.entity.dto.MovingInventoryDTO;
 import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
 import com.huanhong.wms.entity.vo.InventoryInformationVO;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.service.IInventoryInformationService;
+import com.huanhong.wms.service.IMovingInventoryRecordsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +48,9 @@ public class InventoryInformationController extends BaseController {
 
     @Resource
     private InventoryInformationMapper inventoryInformationMapper;
+
+    @Resource
+    private IMovingInventoryRecordsService movingInventoryRecordsService;
 
     /**
      * 分页查询
@@ -150,6 +156,7 @@ public class InventoryInformationController extends BaseController {
     @PutMapping("/movingInventory")
     public Result movingInventory(@Valid @RequestBody List<MovingInventoryDTO> movingInventoryDTOList) {
         try {
+            List<AddMovingInventoryRecordsDTO> addMovingInventoryRecordsDTOArrayList = new ArrayList<>();
         for (MovingInventoryDTO movingInventoryDTO:movingInventoryDTOList
              ) {
                 /**
@@ -171,7 +178,12 @@ public class InventoryInformationController extends BaseController {
                         UpdateInventoryInformationDTO updateInventoryInformationDTO = new UpdateInventoryInformationDTO();
                         updateInventoryInformationDTO.setId(movingInventoryDTO.getId());
                         updateInventoryInformationDTO.setCargoSpaceId(movingInventoryDTO.getHindCargoSpaceId());
-                        return inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
+                        Result resultUpdate = inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
+                        if (!resultUpdate.isOk()){
+                            return Result.failure("移库失败：更新原库存失败！");
+                        }else {
+                            addMovingInventoryRecordsDTOArrayList.add(addMovingInventoryRecords(preInventory,movingInventoryDTO));
+                        }
                     case 1:
                         //移动数量<可移数量
                         //更新元数据
@@ -179,8 +191,8 @@ public class InventoryInformationController extends BaseController {
                         UpdateInventoryInformationDTO updateInventoryInformationDTOAnother = new UpdateInventoryInformationDTO();
                         updateInventoryInformationDTOAnother.setId(movingInventoryDTO.getId());
                         updateInventoryInformationDTOAnother.setInventoryCredit(finalNum.doubleValue());
-                        Result resultUpdate = inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTOAnother);
-                        if (resultUpdate.isOk()) {
+                        Result resultUpdateAnother = inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTOAnother);
+                        if (resultUpdateAnother.isOk()) {
                             //新增数据
                             AddInventoryInformationDTO addInventoryInformationDTO = new AddInventoryInformationDTO();
                             InventoryInformation inventoryInformation = inventoryInformationService.getInventoryById(movingInventoryDTO.getId());
@@ -190,23 +202,23 @@ public class InventoryInformationController extends BaseController {
                             //移动数量
                             addInventoryInformationDTO.setInventoryCredit(hindNum.doubleValue());
                             Result resultAdd = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
-                            if (resultAdd.isOk()) {
-                                continue;
-                            } else {
-                                return resultAdd;
+                            if (!resultAdd.isOk()) {
+                                return Result.failure("移库失败：新增库存失败！");
+                            }else {
+                                addMovingInventoryRecordsDTOArrayList.add(addMovingInventoryRecords(preInventory,movingInventoryDTO));
                             }
                         } else {
-                            return resultUpdate;
+                            return Result.failure("移库失败：更新原库存失败！");
                         }
                     default:
                         log.error("系统异常：库存移动数量比较出错");
                 }
             }
+        return movingInventoryRecordsService.addMovingInventoryRecordsList(addMovingInventoryRecordsDTOArrayList);
         }catch (Exception e) {
             log.error("库存更新失败，异常：", e);
             return Result.failure("操作失败----系统异常,请联系管理员。");
         }
-        return Result.success();
     }
 
 
@@ -225,6 +237,31 @@ public class InventoryInformationController extends BaseController {
             return Result.failure("查询失败，系统异常！");
         }
     }
+
+    private AddMovingInventoryRecordsDTO addMovingInventoryRecords(InventoryInformation preInventory,MovingInventoryDTO movingInventoryDTO){
+
+        /**
+         * 新增移库记录
+         */
+        AddMovingInventoryRecordsDTO addMovingInventoryRecordsDTO = new AddMovingInventoryRecordsDTO();
+        //物料编码
+        addMovingInventoryRecordsDTO.setMaterialCoding(preInventory.getMaterialCoding());
+        //仓库编号
+        addMovingInventoryRecordsDTO.setWarehouseId(movingInventoryDTO.getHindCargoSpaceId().substring(0,4));
+        //批次
+        addMovingInventoryRecordsDTO.setBatch(preInventory.getBatch());
+        //原货位
+        addMovingInventoryRecordsDTO.setPreCargoSpaceId(preInventory.getCargoSpaceId());
+        //新货位
+        addMovingInventoryRecordsDTO.setNewCargoSpaceId(movingInventoryDTO.getHindCargoSpaceId());
+        //原库存
+        addMovingInventoryRecordsDTO.setInventoryCredit(preInventory.getInventoryCredit());
+        //新库存
+        addMovingInventoryRecordsDTO.setMoveQuantity(movingInventoryDTO.getHindInventoryCredit());
+
+        return addMovingInventoryRecordsDTO;
+    }
+
 
 }
 

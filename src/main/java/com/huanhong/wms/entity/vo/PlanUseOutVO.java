@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.time.LocalDateTime;
 
 @Data
@@ -18,9 +20,13 @@ public class PlanUseOutVO {
     @ApiModelProperty(value = "流程Id")
     private String processInstanceId;
 
-    @ApiModelProperty(value = "状态状态状态:1.草拟,2.审批中,3.审批生效,4.作废")
+    @Min(1)
+    @Max(4)
+    @ApiModelProperty(value = "状态:1.草拟,2.审批中,3.审批生效,4.作废")
     private Integer status;
 
+    @Min(1)
+    @Max(3)
     @ApiModelProperty(value = "计划类别-1.正常、2加急、3补计划、请选择（默认）")
     private Integer planClassification;
 

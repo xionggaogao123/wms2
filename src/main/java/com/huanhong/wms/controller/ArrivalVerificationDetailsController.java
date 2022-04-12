@@ -18,7 +18,7 @@ import java.util.List;
 @ApiSort()
 @Api(tags = "到货检验明细表")
 @RestController
-@RequestMapping("/arrival-verification-details")
+@RequestMapping("/v1//arrival-verification-details")
 public class ArrivalVerificationDetailsController extends BaseController {
 
     @Resource

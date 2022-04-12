@@ -188,7 +188,7 @@ public class InventoryDocumentController extends BaseController {
                         addWarehousingRecordDTO.setMaterialCoding(addInventoryInformationDTO.getMaterialCoding());
                         addWarehousingRecordDTO.setCargoSpaceId(addInventoryInformationDTO.getCargoSpaceId());
                         addWarehousingRecordDTO.setWarehouseId(inventoryDocument.getWarehouse());
-                        addWarehousingRecordDTO.setEnterType(1);
+                        addWarehousingRecordDTO.setEnterType(2);
                         addWarehousingRecordDTO.setEnterQuantity(addInventoryInformationDTO.getInventoryCredit());
                         warehousingRecordService.addWarehousingRecord(addWarehousingRecordDTO);
                         count++;

@@ -297,10 +297,10 @@ public class OnShelfController extends BaseController {
             //判断历史货位是否为空，推荐物料分类小类的同货架的邻近货位
             String materialType = materialCoding.substring(0,6);
             QueryWrapper<InventoryInformation> wrapper = new QueryWrapper<>();
-            queryWrapper.select("priority_storage_location");
-            queryWrapper.likeRight("material_coding", materialType);
-            queryWrapper.likeRight("cargo_space_id",warehouseId);
-            List<InventoryInformation> inventoryInformationList = inventoryInformationMapper.selectList(queryWrapper);
+            wrapper.select("priority_storage_location");
+            wrapper.likeRight("material_coding", materialType);
+            wrapper.likeRight("cargo_space_id",warehouseId);
+            List<InventoryInformation> inventoryInformationList = inventoryInformationMapper.selectList(wrapper);
             List<String> cargoSpaceIdList = new ArrayList<>();
             //模糊查询的库存list
             for (InventoryInformation inventoryInformationAnother:inventoryInformationList

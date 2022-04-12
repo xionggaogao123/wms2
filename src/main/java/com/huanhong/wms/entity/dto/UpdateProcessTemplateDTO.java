@@ -32,4 +32,7 @@ public class UpdateProcessTemplateDTO {
 
     @ApiModelProperty(value = "登录账号")
     private String loginName;
+
+    @ApiModelProperty(value = "显示名")
+    private String name;
 }

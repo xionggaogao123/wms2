@@ -1,7 +1,5 @@
 package com.huanhong.wms.entity.dto;
 
-import com.baomidou.mybatisplus.annotation.FieldStrategy;
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -33,6 +31,9 @@ public class AddProcessTemplateDTO {
     @NotEmpty
     @ApiModelProperty(value = "登录账号或角色 id")
     private String loginName;
+
+    @ApiModelProperty(value = "显示名")
+    private String name;
 
     @NotNull
     @Min(1)

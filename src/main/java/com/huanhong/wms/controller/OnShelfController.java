@@ -18,6 +18,7 @@ import com.huanhong.wms.entity.dto.AddOnShelfDTO;
 import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
 import com.huanhong.wms.entity.dto.UpdateOnShelfDTO;
 import com.huanhong.wms.entity.vo.OnShelfVO;
+import com.huanhong.wms.mapper.CargoSpaceManagementMapper;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.mapper.OnShelfMapper;
 import com.huanhong.wms.service.*;
@@ -63,6 +64,9 @@ public class OnShelfController extends BaseController {
 
     @Resource
     private ICargoSpaceManagementService iCargoSpaceManagementService;
+
+    @Resource
+    private CargoSpaceManagementMapper cargoSpaceManagementMapper;
 
     @Resource
     private IShelfManagementService shelfManagementService;
@@ -301,6 +305,25 @@ public class OnShelfController extends BaseController {
             wrapper.likeRight("material_coding", materialType);
             wrapper.likeRight("cargo_space_id",warehouseId);
             List<InventoryInformation> inventoryInformationList = inventoryInformationMapper.selectList(wrapper);
+            //查询同小类物料为空时，随机推荐通五个未满货位
+            if (ObjectUtil.isEmpty(inventoryInformationList)){
+                QueryWrapper<CargoSpaceManagement> cargoSpaceManagementQueryWrapper = new QueryWrapper<>();
+                cargoSpaceManagementQueryWrapper .select("cargo_space_id","full");
+                cargoSpaceManagementQueryWrapper .likeRight("cargo_space_id",warehouseId);
+                cargoSpaceManagementQueryWrapper .eq("full",0).or().eq("full",1);
+                cargoSpaceManagementQueryWrapper .last("limit 5");
+                List<CargoSpaceManagement> cargoSpaceManagementList = cargoSpaceManagementMapper.selectList(cargoSpaceManagementQueryWrapper);
+                JSONArray jsonArrayRandom = new JSONArray();
+                for (CargoSpaceManagement cargospace: cargoSpaceManagementList
+                     ) {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("cargoSpaceId",cargospace.getCargoSpaceId());
+                    jsonObject.put("full",cargospace.getFull());
+                    jsonArrayRandom.add(jsonObject);
+                }
+                jsonObjectResult.put("CargoSpaceIds",jsonArrayRandom);
+                return Result.success(jsonObjectResult);
+            }
             List<String> cargoSpaceIdList = new ArrayList<>();
             //模糊查询的库存list
             for (InventoryInformation inventoryInformationAnother:inventoryInformationList
@@ -329,9 +352,15 @@ public class OnShelfController extends BaseController {
                     jsonObject.put("cargoSpaceId",cargoSpaceManagement.getCargoSpaceId());
                     jsonObject.put("full",cargoSpaceManagement.getFull());
                     jsonArrayNearCargoSpaceId.add(jsonObject);
+                    if (jsonArrayNearCargoSpaceId.size()>4){
+                        break;
+                    }
+                }
+                if (jsonArrayNearCargoSpaceId.size()>4){
+                    break;
                 }
             }
-            jsonObjectResult.put("NearCargoSpaceId",jsonArrayNearCargoSpaceId);
+            jsonObjectResult.put("CargoSpaceIds",jsonArrayNearCargoSpaceId);
             return Result.success(jsonObjectResult);
         }
 
@@ -350,8 +379,14 @@ public class OnShelfController extends BaseController {
                 jsonObject.put("full",cargoSpaceManagement.getFull());
                 jsonArrayHistoryCargoSpace.add(jsonObject);
             }
+            if (jsonArrayHistoryCargoSpace.size()>4){
+                break;
+            }
         }
-        jsonObjectResult.put("HistoryCargoSpaceId",jsonArrayHistoryCargoSpace);
+        jsonObjectResult.put("CargoSpaceIds",jsonArrayHistoryCargoSpace);
+
+
+
         return Result.success(jsonObjectResult);
     }
 }

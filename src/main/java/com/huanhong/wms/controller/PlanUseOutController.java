@@ -1,6 +1,7 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -25,6 +26,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -351,7 +353,7 @@ public class PlanUseOutController extends BaseController {
                     return Result.failure("未进入流程");
                 }
             } else {
-                return Result.failure("出库单异常,无法进入流程引擎");
+                return Result.failure("未找到此单据,无法进入流程引擎");
             }
         } catch (Exception e) {
             log.error("流程启动接口异常", e);
@@ -697,31 +699,77 @@ public class PlanUseOutController extends BaseController {
     @ApiOperation(value = "分页查询领料出库主表及调拨出库主表", notes = "生成代码")
     @GetMapping("/outboundForPDA")
     public Result page(@RequestParam(defaultValue = "1") Integer current,
-                                         @RequestParam(defaultValue = "10") Integer size,
-                                         OutboundDocOfPageQueryForPdaVO outboundDocOfPageQueryForPdaVO
+                       @RequestParam(defaultValue = "10") Integer size,
+                       OutboundDocOfPageQueryForPdaVO outboundDocOfPageQueryForPdaVO
 
 
     ) {
         try {
+            List<OutboundForPdaVO> outboundForPdaVOList = new ArrayList<>();
             //查询领料出库
             PlanUseOutVO planUseOutVO = new PlanUseOutVO();
             BeanUtil.copyProperties(outboundDocOfPageQueryForPdaVO,planUseOutVO);
             Page<PlanUseOut> pageResultPlanUseOut = planUseOutService.pageFuzzyQuery(new Page<>(current, size), planUseOutVO);
+            /**
+             * 组装领料出库参数
+             */
+            for (PlanUseOut planUseOut : pageResultPlanUseOut.getRecords()
+                 ) {
+                OutboundForPdaVO outboundForPdaVO = new OutboundForPdaVO();
+                BeanUtil.copyProperties(planUseOut,outboundForPdaVO);
+                /**
+                 * 单据出库状态为0-未出库 1-部分出库 2-全部出库
+                 * 2 VO状态为完成
+                 * 0、1 VO状态未完成
+                 */
+                if (planUseOut.getOutStatus()>1){
+                    outboundForPdaVO.setOutStatus(1);
+                }else {
+                    outboundForPdaVO.setOutStatus(0);
+                }
+                //单据编号
+                outboundForPdaVO.setDocNum(planUseOut.getDocumentNumber());
+                //单据类型
+                outboundForPdaVO.setDocType(0);
+                outboundForPdaVOList.add(outboundForPdaVO);
+            }
 
             //查询调拨出库
             AllocationOutVO allocationOutVO = new AllocationOutVO();
             allocationOutVO.setAllocationOutNumber(outboundDocOfPageQueryForPdaVO.getDocumentNumber());
             allocationOutVO.setSendWarehouse(outboundDocOfPageQueryForPdaVO.getWarehouseId());
             Page<AllocationOut> pageResultAllocationOut = allocationOutService.pageFuzzyQuery(new Page<>(current,size),allocationOutVO);
-
             if (ObjectUtil.isAllEmpty(pageResultAllocationOut.getRecords())&&ObjectUtil.isAllEmpty(pageResultAllocationOut)) {
                 return Result.success(null, "未查询到调拨入库单信息");
             }
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("planUseOut",pageResultPlanUseOut);
-            jsonObject.put("allocationOut",pageResultAllocationOut);
-            return Result.success(jsonObject);
-
+            /**
+             * 组装领料出库参数
+             */
+            List<OutboundForPdaVO> outboundForPdaVOListNew = new ArrayList<>();
+            for (AllocationOut allocationOut: pageResultAllocationOut.getRecords()
+            ) {
+                OutboundForPdaVO outboundForPdaVO = new OutboundForPdaVO();
+                BeanUtil.copyProperties(allocationOut,outboundForPdaVO);
+                /**
+                 * 单据出库状态为0-未出库 1-部分出库 2-全部出库
+                 * 2 VO状态为完成
+                 * 0、1 VO状态未完成
+                 */
+                if (allocationOut.getOutStatus()>1){
+                    outboundForPdaVO.setOutStatus(1);
+                }else {
+                    outboundForPdaVO.setOutStatus(0);
+                }
+                //单据编号
+                outboundForPdaVO.setDocNum(allocationOut.getAllocationOutNumber());
+                //单据类型
+                outboundForPdaVO.setDocType(1);
+                //调入仓库
+                outboundForPdaVO.setEnterWarehouse(allocationOut.getEnterWarehouse());
+                outboundForPdaVOListNew.add(outboundForPdaVO);
+            }
+            List<OutboundForPdaVO> outboundForPdaVOListLast = ListUtils.union(outboundForPdaVOList,outboundForPdaVOListNew);
+            return Result.success(outboundForPdaVOListLast);
         } catch (Exception e) {
             log.error("分页查询异常", e);
             return Result.failure("查询失败--系统异常，请联系管理员");

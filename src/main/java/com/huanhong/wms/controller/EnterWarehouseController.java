@@ -283,7 +283,7 @@ public class EnterWarehouseController extends BaseController {
                     return Result.failure("未进入流程");
                 }
             } else {
-                return Result.failure("采购入库单异常,无法进入流程引擎");
+                return Result.failure("未找到此单据,无法进入流程引擎");
             }
         } catch (Exception e) {
             log.error("流程启动接口异常", e);

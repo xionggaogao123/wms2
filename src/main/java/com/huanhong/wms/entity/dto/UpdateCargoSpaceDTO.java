@@ -29,7 +29,7 @@ public class UpdateCargoSpaceDTO {
     private Integer stopUsing;
 
     @Min(0)
-    @Max(1)
+    @Max(2)
     @ApiModelProperty(value = "0-空闲 1-未满 2-已满")
     private Integer full;
 

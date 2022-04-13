@@ -56,7 +56,7 @@ public class CargoSpaceManagement extends SuperEntity {
     private Integer stopUsing;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "存满 0 - 未满  1 - 全满")
+    @ApiModelProperty(value = "存满 0 - 空   1 - 未满  2 - 已满")
     private Integer full;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)

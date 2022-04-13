@@ -7,6 +7,7 @@ import com.huanhong.wms.SuperService;
 import com.huanhong.wms.entity.dto.UpPaStatus;
 import com.huanhong.wms.entity.param.ApproveParam;
 import com.huanhong.wms.entity.param.ProcessAssignmentParam;
+import com.huanhong.wms.entity.param.StartProcessParam;
 
 /**
  * <p>
@@ -25,4 +26,6 @@ public interface IProcessAssignmentService extends SuperService<ProcessAssignmen
     Result<Integer> updateProcessAssignmentStatusByParam(UpPaStatus up);
 
     Result<Integer> approveTaskByParam(ApproveParam param);
+
+    Result start(StartProcessParam param);
 }

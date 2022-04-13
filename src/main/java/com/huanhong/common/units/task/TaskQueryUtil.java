@@ -2,11 +2,10 @@ package com.huanhong.common.units.task;
 
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.google.gson.JsonObject;
 import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.entity.param.StartProcessParam;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +48,10 @@ public class TaskQueryUtil {
      * 审批通过，在审批的过程中可以随意添加审批信息
      */
     public static final String TASK_COMPLETE = HOST + "/taskComplete";
+    /**
+     * 启动流程
+     */
+    public static final String START = HOST + "/start";
 
 
     /**
@@ -189,6 +192,28 @@ public class TaskQueryUtil {
         log.info("result:{}", result);
         if (StrUtils.isBlank(result)) {
             log.error("审批通过请求返回结果为空");
+            return Result.failure(500, "返回信息空");
+        }
+
+        return JSONObject.parseObject(result, Result.class);
+    }
+    /**
+     * 启动流程
+     *
+     * @return
+     */
+    public static Result start(StartProcessParam param) {
+        String result;
+        try {
+            result = HttpUtil.post(START,JSONObject.toJSONString(param),7000);
+
+        } catch (Exception e) {
+            log.error("启动流程请求异常：", e);
+            return Result.failure("启动流程错误");
+        }
+        log.info("result:{}", result);
+        if (StrUtils.isBlank(result)) {
+            log.error("启动流程请求返回结果为空");
             return Result.failure(500, "返回信息空");
         }
 

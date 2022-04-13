@@ -10,16 +10,24 @@ import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.entity.InventoryInformation;
 import com.huanhong.wms.entity.PlanUseOut;
+import com.huanhong.wms.entity.PlanUseOutDetails;
+import com.huanhong.wms.entity.dto.AddOutboundRecordDTO;
 import com.huanhong.wms.entity.dto.AddPlanUseOutDTO;
+import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
 import com.huanhong.wms.entity.dto.UpdatePlanUseOutDTO;
 import com.huanhong.wms.entity.vo.PlanUseOutVO;
 import com.huanhong.wms.mapper.PlanUseOutMapper;
+import com.huanhong.wms.service.IInventoryInformationService;
+import com.huanhong.wms.service.IOutboundRecordService;
+import com.huanhong.wms.service.IPlanUseOutDetailsService;
 import com.huanhong.wms.service.IPlanUseOutService;
 import org.apache.poi.util.StringUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,6 +47,15 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
 
     @Resource
     private PlanUseOutMapper planUseOutMapper;
+
+    @Resource
+    private IPlanUseOutDetailsService planUseOutDetailsService;
+
+    @Resource
+    private IInventoryInformationService inventoryInformationService;
+
+    @Resource
+    private IOutboundRecordService outboundRecordService;
 
     /**
      * 分页查询
@@ -295,5 +312,107 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
         queryWrapper.eq("process_instance_id",processInstanceId);
         PlanUseOut planUseOut = planUseOutMapper.selectOne(queryWrapper);
         return planUseOut;
+    }
+
+    @Override
+    public Result addOutboundRecordUpdateInventory(PlanUseOut planUseOut) {
+        List<PlanUseOutDetails> planUseOutDetailsList = planUseOutDetailsService.getListPlanUseOutDetailsByDocNumberAndWarehosue(planUseOut.getDocumentNumber(), planUseOut.getWarehouseId());
+
+        //留存出库记录
+        AddOutboundRecordDTO addOutboundRecordDTO = new AddOutboundRecordDTO();
+        /**
+         * 获取当前库存是否满足领用
+         * 1.warehouseId和materialCoding
+         */
+        if (ObjectUtil.isNotEmpty(planUseOutDetailsList)) {
+            for (PlanUseOutDetails planUseOutDetails : planUseOutDetailsList
+            ) {
+                BigDecimal nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndWarehouseId(planUseOutDetails.getMaterialCoding(), planUseOutDetails.getWarehouseId()));
+                BigDecimal planNum = BigDecimal.valueOf(planUseOutDetails.getRequisitionQuantity());
+                int event = nowNum.compareTo(planNum);
+                /**
+                 * event = -1 : planNuM > nowNum
+                 * event =  0 : planNuM = nowNum
+                 * event =  1 : planNuM < nowNum
+                 */
+                if (event >= 0) {
+                    BigDecimal tempNum = planNum;
+                    List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(planUseOutDetails.getMaterialCoding(), planUseOutDetails.getWarehouseId());
+                    for (InventoryInformation inventoryInformation : inventoryInformationList) {
+                        /**
+                         * 1.将一条库存的数据（编码、批次、货位）中的库存数量放入出库记录的出库数量中：库存数量更新为零，出库数量新增一条数据
+                         * 2.每搬空一条库存数据，tempNum减去对应的数量
+                         * 3.tempNum不为零之前（满足计划领用数量之前）一直循环
+                         * 4.在编辑库存数据之前，判断目前的tempNum是否已经小于此条库存数据的库存数。若大于清空此条库存并循环下一条数据，若小于则更新对应数量
+                         */
+                        if (tempNum.compareTo(BigDecimal.valueOf(0)) > 0) {
+                            //tempNum大于等于此条数据的库存数量
+                            if (tempNum.compareTo(BigDecimal.valueOf(inventoryInformation.getInventoryCredit())) >= 0) {
+                                //更新原库存为零
+                                UpdateInventoryInformationDTO updateInventoryInformationDTO = new UpdateInventoryInformationDTO();
+                                BeanUtil.copyProperties(inventoryInformation, updateInventoryInformationDTO);
+                                updateInventoryInformationDTO.setInventoryCredit((double) 0);
+                                Result update = inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
+                                if (update.isOk()) {
+                                    //新增一条出库记录
+                                    addOutboundRecordDTO.setCargoSpaceId(inventoryInformation.getCargoSpaceId());
+                                    addOutboundRecordDTO.setBatch(inventoryInformation.getBatch());
+                                    addOutboundRecordDTO.setOutQuantity(inventoryInformation.getInventoryCredit());
+                                    tempNum = tempNum.subtract(BigDecimal.valueOf(inventoryInformation.getInventoryCredit()));
+                                } else {
+                                    log.error("更新库存失败");
+                                    return Result.failure("更新库存失败");
+                                }
+                            } else {
+                                //更新库存为原库存-tempNum
+                                UpdateInventoryInformationDTO updateInventoryInformationDTO = new UpdateInventoryInformationDTO();
+                                BeanUtil.copyProperties(inventoryInformation, updateInventoryInformationDTO);
+                                BigDecimal newInventoryNum = BigDecimal.valueOf(inventoryInformation.getInventoryCredit()).subtract(tempNum);
+                                updateInventoryInformationDTO.setInventoryCredit(newInventoryNum.doubleValue());
+                                Result update = inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
+                                if (update.isOk()) {
+                                    //新增一条出库记录
+                                    addOutboundRecordDTO.setCargoSpaceId(inventoryInformation.getCargoSpaceId());
+                                    addOutboundRecordDTO.setBatch(inventoryInformation.getBatch());
+                                    addOutboundRecordDTO.setOutQuantity(tempNum.doubleValue());
+                                    tempNum = tempNum.subtract(BigDecimal.valueOf(inventoryInformation.getInventoryCredit()));
+                                } else {
+                                    log.error("更新库存失败");
+                                    return Result.failure("更新库存失败");
+                                }
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                    /**
+                     * 单据进入流程时，根据领用数量生成出库记录
+                     * 1.原单据编号
+                     * 2.库房ID
+                     * 3.物料编码
+                     * 4.状态：0-审批中（锁库存）1-审批生效（出库）
+                     * 5.出库类型：1-领料出库 2-调拨出库
+                     */
+                    addOutboundRecordDTO.setDocumentNumber(planUseOutDetails.getUsePlanningDocumentNumber());
+                    addOutboundRecordDTO.setWarehouseId(planUseOutDetails.getWarehouseId());
+                    addOutboundRecordDTO.setMaterialCoding(planUseOutDetails.getMaterialCoding());
+                    addOutboundRecordDTO.setStatus(0);
+                    addOutboundRecordDTO.setOutType(1);
+                    //放入新增出库记录List
+                    Result result = outboundRecordService.addOutboundRecord(addOutboundRecordDTO);
+
+                    if (!result.isOk()) {
+                        return Result.failure("新增库存记录失败");
+                    } else {
+                        return Result.success("新增库存记录成功");
+                    }
+                } else {
+                    return Result.failure("物料：" + planUseOutDetails.getMaterialCoding() + " 库存不足，请重拟领用单！");
+                }
+            }
+        } else {
+            return Result.failure("未查询到明细单据信息");
+        }
+        return Result.failure("未知错误");
     }
 }

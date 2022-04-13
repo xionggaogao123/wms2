@@ -2,18 +2,22 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.common.units.EntityUtils;
+import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.*;
+import com.huanhong.wms.entity.AllocationPlan;
+import com.huanhong.wms.entity.AllocationPlanDetail;
+import com.huanhong.wms.entity.InventoryInformation;
+import com.huanhong.wms.entity.OutboundRecord;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.AllocationPlanVO;
+import com.huanhong.wms.mapper.AllocationPlanMapper;
 import com.huanhong.wms.service.IAllocationPlanDetailService;
+import com.huanhong.wms.service.IAllocationPlanService;
 import com.huanhong.wms.service.IInventoryInformationService;
 import com.huanhong.wms.service.IOutboundRecordService;
 import io.swagger.annotations.Api;
@@ -23,16 +27,11 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import com.huanhong.wms.BaseController;
-import com.huanhong.wms.mapper.AllocationPlanMapper;
-import com.huanhong.wms.service.IAllocationPlanService;
-
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/v1//allocation-plan")
@@ -238,7 +237,7 @@ public class AllocationPlanController extends BaseController {
                 Result result = allocationPlanService.updateAllocationPlan(updateAllocationPlanDTO);
                 if (result.isOk()) {
                     //新增出库记录并减库存
-                    Result resultAnoher = addOutboundRecordUpdateInventory(allocationPlan);
+                    Result resultAnoher = allocationPlanService.addOutboundRecordUpdateInventory(allocationPlan);
                     if (!resultAnoher.isOk()) {
                         return resultAnoher;
                     }

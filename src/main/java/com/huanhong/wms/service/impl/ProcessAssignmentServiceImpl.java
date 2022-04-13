@@ -1,9 +1,8 @@
 package com.huanhong.wms.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -12,16 +11,20 @@ import com.huanhong.common.units.task.HistoryTaskVo;
 import com.huanhong.common.units.task.RejectParam;
 import com.huanhong.common.units.task.TaskCompleteParam;
 import com.huanhong.common.units.task.TaskQueryUtil;
+import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.UpPaStatus;
 import com.huanhong.wms.entity.param.ApproveParam;
 import com.huanhong.wms.entity.param.ProcessAssignmentParam;
+import com.huanhong.wms.entity.param.StartProcessParam;
 import com.huanhong.wms.mapper.*;
+import com.huanhong.wms.service.IAllocationPlanService;
 import com.huanhong.wms.service.IMessageService;
+import com.huanhong.wms.service.IPlanUseOutService;
 import com.huanhong.wms.service.IProcessAssignmentService;
-import com.huanhong.wms.SuperServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -39,6 +42,7 @@ import java.util.stream.Collectors;
  * @author liudeyi
  * @since 2022-03-17
  */
+@Slf4j
 @Service
 public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssignmentMapper, ProcessAssignment> implements IProcessAssignmentService {
     @Resource
@@ -59,6 +63,13 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
     private UserMapper userMapper;
     @Resource
     private IMessageService messageService;
+
+
+    @Resource
+    private IPlanUseOutService planUseOutService;
+    @Resource
+    private IAllocationPlanService allocationPlanService;
+
 
     @Override
     public Result<Integer> syncProcessAssignment() {
@@ -180,6 +191,9 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                                     processingData(listMap, processInstanceId, taskId);
                                     continue;
                                 }
+                                break;
+                            default:
+                                log.warn("暂未处理的流程：{}", type);
                                 break;
                         }
                         list.add(p);
@@ -369,6 +383,138 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
         }
         return Result.failure("请稍后重试");
 
+    }
+
+    @Override
+    public Result start(StartProcessParam param) {
+        Result result = TaskQueryUtil.start(param);
+        if (result.isOk()) {
+            Integer id = param.getId();
+            String processInstanceId = Convert.toStr(result.getData());
+            int f = 0;
+            // 更新数据
+            switch (param.getProcessDefinitionKey()) {
+                //出库
+                case "plan_use_out":
+                    /**
+                     * 获取出库单信息
+                     */
+                    PlanUseOut planUseOut = planUseOutMapper.selectById(id);
+
+                    if (!ObjectUtil.isNotNull(planUseOut)) {
+                        return Result.failure("出库单不存在或已被删除,无法进入流程引擎");
+                    }
+                    PlanUseOut tempPlanUseOut = new PlanUseOut();
+                    tempPlanUseOut.setId(id);
+                    tempPlanUseOut.setProcessInstanceId(processInstanceId);
+                    //提交审批时 将更新数量  单据状态由草拟转为审批中
+                    tempPlanUseOut.setStatus(2);
+                    f = planUseOutMapper.updateById(tempPlanUseOut);
+                    if (f <= 0) {
+                        return Result.failure("未进入流程");
+                    }
+                    //新增出库记录并减库存
+                    Result resultAnother = planUseOutService.addOutboundRecordUpdateInventory(planUseOut);
+                    if (!resultAnother.isOk()) {
+                        return resultAnother;
+                    }
+                    break;
+                //    入库
+                case "enter_warehouse":
+                    EnterWarehouse enterWarehouse = enterWarehouseMapper.selectById(id);
+
+                    if (!ObjectUtil.isNotNull(enterWarehouse)) {
+                        return Result.failure("采购入库单不存在或已被删除,无法进入流程引擎");
+                    }
+                    EnterWarehouse tempEnterWarehouse = new EnterWarehouse();
+                    tempEnterWarehouse.setId(id);
+                    tempEnterWarehouse.setProcessInstanceId(processInstanceId);
+                    //单据状态由草拟转为审批中
+                    tempEnterWarehouse.setState(2);
+                    f = enterWarehouseMapper.updateById(tempEnterWarehouse);
+                    if (f <= 0) {
+                        return Result.failure("未进入流程");
+                    }
+                    break;
+                //    调拨
+                case "allocation_plan":
+                    AllocationPlan allocationPlan = allocationPlanMapper.selectById(id);
+
+                    if (!ObjectUtil.isNotEmpty(allocationPlan)) {
+                        return Result.failure("调拨计划单不存在或已被删除,无法进入流程引擎");
+                    }
+                    AllocationPlan tempAllocationPlan = new AllocationPlan();
+                    tempAllocationPlan.setId(id);
+                    tempAllocationPlan.setProcessInstanceId(processInstanceId);
+                    //单据状态由草拟转为审批中
+                    tempAllocationPlan.setPlanStatus(2);
+                    f = allocationPlanMapper.updateById(tempAllocationPlan);
+                    if (f <= 0) {
+                        return Result.failure("未进入流程");
+                    }
+                    //新增出库记录并减库存
+                    Result resultAnother2 = allocationPlanService.addOutboundRecordUpdateInventory(allocationPlan);
+                    if (!resultAnother2.isOk()) {
+                        return resultAnother2;
+                    }
+                    break;
+                //    采购计划
+                case "procurement_plan":
+                    ProcurementPlan procurementPlan = procurementPlanMapper.selectById(id);
+
+                    if (!ObjectUtil.isNotEmpty(procurementPlan)) {
+                        return Result.failure("采购计划单不存在或已被删除,无法进入流程引擎");
+                    }
+                    ProcurementPlan tempProcurementPlan = new ProcurementPlan();
+                    tempProcurementPlan.setId(id);
+                    tempProcurementPlan.setProcessInstanceId(processInstanceId);
+                    //单据状态由草拟转为审批中
+                    tempProcurementPlan.setStatus(2);
+                    f = procurementPlanMapper.updateById(tempProcurementPlan);
+                    if (f <= 0) {
+                        return Result.failure("未进入流程");
+                    }
+                    break;
+                //    需求计划
+                case "requirements_planning":
+                    RequirementsPlanning requirementsPlanning = requirementsPlanningMapper.selectById(id);
+
+                    if (!ObjectUtil.isNotEmpty(requirementsPlanning)) {
+                        return Result.failure("需求计划单不存在或已被删除,无法进入流程引擎");
+                    }
+                    RequirementsPlanning tempRequirementsPlanning = new RequirementsPlanning();
+                    tempRequirementsPlanning.setId(id);
+                    tempRequirementsPlanning.setProcessInstanceId(processInstanceId);
+                    //单据状态由草拟转为审批中
+                    tempRequirementsPlanning.setPlanStatus(2);
+                    f = requirementsPlanningMapper.updateById(tempRequirementsPlanning);
+                    if (f <= 0) {
+                        return Result.failure("未进入流程");
+                    }
+                    break;
+                //    到货检验
+                case "arrival_verification":
+                    ArrivalVerification arrivalVerification = arrivalVerificationMapper.selectById(id);
+
+                    if (!ObjectUtil.isNotEmpty(arrivalVerification)) {
+                        return Result.failure("到货检验单不存在或已被删除,无法进入流程引擎");
+                    }
+                    ArrivalVerification tempArrivalVerification = new ArrivalVerification();
+                    tempArrivalVerification.setId(id);
+                    tempArrivalVerification.setProcessInstanceId(processInstanceId);
+                    //单据状态由草拟转为审批中
+                    tempArrivalVerification.setPlanStatus(2);
+                    f = arrivalVerificationMapper.updateById(tempArrivalVerification);
+                    if (f <= 0) {
+                        return Result.failure("未进入流程");
+                    }
+                    break;
+                default:
+                    log.warn("暂未处理的流程：{}", param.getProcessDefinitionKey());
+                    break;
+            }
+        }
+        return Result.success();
     }
 
     public Map<String, List<HistoryTaskVo>> groupByProcessInstanceId(List<HistoryTaskVo> historyTaskVos) {

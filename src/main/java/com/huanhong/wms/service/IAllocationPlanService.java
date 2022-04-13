@@ -1,10 +1,9 @@
 package com.huanhong.wms.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huanhong.wms.SuperService;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.AllocationPlan;
-import com.huanhong.wms.SuperService;
-import com.huanhong.wms.entity.ArrivalVerification;
 import com.huanhong.wms.entity.dto.AddAllocationPlanDTO;
 import com.huanhong.wms.entity.dto.UpdateAllocationPlanDTO;
 import com.huanhong.wms.entity.vo.AllocationPlanVO;
@@ -63,4 +62,6 @@ public interface IAllocationPlanService extends SuperService<AllocationPlan> {
      * @return
      */
     AllocationPlan getAllocationPlanByProcessInstanceId(String processInstanceId);
+
+    Result addOutboundRecordUpdateInventory(AllocationPlan allocationPlan);
 }

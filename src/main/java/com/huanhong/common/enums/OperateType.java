@@ -73,6 +73,14 @@ public enum OperateType {
      * 清空
      */
     CLEAN,
+    /**
+     * 启动
+     */
+    START,
+    /**
+     * 审批
+     */
+    APPROVE,
 
     /**
      * 修改状态

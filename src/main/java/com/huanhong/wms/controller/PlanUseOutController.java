@@ -344,9 +344,9 @@ public class PlanUseOutController extends BaseController {
                 Result result = planUseOutService.updatePlanUseOut(updatePlanUseOutDTO);
                 if (result.isOk()) {
                     //新增出库记录并减库存
-                    Result resultAnoher = addOutboundRecordUpdateInventory(planUseOut);
-                    if (!resultAnoher.isOk()) {
-                        return resultAnoher;
+                    Result resultAnother = planUseOutService.addOutboundRecordUpdateInventory(planUseOut);
+                    if (!resultAnother.isOk()) {
+                        return resultAnother;
                     }
                     return Result.success("进入流程");
                 } else {

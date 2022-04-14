@@ -514,7 +514,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                     break;
             }
         }
-        return Result.success();
+        return result;
     }
 
     public Map<String, List<HistoryTaskVo>> groupByProcessInstanceId(List<HistoryTaskVo> historyTaskVos) {

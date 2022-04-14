@@ -399,7 +399,6 @@ public class PlanUseOutController extends BaseController {
         }
     }
 
-
     /**
      * 模糊查询
      *
@@ -712,61 +711,6 @@ public class PlanUseOutController extends BaseController {
             log.error("新增出库记录或更新库存异常");
             return Result.failure("新增出库记录或更新库存异常");
         }
-    }
-
-
-
-                        //更新库存--此条数据的数量减去tempNum
-                        BigDecimal newInventory = BigDecimal.valueOf(outboundRecord.getOutQuantity()).subtract(tempNum);
-                        AddInventoryInformationDTO addInventoryInformationDTO = new AddInventoryInformationDTO();
-
-                        //存入新数量
-                        InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(outboundRecord.getMaterialCoding(), outboundRecord.getBatch(), outboundRecord.getCargoSpaceId());
-                        if (ObjectUtil.isEmpty(inventoryInformation)){
-                            return Result.failure("未找到库存信息");
-                        }
-                        BeanUtil.copyProperties(inventoryInformation, addInventoryInformationDTO);
-                        addInventoryInformationDTO.setInventoryCredit(newInventory.doubleValue());
-                        Result result = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
-                        if (result.isOk()) {
-                            //更新成功,明细中的数量改为tempNum
-                            outboundRecord.setOutQuantity(tempNum.doubleValue());
-                        } else {
-                            log.error("回滚库存失败!");
-                            return Result.failure("回滚库存失败");
-                        }
-                    } else {
-                        //当tempNum不为零且大于当前数据的数量，temp数量减去此数量,出库记录及库存信息不更新
-                        tempNum = tempNum.subtract(BigDecimal.valueOf(outboundRecord.getOutQuantity()));
-                    }
-                } else {
-                    //当tempNum等于0,剩余的出库记录全部回滚库存--失败无补偿手段
-                    AddInventoryInformationDTO addInventoryInformationDTO = new AddInventoryInformationDTO();
-                    InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(outboundRecord.getMaterialCoding(), outboundRecord.getBatch(), outboundRecord.getCargoSpaceId());
-                    if (ObjectUtil.isEmpty(inventoryInformation)){
-                        return Result.failure("未找到库存信息");
-                    }
-                    BeanUtil.copyProperties(inventoryInformation, addInventoryInformationDTO);
-                    addInventoryInformationDTO.setInventoryCredit(outboundRecord.getOutQuantity());
-                    Result result = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
-                    if (!result.isOk()) {
-                        return result;
-                    }
-                }
-                //更新明细
-                BeanUtil.copyProperties(outboundRecord,updateOutboundRecordDTO);
-                Result result = outboundRecordService.updateOutboundRecord(updateOutboundRecordDTO);
-                if (result.isOk()) {
-                    return Result.success("出库记录处理成功！");
-                } else {
-                    return Result.failure("出库记录处理失败！");
-                }
-            }
-        } catch (Exception e) {
-            log.error("回滚库存或更新详细信息异常", e);
-            return Result.failure("回滚库存或更新详细信息失败");
-        }
-        return Result.success();
     }
 
 

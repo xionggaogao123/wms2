@@ -64,4 +64,6 @@ public interface IAllocationPlanService extends SuperService<AllocationPlan> {
     AllocationPlan getAllocationPlanByProcessInstanceId(String processInstanceId);
 
     Result addOutboundRecordUpdateInventory(AllocationPlan allocationPlan);
+
+    Result updateOutboundRecordAndInventory(AllocationPlan allocationPlan);
 }

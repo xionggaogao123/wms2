@@ -1,11 +1,8 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.convert.Convert;
-import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -379,25 +376,7 @@ public class PlanUseOutController extends BaseController {
 
             if (ObjectUtil.isNotNull(planUseOut)) {
 
-                //获取此单据下的明细单，校验批准数量是否等于应出数量，若不同回滚库存并更新详细信息
-                String docNum = planUseOut.getDocumentNumber();
-                String warehousId = planUseOut.getWarehouseId();
-                List<PlanUseOutDetails> planUseOutDetailsList = planUseOutDetailsService.getListPlanUseOutDetailsByDocNumberAndWarehosue(docNum, warehousId);
-                List<OutboundRecord> outboundRecordList = new ArrayList<>();
-                for (PlanUseOutDetails planUseOutDetails : planUseOutDetailsList
-                ) {
-                    //如果批准数量不为空并不为零
-                    if (ObjectUtil.isNotNull(planUseOutDetails.getApprovalsQuantity()) && BigDecimal.valueOf(planUseOutDetails.getApprovalsQuantity()).compareTo(BigDecimal.valueOf(0)) > 0) {
-                        //领用数量
-                        BigDecimal requisitionQuantity = BigDecimal.valueOf(planUseOutDetails.getRequisitionQuantity());
-                        //批准数量
-                        BigDecimal approvalsQuantity = BigDecimal.valueOf(planUseOutDetails.getApprovalsQuantity());
-                        if (requisitionQuantity.compareTo(approvalsQuantity) != 0) {
-                            outboundRecordList = outboundRecordService.getOutboundRecordListByDocNumAndWarehouseId(docNum, warehousId);
-                            upDateOutboundRecordAndInventory(outboundRecordList, planUseOutDetails.getApprovalsQuantity());
-                        }
-                    }
-                }
+                planUseOutService.updateOutboundRecordAndInventory(planUseOut);
 
                 UpdatePlanUseOutDTO updatePlanUseOutDTO = new UpdatePlanUseOutDTO();
                 updatePlanUseOutDTO.setId(planUseOut.getId());
@@ -419,6 +398,7 @@ public class PlanUseOutController extends BaseController {
             return Result.failure("系统异常");
         }
     }
+
 
     /**
      * 模糊查询
@@ -735,29 +715,6 @@ public class PlanUseOutController extends BaseController {
     }
 
 
-    /**
-     * 完整审批时-如果批准数量和应出数量不一致--回滚库存
-     * 出库明细单据已更新,需要根据批准数量-应出数量=出库数量回滚部分库存并更新出库记录
-     *
-     * @param outboundRecordList 需要更新的出库记录
-     * @param newOutQuantity 从应出数量改为批准数量
-     * @return
-     */
-    public Result upDateOutboundRecordAndInventory(List<OutboundRecord> outboundRecordList, Double newOutQuantity) {
-
-        try {
-            /**
-             * 根据出库记录list和新的数量(批准数量)
-             */
-            BigDecimal tempNum = BigDecimal.valueOf(newOutQuantity);
-            UpdateOutboundRecordDTO updateOutboundRecordDTO = new UpdateOutboundRecordDTO();
-            for (OutboundRecord outboundRecord : outboundRecordList
-            ) {
-                int event = tempNum.compareTo(BigDecimal.valueOf(0));
-                //遍历出库记录，只要tempNum不等于0，就将此条记录的数量加给tempNum.且此条数据不作变更
-                if (tempNum.compareTo(BigDecimal.valueOf(0)) > 0) {
-                    //判断此时tempNum是否已经小于此条数据的出库数量
-                    if (tempNum.compareTo(BigDecimal.valueOf(outboundRecord.getOutQuantity())) < 0) {
 
                         //更新库存--此条数据的数量减去tempNum
                         BigDecimal newInventory = BigDecimal.valueOf(outboundRecord.getOutQuantity()).subtract(tempNum);

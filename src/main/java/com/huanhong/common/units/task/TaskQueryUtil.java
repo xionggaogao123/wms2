@@ -1,5 +1,6 @@
 package com.huanhong.common.units.task;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.huanhong.common.units.StrUtils;
@@ -24,6 +25,10 @@ public class TaskQueryUtil {
      * 当前需要处理的任务
      */
     public static final String MY_TASK = HOST + "/myTask";
+    /**
+     * 获取当前流程剩余任务数
+     */
+    public static final String COUNT_TASK = HOST + "/countTask?processInstanceId={}";
     /**
      * 删除任务
      */
@@ -71,6 +76,28 @@ public class TaskQueryUtil {
         log.info("result:{}", result);
         if (StrUtils.isBlank(result)) {
             log.error("任务列表请求返回结果为空");
+            return Result.failure(500, "返回信息空");
+        }
+
+        return JSONObject.parseObject(result, Result.class);
+    }
+    /**
+     * 获取当前流程剩余任务数
+     *
+     * @return
+     */
+    public static Result countTask(String processInstanceId) {
+        String result;
+        try {
+            result = HttpUtil.get(StrUtil.format(COUNT_TASK,processInstanceId), 7000);
+
+        } catch (Exception e) {
+            log.error("获取当前流程剩余任务数请求异常：", e);
+            return Result.failure("获取当前流程剩余任务数错误");
+        }
+        log.info("result:{}", result);
+        if (StrUtils.isBlank(result)) {
+            log.error("获取当前流程剩余任务数请求返回结果为空");
             return Result.failure(500, "返回信息空");
         }
 

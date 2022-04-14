@@ -11,12 +11,10 @@ import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.InventoryInformation;
+import com.huanhong.wms.entity.OutboundRecord;
 import com.huanhong.wms.entity.PlanUseOut;
 import com.huanhong.wms.entity.PlanUseOutDetails;
-import com.huanhong.wms.entity.dto.AddOutboundRecordDTO;
-import com.huanhong.wms.entity.dto.AddPlanUseOutDTO;
-import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
-import com.huanhong.wms.entity.dto.UpdatePlanUseOutDTO;
+import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.PlanUseOutVO;
 import com.huanhong.wms.mapper.PlanUseOutMapper;
 import com.huanhong.wms.service.IInventoryInformationService;
@@ -28,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.sql.ResultSet;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -86,13 +85,13 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
 
         query.like(StringUtils.isNotBlank(planUseOutVO.getRequisitioningUnit()), "requisitioning_unit", planUseOutVO.getRequisitioningUnit());
 
-        query.like(StringUtils.isNotBlank(planUseOutVO.getRecipient()),"recipient",planUseOutVO.getRecipient());
+        query.like(StringUtils.isNotBlank(planUseOutVO.getRecipient()), "recipient", planUseOutVO.getRecipient());
 
         query.like(StringUtils.isNotBlank(planUseOutVO.getWarehouseId()), "warehouse_id", planUseOutVO.getWarehouseId());
 
         query.like(StringUtils.isNotBlank(planUseOutVO.getLibrarian()), "librarian", planUseOutVO.getLibrarian());
 
-        query.eq(ObjectUtil.isNotNull(planUseOutVO.getOutStatus()),"out_status",planUseOutVO.getOutStatus());
+        query.eq(ObjectUtil.isNotNull(planUseOutVO.getOutStatus()), "out_status", planUseOutVO.getOutStatus());
 
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -114,7 +113,6 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
     }
 
     /**
-     *
      * @param planUseOutPage
      * @param planUseOutVO
      * @return
@@ -134,16 +132,14 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
         query.like(ObjectUtil.isNotNull(planUseOutVO.getWarehouseId()), "warehouse_id", planUseOutVO.getWarehouseId());
 
         //单据状态
-        if (ObjectUtil.isNotNull(planUseOutVO.getOutStatus())&&planUseOutVO.getOutStatus()==0){
-            query.eq("out_status",0).or().eq("out_status",1);
-        }else if (ObjectUtil.isNotNull(planUseOutVO.getOutStatus())&&planUseOutVO.getOutStatus()==1){
-            query.eq("out_status",2);
+        if (ObjectUtil.isNotNull(planUseOutVO.getOutStatus()) && planUseOutVO.getOutStatus() == 0) {
+            query.eq("out_status", 0).or().eq("out_status", 1);
+        } else if (ObjectUtil.isNotNull(planUseOutVO.getOutStatus()) && planUseOutVO.getOutStatus() == 1) {
+            query.eq("out_status", 2);
         }
 
         return planUseOutMapper.selectPage(planUseOutPage, query);
     }
-
-
 
 
     @Override
@@ -213,54 +209,54 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
          */
 
         //流程Id
-        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getProcessInstanceId())){
+        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getProcessInstanceId())) {
             planUseOutOld.setProcessInstanceId(updatePlanUseOutDTO.getProcessInstanceId());
         }
 
         //单据状态
-        if (ObjectUtil.isNotNull(updatePlanUseOutDTO.getStatus())){
+        if (ObjectUtil.isNotNull(updatePlanUseOutDTO.getStatus())) {
             planUseOutOld.setStatus(updatePlanUseOutDTO.getStatus());
         }
         //计划类别
-        if (ObjectUtil.isNotNull(updatePlanUseOutDTO.getPlanClassification())){
+        if (ObjectUtil.isNotNull(updatePlanUseOutDTO.getPlanClassification())) {
             planUseOutOld.setPlanClassification(updatePlanUseOutDTO.getPlanClassification());
         }
         //领用单位
-        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getRequisitioningUnit())){
+        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getRequisitioningUnit())) {
             planUseOutOld.setRequisitioningUnit(updatePlanUseOutDTO.getRequisitioningUnit());
         }
         //库房员
-        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getLibrarian())){
+        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getLibrarian())) {
             planUseOutOld.setLibrarian(updatePlanUseOutDTO.getLibrarian());
         }
         //费用承担单位
-        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getCostBearingUnit())){
+        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getCostBearingUnit())) {
             planUseOutOld.setCostBearingUnit(updatePlanUseOutDTO.getCostBearingUnit());
         }
         //费用项目
-        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getExpenseItem())){
+        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getExpenseItem())) {
             planUseOutOld.setExpenseItem(updatePlanUseOutDTO.getExpenseItem());
         }
         //物资用途
-        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getMaterialUse())){
+        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getMaterialUse())) {
             planUseOutOld.setMaterialUse(updatePlanUseOutDTO.getMaterialUse());
         }
         //领用用途
-        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getRequisitionUse())){
+        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getRequisitionUse())) {
             planUseOutOld.setRequisitionUse(updatePlanUseOutDTO.getRequisitionUse());
         }
         //领用人
-        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getRecipient())){
+        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getRecipient())) {
             planUseOutOld.setRecipient(updatePlanUseOutDTO.getRecipient());
         }
         //已完成的明细id,格式：以逗号隔开的字符串
-        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getDetailIds())){
+        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getDetailIds())) {
             //获取已经存储的已完成明细Id
             List<String> listOld = new ArrayList<>();
             //更新的Id
             List<String> listPSL = new ArrayList<>();
-            listPSL= Collections.singletonList(updatePlanUseOutDTO.getDetailIds());
-            if (ObjectUtil.isNotNull(planUseOutOld.getDetailIds())){
+            listPSL = Collections.singletonList(updatePlanUseOutDTO.getDetailIds());
+            if (ObjectUtil.isNotNull(planUseOutOld.getDetailIds())) {
                 String s = planUseOutOld.getDetailIds();
                 listOld = Arrays.stream(StringUtils.split(s, ",")).map(s1 -> s1.trim()).collect(Collectors.toList());
             }
@@ -269,21 +265,21 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
             String[] strings = listPSL.toArray(new String[listPSL.size()]);
             String resultString = StringUtil.join(strings, ",");
             planUseOutOld.setDetailIds(resultString);
-        }else {
+        } else {
             List<String> listPSL = new ArrayList<>();
-            listPSL= Collections.singletonList(updatePlanUseOutDTO.getDetailIds());
+            listPSL = Collections.singletonList(updatePlanUseOutDTO.getDetailIds());
             String[] strings = listPSL.toArray(new String[listPSL.size()]);
             String resultString = StringUtil.join(strings, ",");
             planUseOutOld.setDetailIds(resultString);
         }
 
         //出库状态
-        if (ObjectUtil.isNotNull(updatePlanUseOutDTO.getOutStatus())){
+        if (ObjectUtil.isNotNull(updatePlanUseOutDTO.getOutStatus())) {
             planUseOutOld.setOutStatus(updatePlanUseOutDTO.getOutStatus());
         }
 
         //备注
-        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getRemark())){
+        if (StringUtils.isNotBlank(updatePlanUseOutDTO.getRemark())) {
             planUseOutOld.setRemark(updatePlanUseOutDTO.getRemark());
         }
         int update = planUseOutMapper.updateById(planUseOutOld);
@@ -299,17 +295,17 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
     @Override
     public PlanUseOut getPlanUseOutByDocNumAndWarhouseId(String docNumber, String warhouseId) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq("document_number",docNumber);
-        queryWrapper.eq("warehouse_id",warhouseId);
-        PlanUseOut planUseOut =  planUseOutMapper.selectOne(queryWrapper);
+        queryWrapper.eq("document_number", docNumber);
+        queryWrapper.eq("warehouse_id", warhouseId);
+        PlanUseOut planUseOut = planUseOutMapper.selectOne(queryWrapper);
         return planUseOut;
     }
 
 
     @Override
-    public PlanUseOut getPlanUseOutByProcessInstanceId(String processInstanceId){
+    public PlanUseOut getPlanUseOutByProcessInstanceId(String processInstanceId) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq("process_instance_id",processInstanceId);
+        queryWrapper.eq("process_instance_id", processInstanceId);
         PlanUseOut planUseOut = planUseOutMapper.selectOne(queryWrapper);
         return planUseOut;
     }
@@ -317,7 +313,6 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
     @Override
     public Result addOutboundRecordUpdateInventory(PlanUseOut planUseOut) {
         List<PlanUseOutDetails> planUseOutDetailsList = planUseOutDetailsService.getListPlanUseOutDetailsByDocNumberAndWarehosue(planUseOut.getDocumentNumber(), planUseOut.getWarehouseId());
-
         //留存出库记录
         AddOutboundRecordDTO addOutboundRecordDTO = new AddOutboundRecordDTO();
         /**
@@ -414,5 +409,107 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
             return Result.failure("未查询到明细单据信息");
         }
         return Result.failure("未知错误");
+    }
+
+    @Override
+    public Result updateOutboundRecordAndInventory(PlanUseOut planUseOut) {
+        //获取此单据下的明细单，校验批准数量是否等于应出数量，若不同回滚库存并更新详细信息
+        String docNum = planUseOut.getDocumentNumber();
+        String warehousId = planUseOut.getWarehouseId();
+        List<PlanUseOutDetails> planUseOutDetailsList = planUseOutDetailsService.getListPlanUseOutDetailsByDocNumberAndWarehosue(docNum, warehousId);
+        for (PlanUseOutDetails planUseOutDetails : planUseOutDetailsList) {
+            //如果批准数量不为空并不为零
+            if (ObjectUtil.isNotNull(planUseOutDetails.getApprovalsQuantity()) && BigDecimal.valueOf(planUseOutDetails.getApprovalsQuantity()).compareTo(BigDecimal.valueOf(0)) > 0) {
+                //领用数量
+                BigDecimal requisitionQuantity = BigDecimal.valueOf(planUseOutDetails.getRequisitionQuantity());
+                //批准数量
+                BigDecimal approvalsQuantity = BigDecimal.valueOf(planUseOutDetails.getApprovalsQuantity());
+                if (requisitionQuantity.compareTo(approvalsQuantity) != 0) {
+                    List<OutboundRecord> outboundRecordList = outboundRecordService.getOutboundRecordListByDocNumAndWarehouseId(docNum, warehousId);
+                    Result result = handleOutboundRecordAndInventory(outboundRecordList, planUseOutDetails.getApprovalsQuantity());
+                    if(!result.isOk()){
+                        return result;
+                    }
+                }
+            }
+        }
+
+        return Result.success();
+    }
+
+    /**
+     * 完整审批时-如果批准数量和应出数量不一致--回滚库存
+     * 出库明细单据已更新,需要根据批准数量-应出数量=出库数量回滚部分库存并更新出库记录
+     *
+     * @param outboundRecordList 需要更新的出库记录
+     * @param newOutQuantity     从应出数量改为批准数量
+     * @return
+     */
+    public Result handleOutboundRecordAndInventory(List<OutboundRecord> outboundRecordList, Double newOutQuantity) {
+
+        try {
+            /**
+             * 根据出库记录list和新的数量(批准数量)
+             */
+            BigDecimal tempNum = BigDecimal.valueOf(newOutQuantity);
+            UpdateOutboundRecordDTO updateOutboundRecordDTO = new UpdateOutboundRecordDTO();
+            for (OutboundRecord outboundRecord : outboundRecordList) {
+                int event = tempNum.compareTo(BigDecimal.valueOf(0));
+                //遍历出库记录，只要tempNum不等于0，就将此条记录的数量加给tempNum.且此条数据不作变更
+                if (tempNum.compareTo(BigDecimal.valueOf(0)) > 0) {
+                    //判断此时tempNum是否已经小于此条数据的出库数量
+                    if (tempNum.compareTo(BigDecimal.valueOf(outboundRecord.getOutQuantity())) < 0) {
+
+                        //更新库存--此条数据的数量减去tempNum
+                        BigDecimal newInventory = BigDecimal.valueOf(outboundRecord.getOutQuantity()).subtract(tempNum);
+                        AddInventoryInformationDTO addInventoryInformationDTO = new AddInventoryInformationDTO();
+
+                        //存入新数量
+                        InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(outboundRecord.getMaterialCoding(), outboundRecord.getBatch(), outboundRecord.getCargoSpaceId());
+                        if (ObjectUtil.isEmpty(inventoryInformation)) {
+                            return Result.failure("未找到库存信息");
+                        }
+                        BeanUtil.copyProperties(inventoryInformation, addInventoryInformationDTO);
+                        addInventoryInformationDTO.setInventoryCredit(newInventory.doubleValue());
+                        Result result = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
+                        if (result.isOk()) {
+                            //更新成功,明细中的数量改为tempNum
+                            outboundRecord.setOutQuantity(tempNum.doubleValue());
+                        } else {
+                            log.error("回滚库存失败!");
+                            return Result.failure("回滚库存失败");
+                        }
+                    } else {
+                        //当tempNum不为零且大于当前数据的数量，temp数量减去此数量,出库记录及库存信息不更新
+                        tempNum = tempNum.subtract(BigDecimal.valueOf(outboundRecord.getOutQuantity()));
+                    }
+                } else {
+                    //当tempNum等于0,剩余的出库记录全部回滚库存--失败无补偿手段
+                    AddInventoryInformationDTO addInventoryInformationDTO = new AddInventoryInformationDTO();
+                    InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(outboundRecord.getMaterialCoding(), outboundRecord.getBatch(), outboundRecord.getCargoSpaceId());
+                    if (ObjectUtil.isEmpty(inventoryInformation)) {
+                        return Result.failure("未找到库存信息");
+                    }
+                    BeanUtil.copyProperties(inventoryInformation, addInventoryInformationDTO);
+                    addInventoryInformationDTO.setInventoryCredit(outboundRecord.getOutQuantity());
+                    Result result = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
+                    if (!result.isOk()) {
+                        return result;
+                    }
+                }
+                //更新明细
+                BeanUtil.copyProperties(outboundRecord, updateOutboundRecordDTO);
+                Result result = outboundRecordService.updateOutboundRecord(updateOutboundRecordDTO);
+                if (result.isOk()) {
+                    return Result.success("出库记录处理成功！");
+                } else {
+                    return Result.failure("出库记录处理失败！");
+                }
+            }
+        } catch (Exception e) {
+            log.error("回滚库存或更新详细信息异常", e);
+            return Result.failure("回滚库存或更新详细信息失败");
+        }
+        return Result.success();
     }
 }

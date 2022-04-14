@@ -13,10 +13,8 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.AllocationPlan;
 import com.huanhong.wms.entity.AllocationPlanDetail;
 import com.huanhong.wms.entity.InventoryInformation;
-import com.huanhong.wms.entity.dto.AddAllocationPlanDTO;
-import com.huanhong.wms.entity.dto.AddOutboundRecordDTO;
-import com.huanhong.wms.entity.dto.UpdateAllocationPlanDTO;
-import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
+import com.huanhong.wms.entity.OutboundRecord;
+import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.AllocationPlanVO;
 import com.huanhong.wms.mapper.AllocationPlanMapper;
 import com.huanhong.wms.service.IAllocationPlanDetailService;
@@ -28,6 +26,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -297,5 +296,109 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
             return Result.failure("未查询到明细单据信息");
         }
         return Result.failure("未知错误");
+    }
+
+    @Override
+    public Result updateOutboundRecordAndInventory(AllocationPlan allocationPlan) {
+        String docNum = allocationPlan.getAllocationNumber();
+        String warehousId = allocationPlan.getSendWarehouse();
+
+        List<AllocationPlanDetail> allocationPlanDetailsList = allocationPlanDetailService.getAllocationPlanDetailsListByDocNum(docNum);
+
+        for (AllocationPlanDetail allocationPlanDetail : allocationPlanDetailsList) {
+            //如果批准数量不为空并不为零
+            if (ObjectUtil.isNotNull(allocationPlanDetail.getCalibrationQuantity()) && BigDecimal.valueOf(allocationPlanDetail.getCalibrationQuantity()).compareTo(BigDecimal.valueOf(0)) > 0) {
+
+                //请调数量
+                BigDecimal requisitionQuantity = BigDecimal.valueOf(allocationPlanDetail.getRequestQuantity());
+                //准调数量
+                BigDecimal approvalsQuantity = BigDecimal.valueOf(allocationPlanDetail.getCalibrationQuantity());
+
+                if (requisitionQuantity.compareTo(approvalsQuantity) != 0) {
+                    List<OutboundRecord> outboundRecordList = outboundRecordService.getOutboundRecordListByDocNumAndWarehouseId(docNum, warehousId);
+                    Result result = handleOutboundRecordAndInventory(outboundRecordList, allocationPlanDetail.getCalibrationQuantity());
+                    if(!result.isOk()){
+                        return result;
+                    }
+                }
+            }
+        }
+        return Result.success();
+    }
+    /**
+     * 完整审批时-如果请调数量和准调数量不一致--回滚库存
+     * 出库明细单据已更新,需要根据批准数量-应出数量=出库数量回滚部分库存并更新出库记录
+     *
+     * @param outboundRecordList 需要更新的出库记录
+     * @param newOutQuantity 从请调数量改为准调数量
+     * @return
+     */
+    public Result handleOutboundRecordAndInventory(List<OutboundRecord> outboundRecordList, Double newOutQuantity) {
+
+        try {
+            /**
+             * 根据出库记录list和新的数量(批准数量)
+             */
+            BigDecimal tempNum = BigDecimal.valueOf(newOutQuantity);
+            UpdateOutboundRecordDTO updateOutboundRecordDTO = new UpdateOutboundRecordDTO();
+
+            for (OutboundRecord outboundRecord : outboundRecordList) {
+                int event = tempNum.compareTo(BigDecimal.valueOf(0));
+                //遍历出库记录，只要tempNum不等于0，就将此条记录的数量加给tempNum.且此条数据不作变更
+                if (tempNum.compareTo(BigDecimal.valueOf(0)) > 0) {
+                    //判断此时tempNum是否已经小于此条数据的出库数量
+                    if (tempNum.compareTo(BigDecimal.valueOf(outboundRecord.getOutQuantity())) < 0) {
+
+                        //更新库存--此条数据的数量减去tempNum
+                        BigDecimal newInventory = BigDecimal.valueOf(outboundRecord.getOutQuantity()).subtract(tempNum);
+                        AddInventoryInformationDTO addInventoryInformationDTO = new AddInventoryInformationDTO();
+
+                        //存入新数量
+                        InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(outboundRecord.getMaterialCoding(), outboundRecord.getBatch(), outboundRecord.getCargoSpaceId());
+                        if (ObjectUtil.isEmpty(inventoryInformation)){
+                            return Result.failure("未找到库存信息");
+                        }
+                        BeanUtil.copyProperties(inventoryInformation, addInventoryInformationDTO);
+                        addInventoryInformationDTO.setInventoryCredit(newInventory.doubleValue());
+                        Result result = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
+                        if (result.isOk()) {
+                            //更新成功,明细中的数量改为tempNum
+                            outboundRecord.setOutQuantity(tempNum.doubleValue());
+                        } else {
+                            log.error("回滚库存失败!");
+                            return Result.failure("回滚库存失败");
+                        }
+                    } else {
+                        //当tempNum不为零且大于当前数据的数量，temp数量减去此数量,出库记录及库存信息不更新
+                        tempNum = tempNum.subtract(BigDecimal.valueOf(outboundRecord.getOutQuantity()));
+                    }
+                } else {
+                    //当tempNum等于0,剩余的出库记录全部回滚库存--失败无补偿手段
+                    AddInventoryInformationDTO addInventoryInformationDTO = new AddInventoryInformationDTO();
+                    InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(outboundRecord.getMaterialCoding(), outboundRecord.getBatch(), outboundRecord.getCargoSpaceId());
+                    if (ObjectUtil.isEmpty(inventoryInformation)){
+                        return Result.failure("未找到库存信息");
+                    }
+                    BeanUtil.copyProperties(inventoryInformation, addInventoryInformationDTO);
+                    addInventoryInformationDTO.setInventoryCredit(outboundRecord.getOutQuantity());
+                    Result result = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
+                    if (!result.isOk()) {
+                        return result;
+                    }
+                }
+                //更新明细
+                BeanUtil.copyProperties(outboundRecord,updateOutboundRecordDTO);
+                Result result = outboundRecordService.updateOutboundRecord(updateOutboundRecordDTO);
+                if (result.isOk()) {
+                    return Result.success("出库记录处理成功！");
+                } else {
+                    return Result.failure("出库记录处理失败！");
+                }
+            }
+        } catch (Exception e) {
+            log.error("回滚库存或更新详细信息异常", e);
+            return Result.failure("回滚库存或更新详细信息失败");
+        }
+        return Result.success();
     }
 }

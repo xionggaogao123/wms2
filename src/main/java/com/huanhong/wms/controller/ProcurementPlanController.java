@@ -79,10 +79,15 @@ public class ProcurementPlanController extends BaseController {
             }
             ProcurementPlan procurementPlan = (ProcurementPlan) result.getData();
             String docNum = procurementPlan.getPlanNumber();
-            for (AddProcurementPlanDetailsDTO addProcurementPlanDetailsDTO : addProcurementPlanDetailsDTOList) {
-                addProcurementPlanDetailsDTO.setPlanNumber(docNum);
+            String warehouseId = procurementPlan.getWarehouseId();
+            if (ObjectUtil.isNotNull(addProcurementPlanDetailsDTOList)){
+                for (AddProcurementPlanDetailsDTO addProcurementPlanDetailsDTO : addProcurementPlanDetailsDTOList) {
+                    addProcurementPlanDetailsDTO.setPlanNumber(docNum);
+                    addProcurementPlanDetailsDTO.setWarehouseId(warehouseId);
+                }
+                procurementPlanDetailsService.addProcurementPlanDetails(addProcurementPlanDetailsDTOList);
             }
-            return procurementPlanDetailsService.addProcurementPlanDetails(addProcurementPlanDetailsDTOList);
+            return result;
         } catch (Exception e) {
             log.error("新增采购计划失败");
             return Result.failure("系统异常，新增采购计划失败！");

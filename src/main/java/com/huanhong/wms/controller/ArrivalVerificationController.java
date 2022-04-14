@@ -85,13 +85,18 @@ public class ArrivalVerificationController extends BaseController {
             }
             ArrivalVerification arrivalVerification = (ArrivalVerification) result.getData();
             String docNum = arrivalVerification.getVerificationDocumentNumber();
-            for (AddArrivalVerificationDetailsDTO addArrivalVerificationDetailsDTO : addArrivalVerificationDetailsDTOList) {
-                addArrivalVerificationDetailsDTO.setDocumentNumber(docNum);
+            String warehoueId = arrivalVerification.getWarehouseId();
+            if (ObjectUtil.isNotNull(addArrivalVerificationDetailsDTOList)){
+                for (AddArrivalVerificationDetailsDTO addArrivalVerificationDetailsDTO : addArrivalVerificationDetailsDTOList) {
+                    addArrivalVerificationDetailsDTO.setDocumentNumber(docNum);
+                    addArrivalVerificationDetailsDTO.setWarehouseId(warehoueId);
+                }
+                arrivalVerificationDetailsService.addArrivalVerificationDetails(addArrivalVerificationDetailsDTOList);
             }
-            return arrivalVerificationDetailsService.addArrivalVerificationDetails(addArrivalVerificationDetailsDTOList);
+            return result;
         } catch (Exception e) {
-            log.error("新增采购计划失败");
-            return Result.failure("系统异常，新增采购计划失败！");
+            log.error("到货检验计划失败");
+            return Result.failure("系统异常，到货检验计划失败！");
         }
     }
 

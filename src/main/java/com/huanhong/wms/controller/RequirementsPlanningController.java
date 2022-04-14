@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.jacoco.agent.rt.internal_43f5073.core.internal.flow.IFrame;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -81,10 +82,15 @@ public class RequirementsPlanningController extends BaseController {
             }
             RequirementsPlanning requirementsPlanning = (RequirementsPlanning)result.getData();
             String docNum = requirementsPlanning.getPlanNumber();
-            for (AddRequiremetsPlanningDetailsDTO addRequiremetsPlanningDetailsDTO : addRequirementsPlanningDetailsDTOList) {
-               addRequiremetsPlanningDetailsDTO.setPlanNumber(docNum);
+            String warehouseId = requirementsPlanning.getWarehouseId();
+            if (ObjectUtil.isNotNull(addRequirementsPlanningDetailsDTOList)){
+                for (AddRequiremetsPlanningDetailsDTO addRequiremetsPlanningDetailsDTO : addRequirementsPlanningDetailsDTOList) {
+                    addRequiremetsPlanningDetailsDTO.setPlanNumber(docNum);
+                    addRequiremetsPlanningDetailsDTO.setWarehouseId(warehouseId);
+                }
+                requiremetsPlanningDetailsService.addRequiremetsPlanningDetails(addRequirementsPlanningDetailsDTOList);
             }
-            return requiremetsPlanningDetailsService.addRequiremetsPlanningDetails(addRequirementsPlanningDetailsDTOList);
+            return result;
         } catch (Exception e) {
             log.error("新增需求计划失败");
             return Result.failure("系统异常，新增需求计划失败！");

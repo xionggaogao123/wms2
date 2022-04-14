@@ -92,10 +92,12 @@ public class AllocationPlanController extends BaseController {
                 }
                 AllocationPlan allocationPlan = (AllocationPlan) result.getData();
                 String docNum = allocationPlan.getAllocationNumber();
-                for (AddAllocationPlanDetailDTO addAllocationPlanDetailDTO : addAllocationPlanDetailDTOList) {
-                    addAllocationPlanDetailDTO.setAllocationNumber(docNum);
+                if (ObjectUtil.isNotNull(addAllocationPlanDetailDTOList)){
+                    for (AddAllocationPlanDetailDTO addAllocationPlanDetailDTO : addAllocationPlanDetailDTOList) {
+                        addAllocationPlanDetailDTO.setAllocationNumber(docNum);
+                    }
                 }
-                return allocationPlanDetailService.addAllocationPlanDetails(addAllocationPlanDetailDTOList);
+                return result;
             } catch (Exception e) {
                 log.error("新增调拨计划失败");
                 return Result.failure("系统异常，新增调拨计划失败！");
@@ -315,6 +317,8 @@ public class AllocationPlanController extends BaseController {
         }
     }
 
+
+
     /**
      * 新增库存记录以及更新库存信息--发起时调用
      */
@@ -363,6 +367,7 @@ public class AllocationPlanController extends BaseController {
                                         addOutboundRecordDTO.setCargoSpaceId(inventoryInformation.getCargoSpaceId());
                                         addOutboundRecordDTO.setBatch(inventoryInformation.getBatch());
                                         addOutboundRecordDTO.setOutQuantity(inventoryInformation.getInventoryCredit());
+                                        addOutboundRecordDTO.setSalesUnitPrice(inventoryInformation.getSalesUnitPrice());
                                         tempNum = tempNum.subtract(BigDecimal.valueOf(inventoryInformation.getInventoryCredit()));
                                     } else {
                                         log.error("更新库存失败");
@@ -380,6 +385,7 @@ public class AllocationPlanController extends BaseController {
                                         addOutboundRecordDTO.setCargoSpaceId(inventoryInformation.getCargoSpaceId());
                                         addOutboundRecordDTO.setBatch(inventoryInformation.getBatch());
                                         addOutboundRecordDTO.setOutQuantity(tempNum.doubleValue());
+                                        addOutboundRecordDTO.setSalesUnitPrice(inventoryInformation.getSalesUnitPrice());
                                         tempNum = tempNum.subtract(BigDecimal.valueOf(inventoryInformation.getInventoryCredit()));
                                     } else {
                                         log.error("更新库存失败");
@@ -503,6 +509,7 @@ public class AllocationPlanController extends BaseController {
         }
         return Result.success();
     }
+
 
 
 

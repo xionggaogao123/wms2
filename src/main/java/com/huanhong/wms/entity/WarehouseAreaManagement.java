@@ -18,6 +18,7 @@ public class WarehouseAreaManagement extends SuperEntity {
 
     private static final long serialVersionUID=1L;
 
+
     @ApiModelProperty(value = "子库编号")
     private String sublibraryId;
 

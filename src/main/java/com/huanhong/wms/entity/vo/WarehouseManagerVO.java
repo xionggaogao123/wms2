@@ -9,8 +9,8 @@ import lombok.Data;
 @Data
 public class WarehouseManagerVO {
 
-    @ApiModelProperty(value = "用户Id")
-    private Integer userId;
+    @ApiModelProperty(value = "登录账号")
+    private String loginName;
 
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;

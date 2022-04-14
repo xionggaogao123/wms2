@@ -4,6 +4,7 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.AllocationOutDetails;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.entity.AllocationPlanDetail;
+import com.huanhong.wms.entity.PlanUseOutDetails;
 import com.huanhong.wms.entity.dto.AddAllocationOutDetailsDTO;
 import com.huanhong.wms.entity.dto.AddAllocationPlanDetailDTO;
 import com.huanhong.wms.entity.dto.UpdateAllocationOutDetailsDTO;
@@ -48,4 +49,14 @@ public interface IAllocationOutDetailsService extends SuperService<AllocationOut
      * @return
      */
     List<AllocationOutDetails> getAllocationOutDetailsListByDocNum(String docNum);
+
+
+    /**
+     * 根据原单据编号和出库状态和仓库获取明细list
+     * @param documentNumber
+     * @param outStatus
+     * @return
+     */
+    List<AllocationOutDetails> getListAllocationOutDetailsByDocNumberAndOutStatus(String documentNumber, Integer outStatus);
+
 }

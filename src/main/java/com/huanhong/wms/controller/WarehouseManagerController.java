@@ -71,7 +71,7 @@ public class WarehouseManagerController extends BaseController {
         @PostMapping
         public Result add(@Valid @RequestBody AddWarehouseManagerDTO addWarehouseManagerDTO) {
 
-            List<WarehouseManager> warehouseManagerList = warehouseManagerService.getWarehouseManagerListByUserId(addWarehouseManagerDTO.getUserId());
+            List<WarehouseManager> warehouseManagerList = warehouseManagerService.getWarehouseManagerListByLoginName(addWarehouseManagerDTO.getLoginName());
             String warehouseId = addWarehouseManagerDTO.getWarehouseId();
             for (WarehouseManager warehouseManager:warehouseManagerList
                  ) {
@@ -90,7 +90,7 @@ public class WarehouseManagerController extends BaseController {
             if (ObjectUtil.isEmpty(warehouseManager)){
                 return Result.failure("此库管员信息不存在！");
             }
-            List<WarehouseManager> warehouseManagerList = warehouseManagerService.getWarehouseManagerListByUserId(warehouseManager.getUserId());
+            List<WarehouseManager> warehouseManagerList = warehouseManagerService.getWarehouseManagerListByLoginName(warehouseManager.getLoginName());
             String warehouseId = updateWarehouseManagerDTO.getWarehouseId();
             for (WarehouseManager warehouseManagerAnother:warehouseManagerList
             ) {
@@ -128,9 +128,9 @@ public class WarehouseManagerController extends BaseController {
 
         @ApiOperationSupport(order = 6)
         @ApiOperation(value = "根据用户ID获取管理的仓库")
-        @GetMapping("getWarehouseManagerByUserId/{userId}")
-        public Result getWarehouseManagerByUserId(@PathVariable Integer userId) {
-            List<WarehouseManager> warehouseManagerList = warehouseManagerService.getWarehouseManagerListByUserId(userId);
+        @GetMapping("getWarehouseManagerListByLoginName/{loginName}")
+        public Result getWarehouseManagerListByLoginName(@PathVariable String loginName) {
+            List<WarehouseManager> warehouseManagerList = warehouseManagerService.getWarehouseManagerListByLoginName(loginName);
             if (ObjectUtil.isEmpty(warehouseManagerList)){
                 return Result.failure("未查询到对应信息！");
             }

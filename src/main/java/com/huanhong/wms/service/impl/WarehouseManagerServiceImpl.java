@@ -49,7 +49,7 @@ public class WarehouseManagerServiceImpl extends SuperServiceImpl<WarehouseManag
         }
         //若Vo对象不为空，分别获取其中的字段，
         //并对其进行判断是否为空，这一步类似动态SQL的拼装
-        query.like(ObjectUtil.isNotEmpty(warehouseManagerVO.getUserId()), "user_id", warehouseManagerVO.getUserId());
+        query.like(ObjectUtil.isNotEmpty(warehouseManagerVO.getLoginName()), "login_name", warehouseManagerVO.getLoginName());
 
         query.like(StringUtils.isNotBlank(warehouseManagerVO.getWarehouseId()), "warehouse_id", warehouseManagerVO.getWarehouseId());
 
@@ -79,9 +79,9 @@ public class WarehouseManagerServiceImpl extends SuperServiceImpl<WarehouseManag
     }
 
     @Override
-    public List<WarehouseManager> getWarehouseManagerListByUserId(Integer userId) {
+    public List<WarehouseManager> getWarehouseManagerListByLoginName(String loginName) {
         QueryWrapper<WarehouseManager> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_id",userId);
+        queryWrapper.eq("login_name",loginName);
         return warehouseManagerMapper.selectList(queryWrapper);
     }
 }

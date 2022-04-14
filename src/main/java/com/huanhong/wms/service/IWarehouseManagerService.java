@@ -57,10 +57,10 @@ public interface IWarehouseManagerService extends SuperService<WarehouseManager>
     WarehouseManager getWarehouseManagerById(Integer id);
 
     /**
-     * 根据用户id获取此用户管理的仓库
-     * @param userId
+     * 根据登录账号获取此用户管理的仓库
+     * @param loginName
      * @return
      */
-    List<WarehouseManager> getWarehouseManagerListByUserId(Integer userId);
+    List<WarehouseManager> getWarehouseManagerListByLoginName(String loginName);
 
 }

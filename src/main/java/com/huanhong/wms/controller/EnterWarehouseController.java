@@ -96,7 +96,7 @@ public class EnterWarehouseController extends BaseController {
             }
             EnterWarehouse enterWarehouse = (EnterWarehouse) result.getData();
             String docNum = enterWarehouse.getDocumentNumber();
-            String warehouseId = addEnterWarehouseAndDetails.getAddEnterWarehouseDTO().getWarehouse();
+            String warehouseId = enterWarehouse.getWarehouse();
             List<AddEnterWarehouseDetailsDTO> addEnterWarehouseDetailsDTOList = addEnterWarehouseAndDetails.getAddEnterWarehouseDetailsDTOList();
             if (ObjectUtil.isNotNull(addEnterWarehouseDetailsDTOList)) {
                 for (AddEnterWarehouseDetailsDTO details : addEnterWarehouseDetailsDTOList
@@ -104,16 +104,13 @@ public class EnterWarehouseController extends BaseController {
                     details.setOriginalDocumentNumber(docNum);
                     details.setWarehouse(warehouseId);
                 }
-                // 01AA0000
-                Result resultAdd = enterWarehouseDetailsService.addEnterWarehouseDetails(addEnterWarehouseDetailsDTOList);
-
-                return resultAdd;
+                enterWarehouseDetailsService.addEnterWarehouseDetails(addEnterWarehouseDetailsDTOList);
             }
+            return result;
         } catch (Exception e) {
             log.error("添加入库单出错，异常", e);
             return Result.failure("系统异常：入库单添加失败。");
         }
-        return Result.failure("系统异常，未知错误");
     }
 
     @ApiOperationSupport(order = 3)

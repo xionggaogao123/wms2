@@ -57,6 +57,7 @@ public interface IPlanUseOutDetailsService extends SuperService<PlanUseOutDetail
      */
     List<PlanUseOutDetails> getListPlanUseOutDetailsByDocNumberAndWarehosueAndOutStatus(String documentNumber, String warehouseId,Integer outStatus);
 
+
     /**
      * 根据明细ID获取明细信息
      * @param id

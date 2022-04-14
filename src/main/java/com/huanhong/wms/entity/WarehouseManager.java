@@ -18,9 +18,11 @@ public class WarehouseManager extends SuperEntity {
 
     private static final long serialVersionUID=1L;
 
-    @ApiModelProperty(value = "用户Id")
-    private Integer userId;
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "登录账号")
+    private String loginName;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;
 

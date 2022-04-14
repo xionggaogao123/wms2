@@ -8,13 +8,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.AllocationOutDetails;
-import com.huanhong.wms.entity.AllocationPlan;
-import com.huanhong.wms.entity.AllocationPlanDetail;
+import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.AllocationOutVO;
-import com.huanhong.wms.service.IAllocationOutDetailsService;
-import com.huanhong.wms.service.IAllocationPlanDetailService;
+import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -23,11 +20,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RestController;
 import com.huanhong.wms.BaseController;
-import com.huanhong.wms.entity.AllocationOut;
 import com.huanhong.wms.mapper.AllocationOutMapper;
-import com.huanhong.wms.service.IAllocationOutService;
+
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +40,18 @@ public class AllocationOutController extends BaseController {
 
     @Resource
     private IAllocationOutDetailsService allocationOutDetailsService;
+
+    @Resource
+    private IOutboundRecordService outboundRecordService;
+
+    @Resource
+    private IMaterialService materialService;
+
+    @Resource
+    private IInventoryInformationService inventoryInformationService;
+
+    @Resource
+    private IWarehouseManagementService warehouseManagementService;
 
     @ApiImplicitParams({
         @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -146,6 +155,77 @@ public class AllocationOutController extends BaseController {
         jsonObject.put("details", allocationOutDetailsList);
         return Result.success(jsonObject);
         }
+
+
+
+    @ApiOperationSupport(order = 7)
+    @ApiOperation(value = "PDA根据调拨出库单Id获取调拨出库明细list加出库记录（预生成、锁库）包含物料详情")
+    @GetMapping("/getAllocationOutAndOutboundById")
+    public Result getAllocationOutAndOutboundById(@RequestParam Integer id) {
+
+        try {
+
+            List listResult = new ArrayList();
+
+            //加一层主表数据
+            JSONObject jsonObjectMain = new JSONObject();
+
+            //存储于list
+            JSONObject jsonObjectList = new JSONObject();
+
+            //根据单据id获取出库单主表
+            AllocationOut allocationOut = allocationOutService.getAllocationOutById(id);
+
+            if (ObjectUtil.isEmpty(allocationOut)){
+                return Result.failure("未查询到单据信息！");
+            }
+
+            List<AllocationOutDetails> allocationOutDetailsList;
+            /**
+             * 判断out_status
+             * 0-未出库   1-部分出库   2-全部出库
+             */
+            for (int i = 0; i < 3; i++ ){
+                allocationOutDetailsList = allocationOutDetailsService.getListAllocationOutDetailsByDocNumberAndOutStatus(allocationOut.getAllocationOutNumber(),i);
+                if (ObjectUtil.isNotNull(allocationOutDetailsList)) {
+                    jsonObjectList.put(String.valueOf(i), getOut(allocationOutDetailsList));
+                }
+            }
+
+            listResult.add(jsonObjectList);
+            //主表
+            String warehouseName = warehouseManagementService.getWarehouseByWarehouseId(allocationOut.getSendWarehouse()).getWarehouseName();
+            jsonObjectMain.put("warehouseName",warehouseName);
+            jsonObjectMain.put("panUseOut",allocationOut);
+            jsonObjectMain.put("list",listResult);
+            return Result.success(jsonObjectMain);
+
+        }catch (Exception e){
+            log.error("PDA查询领料出库明细异常",e);
+            return Result.failure("PDA查询领料出库明细异常!");
+        }
+    }
+
+    public List<JSONObject> getOut(List<AllocationOutDetails> allocationOutDetailsList) {
+        List<JSONObject> listResult = new ArrayList<>();
+        for (AllocationOutDetails allocationOutDetails : allocationOutDetailsList
+        ) {
+            JSONObject jsonObject = new JSONObject();
+            AllocationOut allocationOut = allocationOutService.getAllocationOutByDocNumber(allocationOutDetails.getAllocationOutNumber());
+            List<OutboundRecord> outboundRecordList = outboundRecordService.getOutboundRecordListByDocNumAndWarehouseId(allocationOutDetails.getAllocationOutNumber(),allocationOut.getSendWarehouse());
+            if (ObjectUtil.isEmpty(outboundRecordList)) {
+                Result.failure("未查询到出库记录单相关信息");
+            }
+            jsonObject.put("planUseOutDetails", allocationOutDetails);
+            jsonObject.put("outboundList", outboundRecordList);
+            jsonObject.put("material", materialService.getMeterialByMeterialCode(allocationOutDetails.getMaterialCoding()));
+            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(allocationOutDetails.getMaterialCoding(),allocationOut.getSendWarehouse());
+            jsonObject.put("inventory",inventoryInformationList);
+            listResult.add(jsonObject);
+        }
+        return listResult;
+    }
+
 
 }
 

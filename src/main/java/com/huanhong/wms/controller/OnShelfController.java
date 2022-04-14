@@ -298,12 +298,13 @@ public class OnShelfController extends BaseController {
         JSONObject jsonObjectResult = new JSONObject();
         //判断历史货位是否为空
         if (ObjectUtil.isAllEmpty(inventoryInformation)){
-            //判断历史货位是否为空，推荐物料分类小类的同货架的邻近货位
+            //若历史货位为空，推荐物料分类小类的同货架的邻近货位
             String materialType = materialCoding.substring(0,6);
             QueryWrapper<InventoryInformation> wrapper = new QueryWrapper<>();
             wrapper.select("priority_storage_location");
             wrapper.likeRight("material_coding", materialType);
             wrapper.likeRight("cargo_space_id",warehouseId);
+            wrapper.notLike("cargo_space_id", "0000");
             List<InventoryInformation> inventoryInformationList = inventoryInformationMapper.selectList(wrapper);
             //查询同小类物料为空时，随机推荐通五个未满货位
             if (ObjectUtil.isEmpty(inventoryInformationList)){
@@ -311,6 +312,7 @@ public class OnShelfController extends BaseController {
                 cargoSpaceManagementQueryWrapper .select("cargo_space_id","full");
                 cargoSpaceManagementQueryWrapper .likeRight("cargo_space_id",warehouseId);
                 cargoSpaceManagementQueryWrapper .eq("full",0).or().eq("full",1);
+                cargoSpaceManagementQueryWrapper .notLike("cargo_space_id", "0000");
                 cargoSpaceManagementQueryWrapper .last("limit 5");
                 List<CargoSpaceManagement> cargoSpaceManagementList = cargoSpaceManagementMapper.selectList(cargoSpaceManagementQueryWrapper);
                 JSONArray jsonArrayRandom = new JSONArray();
@@ -374,8 +376,10 @@ public class OnShelfController extends BaseController {
             JSONObject jsonObject = new JSONObject();
             CargoSpaceManagement cargoSpaceManagement = iCargoSpaceManagementService.getCargoSpaceByCargoSpaceId(cargospaceId);
             //货位不存在且不为满
-            if (ObjectUtil.isNotEmpty(cargoSpaceManagement)&&cargoSpaceManagement.getFull()!=2){
-                jsonObject.put("cargoSpaceId",cargoSpaceManagement.getCargoSpaceId());
+            String cargoSpaceId = cargoSpaceManagement.getCargoSpaceId();
+            String tempCargoSpaceId = warehouseId+"01AA0000";
+            if (ObjectUtil.isNotEmpty(cargoSpaceManagement)&&cargoSpaceManagement.getFull()!=2&&!tempCargoSpaceId.equals(cargoSpaceId)){
+                jsonObject.put("cargoSpaceId",cargoSpaceId);
                 jsonObject.put("full",cargoSpaceManagement.getFull());
                 jsonArrayHistoryCargoSpace.add(jsonObject);
             }
@@ -384,7 +388,6 @@ public class OnShelfController extends BaseController {
             }
         }
         jsonObjectResult.put("CargoSpaceIds",jsonArrayHistoryCargoSpace);
-
 
 
         return Result.success(jsonObjectResult);

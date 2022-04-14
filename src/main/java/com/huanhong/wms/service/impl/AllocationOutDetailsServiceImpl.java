@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.AllocationOutDetails;
 import com.huanhong.wms.entity.AllocationPlanDetail;
+import com.huanhong.wms.entity.PlanUseOutDetails;
 import com.huanhong.wms.entity.dto.AddAllocationOutDetailsDTO;
 import com.huanhong.wms.entity.dto.AddAllocationPlanDetailDTO;
 import com.huanhong.wms.entity.dto.UpdateAllocationOutDetailsDTO;
@@ -88,5 +89,20 @@ public class AllocationOutDetailsServiceImpl extends SuperServiceImpl<Allocation
         QueryWrapper<AllocationOutDetails> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("allocation_out_number", docNum);
         return allocationOutDetailsMapper.selectList(queryWrapper);
+    }
+
+    /**
+     * 区分状态
+     * @param documentNumber
+     * @param outStatus
+     * @return
+     */
+    @Override
+    public List<AllocationOutDetails> getListAllocationOutDetailsByDocNumberAndOutStatus(String documentNumber, Integer outStatus) {
+        QueryWrapper<AllocationOutDetails>  queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("allocation_out_number",documentNumber);
+        queryWrapper.eq("out_status",outStatus);
+        List<AllocationOutDetails> listData = allocationOutDetailsMapper.selectList(queryWrapper);
+        return listData;
     }
 }

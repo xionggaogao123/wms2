@@ -370,6 +370,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                         }
                         //获取此单据下的明细单，校验批准数量是否等于应出数量，若不同回滚库存并更新详细信息
                         Result result1 = planUseOutService.updateOutboundRecordAndInventory(planUseOut);
+                        log.info("result1:{}",result1);
                         if (!result1.isOk()) {
                             return result1;
                         }

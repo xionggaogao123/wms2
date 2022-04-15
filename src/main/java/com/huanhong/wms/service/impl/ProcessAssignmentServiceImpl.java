@@ -346,44 +346,10 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
         if (update <= 0) {
             return Result.failure("数据更新失败，请稍后再试");
         }
-        if (param.getAccounts() != null) {
-            if (param.getAccounts().size() > 0) {
-                // TODO 推送抄送消息
-                List<String> accounts = param.getAccounts();
-                List<Message> messages = new ArrayList<>();
-                for (String account : accounts) {
-                    User receiver = userMapper.getUserByAccount(account);
-                    if (receiver == null) {
-                        continue;
-                    }
-                    Message message = new Message();
-                    message.setStatus(0);
-                    message.setUserName(receiver.getUserName());
-                    message.setUserId(receiver.getId());
-                    message.setDocumentNumber(processAssignment.getDocumentNumber());
-                    message.setObjectId(processAssignment.getObjectId());
-                    message.setObjectType(processAssignment.getObjectType());
-                    message.setType(0);
-                    message.setHandleUserId(user.getId());
-                    message.setHandleUserName(user.getUserName());
-                    message.setPlanClassification(processAssignment.getPlanClassification());
-                    message.setProcessInstanceId(processAssignment.getProcessInstanceId());
-                    messages.add(message);
-                }
-                if (messages.size() > 0) {
-                    boolean batchAdd = messageService.saveBatch(messages);
-                    if (!batchAdd) {
-                        return Result.failure("消息抄送失败");
-                    }
-                    //TODO 推送消息
-
-                }
-
-            }
-        }
         // 判断当前流程实例任务是否完成，如果已完成更新表单状态
         String processInstanceId = processAssignment.getProcessInstanceId();
         Result countTask = TaskQueryUtil.countTask(processInstanceId);
+        log.info("countTask:{}",countTask);
         if (countTask.isOk()) {
             Long count = Convert.toLong(countTask.getData());
             if (count < 1) {
@@ -514,6 +480,42 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                 }
             }
         }
+        if (param.getAccounts() != null) {
+            if (param.getAccounts().size() > 0) {
+                // TODO 推送抄送消息
+                List<String> accounts = param.getAccounts();
+                List<Message> messages = new ArrayList<>();
+                for (String account : accounts) {
+                    User receiver = userMapper.getUserByAccount(account);
+                    if (receiver == null) {
+                        continue;
+                    }
+                    Message message = new Message();
+                    message.setStatus(0);
+                    message.setUserName(receiver.getUserName());
+                    message.setUserId(receiver.getId());
+                    message.setDocumentNumber(processAssignment.getDocumentNumber());
+                    message.setObjectId(processAssignment.getObjectId());
+                    message.setObjectType(processAssignment.getObjectType());
+                    message.setType(0);
+                    message.setHandleUserId(user.getId());
+                    message.setHandleUserName(user.getUserName());
+                    message.setPlanClassification(processAssignment.getPlanClassification());
+                    message.setProcessInstanceId(processAssignment.getProcessInstanceId());
+                    messages.add(message);
+                }
+                if (messages.size() > 0) {
+                    boolean batchAdd = messageService.saveBatch(messages);
+                    if (!batchAdd) {
+                        return Result.failure("消息抄送失败");
+                    }
+                    //TODO 推送消息
+
+                }
+
+            }
+        }
+
         return Result.success();
 
     }

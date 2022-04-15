@@ -141,6 +141,7 @@ public class PlanUseOutController extends BaseController {
                 ) {
                     details.setUsePlanningDocumentNumber(docNum);
                     details.setWarehouseId(warehouseId);
+                    details.setApprovalsQuantity(details.getRequisitionQuantity());
                 }
                 planUseOutDetailsService.addPlanUseOutDetails(addPlanUseOutDetailsDTOList);
             }

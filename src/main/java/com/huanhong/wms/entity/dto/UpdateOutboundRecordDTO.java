@@ -7,6 +7,7 @@ import lombok.Data;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
@@ -26,12 +27,15 @@ public class UpdateOutboundRecordDTO {
     @ApiModelProperty(value = "库房ID")
     private String warehouseId;
 
+    @NotBlank
     @ApiModelProperty(value = "物料编码")
     private String materialCoding;
 
+    @NotBlank
     @ApiModelProperty(value = "货位编号")
     private String cargoSpaceId;
 
+    @NotBlank
     @ApiModelProperty(value = "批次")
     private String batch;
 
@@ -42,8 +46,6 @@ public class UpdateOutboundRecordDTO {
     @ApiModelProperty(value = "出货数量")
     private Double outQuantity;
 
-    @ApiModelProperty(value = "详细信息（json 货位 批次 数量）")
-    private String details;
 
     @Min(0)
     @Max(1)

@@ -74,6 +74,13 @@ public interface IPlanUseOutService extends SuperService<PlanUseOut> {
     PlanUseOut getPlanUseOutByProcessInstanceId(String processInstanceId);
 
     Result addOutboundRecordUpdateInventory(PlanUseOut planUseOut);
+
+    /**
+     * 检查库存
+     * @param planUseOut
+     * @return
+     */
+    Result checkStock(PlanUseOut planUseOut);
     /**
      * 完整审批时-如果批准数量和应出数量不一致--回滚库存
      * 出库明细单据已更新,需要根据批准数量-应出数量=出库数量回滚部分库存并更新出库记录

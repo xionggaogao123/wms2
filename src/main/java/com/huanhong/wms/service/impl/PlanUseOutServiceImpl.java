@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.sql.ResultSet;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -320,8 +319,7 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
          * 1.warehouseId和materialCoding
          */
         if (ObjectUtil.isNotEmpty(planUseOutDetailsList)) {
-            for (PlanUseOutDetails planUseOutDetails : planUseOutDetailsList
-            ) {
+            for (PlanUseOutDetails planUseOutDetails : planUseOutDetailsList) {
                 BigDecimal nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndWarehouseId(planUseOutDetails.getMaterialCoding(), planUseOutDetails.getWarehouseId()));
                 BigDecimal planNum = BigDecimal.valueOf(planUseOutDetails.getRequisitionQuantity());
                 int event = nowNum.compareTo(planNum);
@@ -409,6 +407,30 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
             return Result.failure("未查询到明细单据信息");
         }
         return Result.failure("未知错误");
+    }
+
+    @Override
+    public Result checkStock(PlanUseOut planUseOut) {
+        List<PlanUseOutDetails> planUseOutDetailsList = planUseOutDetailsService
+                .getListPlanUseOutDetailsByDocNumberAndWarehosue(planUseOut.getDocumentNumber(), planUseOut.getWarehouseId());
+        if (ObjectUtil.isEmpty(planUseOutDetailsList)) {
+            return  Result.failure("未查询到明细单据信息");
+        }
+        for (PlanUseOutDetails planUseOutDetails : planUseOutDetailsList) {
+            BigDecimal nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndWarehouseId(planUseOutDetails.getMaterialCoding(), planUseOutDetails.getWarehouseId()));
+            BigDecimal planNum = BigDecimal.valueOf(planUseOutDetails.getRequisitionQuantity());
+            int event = nowNum.compareTo(planNum);
+            /**
+             * event = -1 : planNuM > nowNum
+             * event =  0 : planNuM = nowNum
+             * event =  1 : planNuM < nowNum
+             */
+            if (event < 0) {
+                return Result.failure("物料：" + planUseOutDetails.getMaterialCoding() + " 库存不足，请重拟领用单！");
+            }
+        }
+
+        return Result.success();
     }
 
     @Override

@@ -37,6 +37,7 @@ public class OutboundRecordServiceImpl extends SuperServiceImpl<OutboundRecordMa
 
     /**
      * 分页查询
+     *
      * @param outboundRecordPage
      * @param outboundRecordVO
      * @return
@@ -61,19 +62,19 @@ public class OutboundRecordServiceImpl extends SuperServiceImpl<OutboundRecordMa
 
         query.like(StringUtils.isNotBlank(outboundRecordVO.getWarehouseId()), "warehouse_id", outboundRecordVO.getWarehouseId());
 
-        query.like(StringUtils.isNotBlank(outboundRecordVO.getMaterialCoding()),"material_coding",outboundRecordVO.getMaterialCoding());
+        query.like(StringUtils.isNotBlank(outboundRecordVO.getMaterialCoding()), "material_coding", outboundRecordVO.getMaterialCoding());
 
-        query.like(StringUtils.isNotBlank(outboundRecordVO.getCargoSpaceId()),"cargo_space_id",outboundRecordVO.getCargoSpaceId());
+        query.like(StringUtils.isNotBlank(outboundRecordVO.getCargoSpaceId()), "cargo_space_id", outboundRecordVO.getCargoSpaceId());
 
-        query.like(StringUtils.isNotBlank(outboundRecordVO.getBatch()),"batch",outboundRecordVO.getBatch());
+        query.like(StringUtils.isNotBlank(outboundRecordVO.getBatch()), "batch", outboundRecordVO.getBatch());
 
-        query.like(ObjectUtil.isNotNull(outboundRecordVO.getStatus()),"status",outboundRecordVO.getStatus());
+        query.like(ObjectUtil.isNotNull(outboundRecordVO.getStatus()), "status", outboundRecordVO.getStatus());
 
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         /**
          * 创建时间时间区间
          */
-        if (ObjectUtil.isNotEmpty(outboundRecordVO.getCreateDateStart())&&ObjectUtil.isNotEmpty(outboundRecordVO.getCreateDateEnd())){
+        if (ObjectUtil.isNotEmpty(outboundRecordVO.getCreateDateStart()) && ObjectUtil.isNotEmpty(outboundRecordVO.getCreateDateEnd())) {
             String enterDateStart = dtf1.format(outboundRecordVO.getCreateDateStart());
             String enterDateEnd = dtf1.format(outboundRecordVO.getCreateDateEnd());
             /**
@@ -83,38 +84,42 @@ public class OutboundRecordServiceImpl extends SuperServiceImpl<OutboundRecordMa
                     .apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + enterDateEnd + "')");
 
         }
-        return outboundRecordMapper.selectPage(outboundRecordPage,query);
+        return outboundRecordMapper.selectPage(outboundRecordPage, query);
     }
 
     @Override
     public Result addOutboundRecord(AddOutboundRecordDTO addOutboundRecordDTO) {
-        OutboundRecord outboundRecord = new OutboundRecord();
-        BeanUtil.copyProperties(addOutboundRecordDTO,outboundRecord);
+        OutboundRecord outboundRecord = getOutboundRecordByDocNumAndCargoSpaceAndMaterialCodingAndBatch(addOutboundRecordDTO.getDocumentNumber(), addOutboundRecordDTO.getCargoSpaceId(), addOutboundRecordDTO.getMaterialCoding(), addOutboundRecordDTO.getBatch());
+        if (null != outboundRecord) {
+            return Result.success(outboundRecord);
+        }
+        outboundRecord = new OutboundRecord();
+        BeanUtil.copyProperties(addOutboundRecordDTO, outboundRecord);
         int add = outboundRecordMapper.insert(outboundRecord);
-        return add>0 ? Result.success(getOutboundRecordByDocNumAndCargoSpaceAndMaterialCodingAndBatch(addOutboundRecordDTO.getDocumentNumber(),addOutboundRecordDTO.getCargoSpaceId(),addOutboundRecordDTO.getMaterialCoding(),addOutboundRecordDTO.getBatch())) : Result.failure("新增失败");
+        return add > 0 ? Result.success(getOutboundRecordByDocNumAndCargoSpaceAndMaterialCodingAndBatch(addOutboundRecordDTO.getDocumentNumber(), addOutboundRecordDTO.getCargoSpaceId(), addOutboundRecordDTO.getMaterialCoding(), addOutboundRecordDTO.getBatch())) : Result.failure("新增失败");
     }
 
     @Override
     public Result addOutboundRecordList(List<AddOutboundRecordDTO> addOutboundRecordDTOList) {
         int count = 0;
         for (AddOutboundRecordDTO addOutboundRecordDTO : addOutboundRecordDTOList
-             ) {
+        ) {
             OutboundRecord outboundRecord = new OutboundRecord();
-            BeanUtil.copyProperties(addOutboundRecordDTO,outboundRecord);
-            int add =  outboundRecordMapper.insert(outboundRecord);
-            if (add>1){
+            BeanUtil.copyProperties(addOutboundRecordDTO, outboundRecord);
+            int add = outboundRecordMapper.insert(outboundRecord);
+            if (add > 1) {
                 count++;
             }
         }
-        return count==addOutboundRecordDTOList.size() ? Result.success("新增记录成功") : Result.failure("新增记录失败");
+        return count == addOutboundRecordDTOList.size() ? Result.success("新增记录成功") : Result.failure("新增记录失败");
     }
 
     @Override
     public Result updateOutboundRecord(UpdateOutboundRecordDTO updateOutboundRecordDTO) {
         OutboundRecord outboundRecord = new OutboundRecord();
-        BeanUtil.copyProperties(updateOutboundRecordDTO,outboundRecord);
+        BeanUtil.copyProperties(updateOutboundRecordDTO, outboundRecord);
         int update = outboundRecordMapper.updateById(outboundRecord);
-        return update>0 ? Result.success("更新成功！") : Result.failure("更新失败！");
+        return update > 0 ? Result.success("更新成功！") : Result.failure("更新失败！");
     }
 
     @Override
@@ -124,28 +129,29 @@ public class OutboundRecordServiceImpl extends SuperServiceImpl<OutboundRecordMa
 
     @Override
     public List<OutboundRecord> getOutboundRecordListByDocNumAndWarehouseId(String docNum, String warehouseId) {
-        QueryWrapper queryWrapper =  new QueryWrapper();
-        queryWrapper.eq("document_number",docNum);
-        queryWrapper.eq("warehouse_id",warehouseId);
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("document_number", docNum);
+        queryWrapper.eq("warehouse_id", warehouseId);
         return outboundRecordMapper.selectList(queryWrapper);
     }
 
     @Override
     public List<OutboundRecord> getOutboundRecordByDocNumAndWarehouseIdAndMaterialCoding(String docNum, String warehouseId, String materialCoding) {
-        QueryWrapper queryWrapper =  new QueryWrapper();
-        queryWrapper.eq("document_number",docNum);
-        queryWrapper.eq("material_coding",materialCoding);
-        queryWrapper.eq("warehouse_id",warehouseId);
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("document_number", docNum);
+        queryWrapper.eq("material_coding", materialCoding);
+        queryWrapper.eq("warehouse_id", warehouseId);
         return outboundRecordMapper.selectList(queryWrapper);
     }
 
     @Override
     public OutboundRecord getOutboundRecordByDocNumAndCargoSpaceAndMaterialCodingAndBatch(String docNum, String cargoSpace, String materialCoding, String batch) {
-        QueryWrapper queryWrapper =  new QueryWrapper();
-        queryWrapper.eq("document_number",docNum);
-        queryWrapper.eq("material_coding",materialCoding);
-        queryWrapper.eq("cargo_space_id",cargoSpace);
-        queryWrapper.eq("batch",batch);
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.eq("document_number", docNum);
+        queryWrapper.eq("material_coding", materialCoding);
+        queryWrapper.eq("cargo_space_id", cargoSpace);
+        queryWrapper.eq("batch", batch);
+        queryWrapper.last("limit 1");
         return outboundRecordMapper.selectOne(queryWrapper);
     }
 }

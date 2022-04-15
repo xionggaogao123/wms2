@@ -6,6 +6,7 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.EnterWarehouse;
 import com.huanhong.wms.entity.dto.AddEnterWarehouseDTO;
 import com.huanhong.wms.entity.dto.UpdateEnterWarehouseDTO;
+import com.huanhong.wms.entity.param.MaterialPriceParam;
 import com.huanhong.wms.entity.vo.EnterWarehouseVO;
 
 /**
@@ -64,4 +65,5 @@ public interface IEnterWarehouseService extends SuperService<EnterWarehouse> {
      */
     EnterWarehouse getEnterWarehouseByProcessInstanceId(String processInstanceId);
 
+    Result<Object> getMaterialPriceByParam(MaterialPriceParam param);
 }

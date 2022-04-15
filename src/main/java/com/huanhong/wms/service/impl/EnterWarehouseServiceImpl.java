@@ -13,7 +13,9 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.EnterWarehouse;
 import com.huanhong.wms.entity.dto.AddEnterWarehouseDTO;
 import com.huanhong.wms.entity.dto.UpdateEnterWarehouseDTO;
+import com.huanhong.wms.entity.param.MaterialPriceParam;
 import com.huanhong.wms.entity.vo.EnterWarehouseVO;
+import com.huanhong.wms.entity.vo.MaterialPriceVO;
 import com.huanhong.wms.mapper.EnterWarehouseMapper;
 import com.huanhong.wms.service.IEnterWarehouseService;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -266,5 +272,13 @@ public class EnterWarehouseServiceImpl extends SuperServiceImpl<EnterWarehouseMa
         queryWrapper.eq("process_instance_id",processInstanceId);
         EnterWarehouse enterWarehouse = enterWarehouseMapper.selectOne(queryWrapper);
         return enterWarehouse;
+    }
+
+    @Override
+    public Result<Object> getMaterialPriceByParam(MaterialPriceParam param) {
+        Map<String, List<MaterialPriceVO>> map = new HashMap<>();
+        List<MaterialPriceVO> list = enterWarehouseMapper.getMaterialPriceList(param);
+        map = list.stream().collect(Collectors.groupingBy(MaterialPriceVO::getMaterialName));
+        return Result.success(map);
     }
 }

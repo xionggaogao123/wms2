@@ -18,7 +18,9 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.User;
 import com.huanhong.wms.entity.dto.LoginDTO;
 import com.huanhong.wms.entity.param.DeptMaterialParam;
+import com.huanhong.wms.entity.param.MaterialPriceParam;
 import com.huanhong.wms.properties.OssProperties;
+import com.huanhong.wms.service.IEnterWarehouseService;
 import com.huanhong.wms.service.IRequirementsPlanningService;
 import com.huanhong.wms.service.IUserService;
 import com.huanhong.wms.service.IWarehouseManagementService;
@@ -53,6 +55,9 @@ public class DataController extends BaseController {
     @Resource
     private IRequirementsPlanningService requirementsPlanningService;
 
+    @Resource
+    private IEnterWarehouseService enterWarehouseService;
+
 
 
     @ApiOperation(value = "小程序首页")
@@ -71,16 +76,16 @@ public class DataController extends BaseController {
 
     @ApiOperation(value = "物料价格波动")
     @GetMapping("/price")
-    public Result<Object> materialPrice(DeptMaterialParam param) {
+    public Result<Object> materialPrice(MaterialPriceParam param) {
         LoginUser loginUser = this.getLoginUser();
-        return requirementsPlanningService.getDeptMaterialNeedAndUseByParam(param);
+        return enterWarehouseService.getMaterialPriceByParam(param);
     }
 
     @ApiOperation(value = "利润率")
     @GetMapping("/profit")
-    public Result<Object> materialProfit(DeptMaterialParam param) {
+    public Result<Object> materialProfit() {
         LoginUser loginUser = this.getLoginUser();
-        return requirementsPlanningService.getDeptMaterialNeedAndUseByParam(param);
+        return null ;
     }
 
 }

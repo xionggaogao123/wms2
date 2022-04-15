@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huanhong.wms.mapper.EnterWarehouseMapper">
+
+
+    <select id="getMaterialPriceList" resultType="com.huanhong.wms.entity.vo.MaterialPriceVO">
+        SELECT
+        m.material_name ,
+        ew.create_time ,
+        ewd.material_coding ,
+        ewd.unit_price_without_tax ,
+        ewd.unit_price_including_tax
+        FROM
+        enter_warehouse ew
+        LEFT JOIN enter_warehouse_details ewd ON ewd.original_document_number = ew.document_number
+        AND ewd.del = 0
+        LEFT JOIN material m ON m.material_coding = ewd.material_coding
+        WHERE
+        ew.del = 0
+        AND state = 3
+        AND ewd.material_coding IS NOT NULL
+        AND m.material_name IS NOT NULL
+        <if test="materialCoding != null">and m.material_coding = #{materialCoding}</if>
+        <if test="materialName != null">and m.material_name = #{materialName}</if>
+        <if test="startTime != null">and rp.createTime > #{startTime}</if>
+        <if test="endTime != null">and rp.createTime lt; #{endTime}</if>
+        ORDER BY ew.create_time
+    </select>
+</mapper>

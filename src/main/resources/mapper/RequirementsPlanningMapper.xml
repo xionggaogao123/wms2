@@ -16,6 +16,10 @@
         WHERE
             rp.del = 0
           AND rp.plan_status = 3
+        <if test="deptId != null">and d.id = #{deptId}</if>
+        <if test="materialCoding != null">and m.material_coding = #{materialCoding}</if>
+        <if test="startTime != null">and rp.createTime > #{startTime}</if>
+        <if test="endTime != null">and rp.createTime lt; #{endTime}</if>
         GROUP BY
             rpd.material_coding
     </select>

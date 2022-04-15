@@ -303,7 +303,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
             return Result.failure("任务ID不得为空");
         }
         String taskId = param.getTaskId();
-        ProcessAssignment processAssignment = processAssignmentMapper.selectList(new QueryWrapper<ProcessAssignment>().eq("task_id", taskId).eq("status", 0)).get(0);
+        ProcessAssignment processAssignment = processAssignmentMapper.selectOne(new QueryWrapper<ProcessAssignment>().eq("task_id", taskId).eq("status", 0).last("limit 1"));
         if (processAssignment == null) {
             return Result.failure("该任务不存在");
         }

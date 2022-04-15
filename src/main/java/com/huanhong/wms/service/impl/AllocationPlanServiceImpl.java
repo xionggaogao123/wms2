@@ -10,10 +10,7 @@ import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.AllocationPlan;
-import com.huanhong.wms.entity.AllocationPlanDetail;
-import com.huanhong.wms.entity.InventoryInformation;
-import com.huanhong.wms.entity.OutboundRecord;
+import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.AllocationPlanVO;
 import com.huanhong.wms.mapper.AllocationPlanMapper;
@@ -26,7 +23,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -296,6 +292,30 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
             return Result.failure("未查询到明细单据信息");
         }
         return Result.failure("未知错误");
+    }
+
+    @Override
+    public Result checkStock(AllocationPlan allocationPlan) {
+        List<AllocationPlanDetail> allocationPlanDetailsList = allocationPlanDetailService
+                .getAllocationPlanDetailsListByDocNum(allocationPlan.getAllocationNumber());
+        if (ObjectUtil.isEmpty(allocationPlanDetailsList)) {
+            return  Result.failure("未查询到明细单据信息");
+        }
+        for (AllocationPlanDetail allocationPlanDetail : allocationPlanDetailsList) {
+            BigDecimal nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndBatchAndWarehouseId(allocationPlanDetail.getMaterialCoding(),allocationPlanDetail.getBatch(), allocationPlan.getSendWarehouse()));
+            BigDecimal planNum = BigDecimal.valueOf(allocationPlanDetail.getRequestQuantity());
+            int event = nowNum.compareTo(planNum);
+            /**
+             * event = -1 : planNuM > nowNum
+             * event =  0 : planNuM = nowNum
+             * event =  1 : planNuM < nowNum
+             */
+            if (event < 0) {
+                return Result.failure("物料：" + allocationPlanDetail.getMaterialCoding() + " 库存不足，请重拟领用单！");
+            }
+        }
+
+        return Result.success();
     }
 
     @Override

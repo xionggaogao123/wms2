@@ -65,5 +65,7 @@ public interface IAllocationPlanService extends SuperService<AllocationPlan> {
 
     Result addOutboundRecordUpdateInventory(AllocationPlan allocationPlan);
 
+    Result checkStock(AllocationPlan allocationPlan);
+
     Result updateOutboundRecordAndInventory(AllocationPlan allocationPlan);
 }

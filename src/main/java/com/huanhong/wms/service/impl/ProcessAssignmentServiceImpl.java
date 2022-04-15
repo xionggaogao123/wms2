@@ -349,7 +349,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
         // 判断当前流程实例任务是否完成，如果已完成更新表单状态
         String processInstanceId = processAssignment.getProcessInstanceId();
         Result countTask = TaskQueryUtil.countTask(processInstanceId);
-        log.info("countTask:{}",countTask);
+        log.info("countTask:{}", countTask);
         if (countTask.isOk()) {
             Long count = Convert.toLong(countTask.getData());
             if (count < 1) {
@@ -370,7 +370,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                         }
                         //获取此单据下的明细单，校验批准数量是否等于应出数量，若不同回滚库存并更新详细信息
                         Result result1 = planUseOutService.updateOutboundRecordAndInventory(planUseOut);
-                        log.info("result1:{}",result1);
+                        log.info("result1:{}", result1);
                         if (!result1.isOk()) {
                             return result1;
                         }
@@ -523,23 +523,49 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
 
     @Override
     public Result start(StartProcessParam param) {
+        Integer id = param.getId();
+        PlanUseOut planUseOut = null;
+        AllocationPlan allocationPlan = null;
+        // 出库先验证库存是否够 不够直接返回
+        switch (param.getProcessDefinitionKey()) {
+            //出库
+            case "plan_use_out":
+                /**
+                 * 获取出库单信息
+                 */
+                planUseOut = planUseOutMapper.selectById(id);
+                if (!ObjectUtil.isNotNull(planUseOut)) {
+                    return Result.failure("出库单不存在或已被删除,无法进入流程引擎");
+                }
+                Result checkStock = planUseOutService.checkStock(planUseOut);
+                if (!checkStock.isOk()) {
+                    return checkStock;
+                }
+                break;
+            case "allocation_plan":
+                allocationPlan = allocationPlanMapper.selectById(id);
+
+                if (!ObjectUtil.isNotEmpty(allocationPlan)) {
+                    return Result.failure("调拨计划单不存在或已被删除,无法进入流程引擎");
+                }
+                Result checkStock2 = allocationPlanService.checkStock(allocationPlan);
+                if (!checkStock2.isOk()) {
+                    return checkStock2;
+                }
+                break;
+            default:
+                break;
+        }
+        // 前置条件判断完成 启动流程
         Result result = TaskQueryUtil.start(param);
         if (result.isOk()) {
-            Integer id = param.getId();
+            // 流程启动成功  处理业务数据
             String processInstanceId = Convert.toStr(result.getData());
             int f = 0;
             // 更新数据
             switch (param.getProcessDefinitionKey()) {
                 //出库
                 case "plan_use_out":
-                    /**
-                     * 获取出库单信息
-                     */
-                    PlanUseOut planUseOut = planUseOutMapper.selectById(id);
-
-                    if (!ObjectUtil.isNotNull(planUseOut)) {
-                        return Result.failure("出库单不存在或已被删除,无法进入流程引擎");
-                    }
                     PlanUseOut tempPlanUseOut = new PlanUseOut();
                     tempPlanUseOut.setId(id);
                     tempPlanUseOut.setProcessInstanceId(processInstanceId);
@@ -574,11 +600,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                     break;
                 //    调拨
                 case "allocation_plan":
-                    AllocationPlan allocationPlan = allocationPlanMapper.selectById(id);
 
-                    if (!ObjectUtil.isNotEmpty(allocationPlan)) {
-                        return Result.failure("调拨计划单不存在或已被删除,无法进入流程引擎");
-                    }
                     AllocationPlan tempAllocationPlan = new AllocationPlan();
                     tempAllocationPlan.setId(id);
                     tempAllocationPlan.setProcessInstanceId(processInstanceId);

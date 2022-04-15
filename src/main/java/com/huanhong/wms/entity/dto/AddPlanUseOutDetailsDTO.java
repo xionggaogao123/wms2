@@ -12,7 +12,7 @@ public class AddPlanUseOutDetailsDTO {
 
     private static final long serialVersionUID=1L;
 
-    @NotBlank
+   
     @ApiModelProperty(value = "原单据编号")
     private String usePlanningDocumentNumber;
 

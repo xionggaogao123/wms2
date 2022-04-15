@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -29,9 +30,11 @@ public class AddOutboundRecordDTO {
     @ApiModelProperty(value = "物料编码")
     private String materialCoding;
 
+    @NotBlank
     @ApiModelProperty(value = "货位编号")
     private String cargoSpaceId;
 
+    @NotBlank
     @ApiModelProperty(value = "批次")
     private String batch;
 

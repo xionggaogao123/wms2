@@ -316,15 +316,17 @@ public class OnShelfController extends BaseController {
                 cargoSpaceManagementQueryWrapper .last("limit 5");
                 List<CargoSpaceManagement> cargoSpaceManagementList = cargoSpaceManagementMapper.selectList(cargoSpaceManagementQueryWrapper);
                 JSONArray jsonArrayRandom = new JSONArray();
+                List<String> listStr = new ArrayList<>();
                 for (CargoSpaceManagement cargospace: cargoSpaceManagementList
                      ) {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("cargoSpaceId",cargospace.getCargoSpaceId());
-                    jsonObject.put("full",cargospace.getFull());
-                    jsonArrayRandom.add(jsonObject);
+//                    JSONObject jsonObject = new JSONObject();
+//                    jsonObject.put("cargoSpaceId",cargospace.getCargoSpaceId());
+//                    jsonObject.put("full",cargospace.getFull());
+//                    jsonArrayRandom.add(jsonObject);
+                    listStr.add(cargospace.getCargoSpaceId());
                 }
-                jsonObjectResult.put("CargoSpaceIds",jsonArrayRandom);
-                return Result.success(jsonObjectResult);
+//                jsonObjectResult.put("CargoSpaceIds",jsonArrayRandom);
+                return Result.success(listStr);
             }
             List<String> cargoSpaceIdList = new ArrayList<>();
             //模糊查询的库存list
@@ -344,26 +346,28 @@ public class OnShelfController extends BaseController {
 
             JSONArray jsonArrayNearCargoSpaceId = new JSONArray();
             //将去重后的货位进行遍历查询
+            List<String> stringList = new ArrayList<>();
             for (String cargoSpaceId:cargoSpaceIdList
                  ) {
                 String shelfId = cargoSpaceId.substring(0,10);
                 List<CargoSpaceManagement> cargoSpaceManagementList = iCargoSpaceManagementService.getCargoSpaceListByShelfId(shelfId);
                 for (CargoSpaceManagement cargoSpaceManagement:cargoSpaceManagementList
                      ) {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("cargoSpaceId",cargoSpaceManagement.getCargoSpaceId());
-                    jsonObject.put("full",cargoSpaceManagement.getFull());
-                    jsonArrayNearCargoSpaceId.add(jsonObject);
-                    if (jsonArrayNearCargoSpaceId.size()>4){
+//                    JSONObject jsonObject = new JSONObject();
+//                    jsonObject.put("cargoSpaceId",cargoSpaceManagement.getCargoSpaceId());
+//                    jsonObject.put("full",cargoSpaceManagement.getFull());
+//                    jsonArrayNearCargoSpaceId.add(jsonObject);
+                      stringList.add(cargoSpaceManagement.getCargoSpaceId());
+                    if (stringList.size()>4){
                         break;
                     }
                 }
-                if (jsonArrayNearCargoSpaceId.size()>4){
+                if (stringList.size()>4){
                     break;
                 }
             }
-            jsonObjectResult.put("CargoSpaceIds",jsonArrayNearCargoSpaceId);
-            return Result.success(jsonObjectResult);
+//            jsonObjectResult.put("CargoSpaceIds",jsonArrayNearCargoSpaceId);
+            return Result.success(stringList);
         }
 
 
@@ -371,6 +375,7 @@ public class OnShelfController extends BaseController {
         //历史货位不为空，返回未满的货位ID list
         List<String> cargoSpaceIdList = Arrays.asList(StringUtils.commaDelimitedListToStringArray(priorityStorageLocation));
         JSONArray jsonArrayHistoryCargoSpace = new JSONArray();
+        List<String> strList = new ArrayList<>();
         for (String cargospaceId:cargoSpaceIdList
         ) {
             JSONObject jsonObject = new JSONObject();
@@ -379,18 +384,39 @@ public class OnShelfController extends BaseController {
             String cargoSpaceId = cargoSpaceManagement.getCargoSpaceId();
             String tempCargoSpaceId = warehouseId+"01AA0000";
             if (ObjectUtil.isNotEmpty(cargoSpaceManagement)&&cargoSpaceManagement.getFull()!=2&&!tempCargoSpaceId.equals(cargoSpaceId)){
-                jsonObject.put("cargoSpaceId",cargoSpaceId);
-                jsonObject.put("full",cargoSpaceManagement.getFull());
-                jsonArrayHistoryCargoSpace.add(jsonObject);
+//                jsonObject.put("cargoSpaceId",cargoSpaceId);
+//                jsonObject.put("full",cargoSpaceManagement.getFull());
+//                jsonArrayHistoryCargoSpace.add(jsonObject);
+                strList.add(cargoSpaceManagement.getCargoSpaceId());
             }
-            if (jsonArrayHistoryCargoSpace.size()>4){
+            if (strList.size()>4){
                 break;
             }
+            if (strList.size()==0){
+                QueryWrapper<CargoSpaceManagement> cargoSpaceManagementQueryWrapper = new QueryWrapper<>();
+                cargoSpaceManagementQueryWrapper .select("cargo_space_id","full");
+                cargoSpaceManagementQueryWrapper .likeRight("cargo_space_id",warehouseId);
+                cargoSpaceManagementQueryWrapper .eq("full",0).or().eq("full",1);
+                cargoSpaceManagementQueryWrapper .notLike("cargo_space_id", "0000");
+                cargoSpaceManagementQueryWrapper .last("limit 5");
+                List<CargoSpaceManagement> cargoSpaceManagementList = cargoSpaceManagementMapper.selectList(cargoSpaceManagementQueryWrapper);
+                JSONArray jsonArrayRandom = new JSONArray();
+                List<String> listStr = new ArrayList<>();
+                for (CargoSpaceManagement cargospace: cargoSpaceManagementList
+                ) {
+//                    JSONObject jsonObject = new JSONObject();
+//                    jsonObject.put("cargoSpaceId",cargospace.getCargoSpaceId());
+//                    jsonObject.put("full",cargospace.getFull());
+//                    jsonArrayRandom.add(jsonObject);
+                    listStr.add(cargospace.getCargoSpaceId());
+                }
+//                jsonObjectResult.put("CargoSpaceIds",jsonArrayRandom);
+                return Result.success(listStr);
+            }
         }
-        jsonObjectResult.put("CargoSpaceIds",jsonArrayHistoryCargoSpace);
+//        jsonObjectResult.put("CargoSpaceIds",jsonArrayHistoryCargoSpace);
 
-
-        return Result.success(jsonObjectResult);
+        return Result.success(strList);
     }
 }
 

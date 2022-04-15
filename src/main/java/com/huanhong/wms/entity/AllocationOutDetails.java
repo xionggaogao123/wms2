@@ -32,6 +32,10 @@ public class AllocationOutDetails extends SuperEntity {
     private String batch;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "出库状态：0-未出库，1-部分出库，2-全部出库")
+    private Integer outStatus;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "准调数量")
     private Double calibrationQuantity;
 

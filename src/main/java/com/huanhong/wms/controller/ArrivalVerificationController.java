@@ -77,6 +77,8 @@ public class ArrivalVerificationController extends BaseController {
     @PostMapping("/add")
     public Result add(@Valid @RequestBody AddArrivalVerificationAndDetailsDTO addArrivalVerificationAndDetailsDTO) {
         try {
+
+
             AddArrivalVerificationDTO addArrivalVerificationDTO = addArrivalVerificationAndDetailsDTO.getAddArrivalVerificationDTO();
             List<AddArrivalVerificationDetailsDTO> addArrivalVerificationDetailsDTOList = addArrivalVerificationAndDetailsDTO.getAddArrivalVerificationDetailsDTOList();
             Result result = arrivalVerificationService.addArrivalVerification(addArrivalVerificationDTO);

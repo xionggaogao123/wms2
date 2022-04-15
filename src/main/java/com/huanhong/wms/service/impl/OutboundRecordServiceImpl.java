@@ -91,7 +91,7 @@ public class OutboundRecordServiceImpl extends SuperServiceImpl<OutboundRecordMa
         OutboundRecord outboundRecord = new OutboundRecord();
         BeanUtil.copyProperties(addOutboundRecordDTO,outboundRecord);
         int add = outboundRecordMapper.insert(outboundRecord);
-        return add>0 ? Result.success() : Result.failure("新增失败");
+        return add>0 ? Result.success(getOutboundRecordByDocNumAndCargoSpaceAndMaterialCodingAndBatch(addOutboundRecordDTO.getDocumentNumber(),addOutboundRecordDTO.getCargoSpaceId(),addOutboundRecordDTO.getMaterialCoding(),addOutboundRecordDTO.getBatch())) : Result.failure("新增失败");
     }
 
     @Override
@@ -137,5 +137,15 @@ public class OutboundRecordServiceImpl extends SuperServiceImpl<OutboundRecordMa
         queryWrapper.eq("material_coding",materialCoding);
         queryWrapper.eq("warehouse_id",warehouseId);
         return outboundRecordMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public OutboundRecord getOutboundRecordByDocNumAndCargoSpaceAndMaterialCodingAndBatch(String docNum, String cargoSpace, String materialCoding, String batch) {
+        QueryWrapper queryWrapper =  new QueryWrapper();
+        queryWrapper.eq("document_number",docNum);
+        queryWrapper.eq("material_coding",materialCoding);
+        queryWrapper.eq("cargo_space_id",cargoSpace);
+        queryWrapper.eq("batch",batch);
+        return outboundRecordMapper.selectOne(queryWrapper);
     }
 }

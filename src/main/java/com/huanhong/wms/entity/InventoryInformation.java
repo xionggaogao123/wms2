@@ -52,11 +52,11 @@ public class InventoryInformation extends SuperEntity {
     private String batch;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "货主")
+    @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
     private Integer consignor;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "有效日期")
+    @ApiModelProperty(value = "有效日期-失效日期")
     private LocalDateTime effectiveDate;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
@@ -95,4 +95,27 @@ public class InventoryInformation extends SuperEntity {
     @Version
     @TableField(fill = FieldFill.INSERT)
     private Integer version;
+
+    @ApiModelProperty(value = "库房编号")
+    private String warehouseId;
+
+    @ApiModelProperty(value = "库区编号")
+    private String warehouseAreaId;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "库房名称")
+    private String warehouseName;
+
+    @ApiModelProperty(value = "生产日期")
+    private LocalDateTime produceDate;
+
+    @ApiModelProperty(value = "入库时间：入库单审批生效时间")
+    private LocalDateTime inDate;
+
+    @ApiModelProperty(value = "采购入库单据编号")
+    private String documentNumber;
+
+    @ApiModelProperty(value = "最近一次库存数量更新时间")
+    private LocalDateTime lastUpdateInventoryCredit;
+
 }

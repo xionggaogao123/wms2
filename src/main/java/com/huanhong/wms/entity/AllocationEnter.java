@@ -53,4 +53,8 @@ public class AllocationEnter extends SuperEntity {
     @TableField(value = "last_update",fill = FieldFill.INSERT_UPDATE)
     @ApiModelProperty(value = "最后更新时间")
     private LocalDateTime lastUpdate;
+
+    @ApiModelProperty(value = "调入单位")
+    private String receiveCompany;
+
 }

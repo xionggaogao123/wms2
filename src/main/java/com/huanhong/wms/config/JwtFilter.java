@@ -1,10 +1,12 @@
 package com.huanhong.wms.config;
 
+import cn.hutool.core.util.StrUtil;
 import com.huanhong.common.units.TokenUtil;
 import com.huanhong.wms.bean.Constant;
 import com.huanhong.wms.bean.LoginUser;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
+import org.springframework.http.HttpHeaders;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
@@ -36,10 +38,11 @@ public class JwtFilter implements Filter {
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
-        //客户端将token封装在请求头中，格式为（Bearer后加空格）：Authorization：Bearer + Token
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || Constant.GUEST.equals(authHeader)) {
-            //判断是否需要过滤
+        // 客户端将token封装在请求头中，格式为（Bearer后加空格）：Authorization：Bearer + Token
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String accessToken = request.getParameter("access_token");
+        if ((StrUtil.isBlank(authHeader) && StrUtil.isBlank(accessToken)) || Constant.GUEST.equals(authHeader)) {
+            // 判断是否需要过滤
             if (isExcludedPage(request)) {
                 chain.doFilter(req, res);
                 return;
@@ -47,27 +50,39 @@ public class JwtFilter implements Filter {
             renderResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "TOKEN IS NULL");
             return;
         }
-        LoginUser user;
-        if (authHeader.startsWith(Constant.BEARER)) {
-            String token = authHeader.substring(7);
-            try {
-                //去除Bearer 后部分
-                //解密token，拿到里面的对象claims
-                user = TokenUtil.parseJWT(token);
-            } catch (SignatureException e) {
+
+        if (StrUtil.isNotBlank(authHeader)) {
+            if (authHeader.startsWith(Constant.BASIC)) {
+                //判断是否需要过滤
+                if (isExcludedPage(request)) {
+                    chain.doFilter(req, res);
+                    return;
+                }
+                // 若要处理BASIC认证请在下面处理
+            }
+            if (authHeader.startsWith(Constant.BEARER)) {
+                accessToken = authHeader.substring(7);
+            } else {
                 renderResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "TOKEN INVALID");
                 return;
-            } catch (ExpiredJwtException e) {
-                renderResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "TOKEN OVERDUE");
-                return;
-            } catch (Exception e) {
-                renderResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "TOKEN ERROR");
-                return;
             }
-        } else {
+        }
+        LoginUser user;
+        try {
+            //去除Bearer 后部分
+            //解密token，拿到里面的对象claims
+            user = TokenUtil.parseJWT(accessToken);
+        } catch (SignatureException e) {
             renderResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "TOKEN INVALID");
             return;
+        } catch (ExpiredJwtException e) {
+            renderResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "TOKEN OVERDUE");
+            return;
+        } catch (Exception e) {
+            renderResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "TOKEN ERROR");
+            return;
         }
+
         //将对象传递给下一个请求
         request.setAttribute("loginUser", user);
         chain.doFilter(req, res);

@@ -6,8 +6,12 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.InventoryInformation;
 import com.huanhong.wms.entity.dto.AddInventoryInformationDTO;
 import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
+import com.huanhong.wms.entity.param.InventoryInfoVoPage;
+import com.huanhong.wms.entity.vo.InventoryInfoVo;
 import com.huanhong.wms.entity.vo.InventoryInformationVO;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -87,5 +91,15 @@ public interface IInventoryInformationService extends SuperService<InventoryInfo
     List<InventoryInformation> getInventoryInformationListByMaterialCodingAndBatchAndWarehouseId(String materialCoding,String batch,String warehouseId);
 
 
+    Result<Page<InventoryInfoVo>> inventoryBill(InventoryInfoVoPage page);
 
+    void inventoryBillExport(InventoryInfoVoPage page, HttpServletRequest request, HttpServletResponse response);
+
+    Result<Page<InventoryInfoVo>> deadGoods(InventoryInfoVoPage page);
+
+    void deadGoodsExport(InventoryInfoVoPage page, HttpServletRequest request, HttpServletResponse response);
+
+    Result<Page<InventoryInfoVo>> deadGoodsSettle(InventoryInfoVoPage page);
+
+    void deadGoodsSettleExport(InventoryInfoVoPage page, HttpServletRequest request, HttpServletResponse response);
 }

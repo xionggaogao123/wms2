@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huanhong.wms.mapper.InventoryInformationMapper">
+
+
+    <select id="inventoryBill" resultType="com.huanhong.wms.entity.vo.InventoryInfoVo">
+        select i.*,m.type_code,m.brand,m.specification_model from inventory_information i left join material
+        m on i.material_coding = m.material_coding
+        where i.del = 0 and m.del = 0
+        <if test="materialCoding != null">
+            and i.material_coding like concat('%',#{materialCoding},'%')
+        </if>
+        <if test="materialName != null">
+            and i.material_name like concat('%',#{materialName},'%')
+        </if>
+        <if test="specificationModel != null">
+            and m.specification_model = #{specificationModel}
+        </if>
+        <if test="supplier != null">
+            and m.supplier = #{supplier}
+        </if>
+        <if test="typeCode != null">
+            and m.type_code = #{typeCode}
+        </if>
+        <if test="batch != null">
+            and i.batch = #{batch}
+        </if>
+        <if test="warehouseId != null">
+            and i.warehouse_id = #{warehouseId}
+        </if>
+        <if test="warehouseName != null">
+            and i.warehouse_name = #{warehouseName}
+        </if>
+        <if test="consignor != null">
+            and i.consignor = #{consignor}
+        </if>
+        <if test="effectiveDateStart != null">
+            and i.effective_date >= #{effectiveDateStart}
+        </if>
+        <if test="effectiveDateEnd != null">
+            <![CDATA[
+            and i.effective_date <= #{effectiveDateEnd}
+            ]]>
+        </if>
+        <if test="inDateStart != null">
+            and i.in_date >= #{inDateStart}
+        </if>
+        <if test="inDateEnd != null">
+            <![CDATA[
+            and i.in_date <= #{inDateEnd}
+            ]]>
+        </if>
+        <if test="inDayStart != null">
+            <![CDATA[
+            and i.in_date <= DATE_SUB(now(), INTERVAL #{inDayStart} DAY)
+            ]]>
+        </if>
+        <if test="inDayEnd != null">
+            and i.in_date >= DATE_SUB(now(), INTERVAL #{inDayEnd} DAY)
+        </if>
+
+    </select>
+    <select id="deadGoods" resultType="com.huanhong.wms.entity.vo.InventoryInfoVo">
+        select i.*,m.type_code,m.brand,m.specification_model from inventory_information i left join material
+        m on i.material_coding = m.material_coding
+        where i.del = 0 and m.del = 0
+        <if test="materialCoding != null">
+            and i.material_coding like concat('%',#{materialCoding},'%')
+        </if>
+        <if test="materialName != null">
+            and i.material_name like concat('%',#{materialName},'%')
+        </if>
+        <if test="specificationModel != null">
+            and m.specification_model = #{specificationModel}
+        </if>
+        <if test="supplier != null">
+            and m.supplier = #{supplier}
+        </if>
+        <if test="typeCode != null">
+            and m.type_code = #{typeCode}
+        </if>
+        <if test="batch != null">
+            and i.batch = #{batch}
+        </if>
+        <if test="warehouseId != null">
+            and i.warehouse_id = #{warehouseId}
+        </if>
+        <if test="warehouseName != null">
+            and i.warehouse_name = #{warehouseName}
+        </if>
+        <if test="consignor != null">
+            and i.consignor = #{consignor}
+        </if>
+        <if test="effectiveDateStart != null">
+            and i.effective_date >= #{effectiveDateStart}
+        </if>
+        <if test="effectiveDateEnd != null">
+            <![CDATA[
+            and i.effective_date <= #{effectiveDateEnd}
+            ]]>
+        </if>
+        <if test="inDayStart != null">
+            <![CDATA[
+            and i.in_date <= DATE_SUB(now(), INTERVAL #{inDayStart} DAY)
+            ]]>
+        </if>
+        <if test="inDayEnd != null">
+            and i.in_date >= DATE_SUB(now(), INTERVAL #{inDayEnd} DAY)
+        </if>
+        <if test="inDayEnd != null">
+            <![CDATA[
+            and i.in_date <=  DATE_SUB(now(), INTERVAL #{inDayEnd} DAY)
+            ]]>
+        </if>
+        <if test="inMonth != null">
+            <![CDATA[
+            and i.in_date <= DATE_SUB(now(), INTERVAL #{inMonth} MONTH)
+            ]]>
+        </if>
+
+    </select>
+    <select id="deadGoodsSettle" resultType="com.huanhong.wms.entity.vo.InventoryInfoVo">
+        select i.*,m.type_code,m.brand,m.specification_model from inventory_information i left join material
+        m on i.material_coding = m.material_coding
+        where i.del = 0 and m.del = 0
+        <if test="materialCoding != null">
+            and i.material_coding like concat('%',#{materialCoding},'%')
+        </if>
+        <if test="materialName != null">
+            and i.material_name like concat('%',#{materialName},'%')
+        </if>
+        <if test="specificationModel != null">
+            and m.specification_model = #{specificationModel}
+        </if>
+        <if test="supplier != null">
+            and m.supplier = #{supplier}
+        </if>
+        <if test="typeCode != null">
+            and m.type_code = #{typeCode}
+        </if>
+        <if test="batch != null">
+            and i.batch = #{batch}
+        </if>
+        <if test="warehouseId != null">
+            and i.warehouse_id = #{warehouseId}
+        </if>
+        <if test="warehouseName != null">
+            and i.warehouse_name = #{warehouseName}
+        </if>
+        <if test="consignor != null">
+            and i.consignor = #{consignor}
+        </if>
+        <if test="effectiveDateStart != null">
+            and i.effective_date >= #{effectiveDateStart}
+        </if>
+        <if test="effectiveDateEnd != null">
+            <![CDATA[
+            and i.effective_date <= #{effectiveDateEnd}
+            ]]>
+        </if>
+        <if test="inDateStart != null">
+            and i.in_date >= #{inDateStart}
+        </if>
+        <if test="inDateEnd != null">
+            <![CDATA[
+            and i.in_date <= #{inDateEnd}
+            ]]>
+        </if>
+        <if test="inDayStart != null">
+            <![CDATA[
+            and i.in_date <= DATE_SUB(now(), INTERVAL #{inDayStart} DAY)
+            ]]>
+        </if>
+        <if test="inDayEnd != null">
+            and i.in_date >= DATE_SUB(now(), INTERVAL #{inDayEnd} DAY)
+        </if>
+        <if test="inMonth != null">
+            <![CDATA[
+            and i.in_date <= DATE_SUB(now(), INTERVAL #{inMonth} MONTH)
+            ]]>
+        </if>
+
+    </select>
+</mapper>

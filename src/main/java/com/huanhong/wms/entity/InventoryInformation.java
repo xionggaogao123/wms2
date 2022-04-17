@@ -12,6 +12,7 @@ import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -107,10 +108,10 @@ public class InventoryInformation extends SuperEntity {
     private String warehouseName;
 
     @ApiModelProperty(value = "生产日期")
-    private LocalDateTime produceDate;
+    private Date produceDate;
 
     @ApiModelProperty(value = "入库时间：入库单审批生效时间")
-    private LocalDateTime inDate;
+    private Date inDate;
 
     @ApiModelProperty(value = "采购入库单据编号")
     private String documentNumber;

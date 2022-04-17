@@ -17,6 +17,8 @@ public interface Constant {
 
     String BEARER = "Bearer ";
 
+    String BASIC = "Basic ";
+
     String LOCALHOST_IP = "127.0.0.1";
 
     String REQUEST_ID = "reqId";

@@ -1,7 +1,10 @@
 package com.huanhong.wms.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.entity.InventoryInformation;
+import com.huanhong.wms.entity.param.InventoryInfoVoPage;
+import com.huanhong.wms.entity.vo.InventoryInfoVo;
 
 /**
  * <p>
@@ -14,4 +17,9 @@ import com.huanhong.wms.entity.InventoryInformation;
 public interface InventoryInformationMapper extends BaseMapper<InventoryInformation> {
 
 
+    Page<InventoryInfoVo> inventoryBill(InventoryInfoVoPage page);
+
+    Page<InventoryInfoVo> deadGoods(InventoryInfoVoPage page);
+
+    Page<InventoryInfoVo> deadGoodsSettle(InventoryInfoVoPage page);
 }

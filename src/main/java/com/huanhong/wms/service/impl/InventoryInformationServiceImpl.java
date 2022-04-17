@@ -1,6 +1,7 @@
 package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -8,6 +9,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huanhong.common.units.ConsignorUtil;
+import com.huanhong.common.units.excel.ExportExcel;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
@@ -15,14 +18,20 @@ import com.huanhong.wms.entity.CargoSpaceManagement;
 import com.huanhong.wms.entity.InventoryInformation;
 import com.huanhong.wms.entity.dto.AddInventoryInformationDTO;
 import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
+import com.huanhong.wms.entity.param.InventoryInfoVoPage;
+import com.huanhong.wms.entity.vo.InventoryInfoVo;
 import com.huanhong.wms.entity.vo.InventoryInformationVO;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
+import com.huanhong.wms.properties.OssProperties;
 import com.huanhong.wms.service.ICargoSpaceManagementService;
 import com.huanhong.wms.service.IInventoryInformationService;
 import org.apache.poi.util.StringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,6 +53,9 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 
     @Resource
     private ICargoSpaceManagementService cargoSpaceManagementService;
+
+    @Autowired
+    private OssProperties ossProperties;
 
     /**
      * 分页查询
@@ -164,7 +176,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
          */
 //        InventoryInformationVO inventoryInformationVO = new InventoryInformationVO();
 //        BeanUtil.copyProperties(addInventoryInformationDTO, inventoryInformationVO);
-        InventoryInformation inventoryInformationIsExist = getInventoryInformation(addInventoryInformationDTO.getMaterialCoding(),addInventoryInformationDTO.getBatch(),addInventoryInformationDTO.getCargoSpaceId());
+        InventoryInformation inventoryInformationIsExist = getInventoryInformation(addInventoryInformationDTO.getMaterialCoding(), addInventoryInformationDTO.getBatch(), addInventoryInformationDTO.getCargoSpaceId());
         if (ObjectUtil.isNotEmpty(inventoryInformationIsExist)) {
             //已有数量
             Double inventoryCreditOld = inventoryInformationIsExist.getInventoryCredit();
@@ -251,9 +263,9 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     @Override
     public InventoryInformation getInventoryInformation(String materialCoding, String batch, String cargoSpaceId) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq("material_coding",materialCoding);
-        queryWrapper.eq("batch",batch);
-        queryWrapper.eq("cargo_space_id",cargoSpaceId);
+        queryWrapper.eq("material_coding", materialCoding);
+        queryWrapper.eq("batch", batch);
+        queryWrapper.eq("cargo_space_id", cargoSpaceId);
         return inventoryInformationMapper.selectOne(queryWrapper);
     }
 
@@ -261,9 +273,9 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     public Double getNumByMaterialCodingAndWarehouseId(String materialCoding, String warehouseId) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.select("IFNULL(SUM(Inventory_credit),0) AS num");
-        queryWrapper.eq("material_coding",materialCoding);
-        queryWrapper.likeRight("cargo_space_id",warehouseId);
-        Map map =  this.getMap(queryWrapper);
+        queryWrapper.eq("material_coding", materialCoding);
+        queryWrapper.likeRight("cargo_space_id", warehouseId);
+        Map map = this.getMap(queryWrapper);
         Double num = (Double) map.get("num");
         return num;
     }
@@ -272,10 +284,10 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     public Double getNumByMaterialCodingAndBatchAndWarehouseId(String materialCoding, String batch, String warehouseId) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.select("IFNULL(SUM(Inventory_credit),0) AS num");
-        queryWrapper.eq("material_coding",materialCoding);
-        queryWrapper.eq( "batch", batch);
-        queryWrapper.likeRight("cargo_space_id",warehouseId);
-        Map map =  this.getMap(queryWrapper);
+        queryWrapper.eq("material_coding", materialCoding);
+        queryWrapper.eq("batch", batch);
+        queryWrapper.likeRight("cargo_space_id", warehouseId);
+        Map map = this.getMap(queryWrapper);
         Double num = (Double) map.get("num");
         return num;
     }
@@ -283,18 +295,95 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     @Override
     public List<InventoryInformation> getInventoryInformationListByMaterialCodingAndWarehouseId(String materialCoding, String warehouseId) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq("material_coding",materialCoding);
-        queryWrapper.likeRight("cargo_space_id",warehouseId);
+        queryWrapper.eq("material_coding", materialCoding);
+        queryWrapper.likeRight("cargo_space_id", warehouseId);
         return inventoryInformationMapper.selectList(queryWrapper);
     }
 
     @Override
     public List<InventoryInformation> getInventoryInformationListByMaterialCodingAndBatchAndWarehouseId(String materialCoding, String batch, String warehouseId) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq("material_coding",materialCoding);
+        queryWrapper.eq("material_coding", materialCoding);
         queryWrapper.eq("batch", batch);
-        queryWrapper.likeRight("cargo_space_id",warehouseId);
+        queryWrapper.likeRight("cargo_space_id", warehouseId);
         return inventoryInformationMapper.selectList(queryWrapper);
     }
+
+    @Override
+    public Result<Page<InventoryInfoVo>> inventoryBill(InventoryInfoVoPage page) {
+        Page<InventoryInfoVo> pageData = inventoryInformationMapper.inventoryBill(page);
+        return Result.success(pageData);
+    }
+
+    @Override
+    public void inventoryBillExport(InventoryInfoVoPage page, HttpServletRequest request, HttpServletResponse response) {
+        Page<InventoryInfoVo> pageData = inventoryInformationMapper.inventoryBill(page);
+        int i = 1;
+        for (InventoryInfoVo ii : pageData.getRecords()) {
+            ii.setIndex(i);
+            ii.setConsignorStr(ConsignorUtil.getConsignor(ii.getConsignor()));
+            ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
+            i++;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("list", pageData.getRecords());
+        params.put("gmtCreate", new Date());
+        params.put("userName", page.getUserName());
+        String templatePath = ossProperties.getPath() + "templates/inventoryBill.xlsx";
+        ExportExcel.exportExcel(templatePath, ossProperties.getPath() + "temp/", "库存账.xlsx", params, request, response);
+    }
+
+    @Override
+    public Result<Page<InventoryInfoVo>> deadGoods(InventoryInfoVoPage page) {
+        Page<InventoryInfoVo> pageData = inventoryInformationMapper.deadGoods(page);
+        return Result.success(pageData);
+    }
+
+    @Override
+    public void deadGoodsExport(InventoryInfoVoPage page, HttpServletRequest request, HttpServletResponse response) {
+        Page<InventoryInfoVo> pageData = inventoryInformationMapper.deadGoods(page);
+        int i = 1;
+        for (InventoryInfoVo ii : pageData.getRecords()) {
+            ii.setIndex(i);
+            ii.setConsignorStr(ConsignorUtil.getConsignor(ii.getConsignor()));
+            ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
+            //TODO: 入库单编号 泰丰  各单位
+            i++;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("list", pageData.getRecords());
+        params.put("gmtCreate", new Date());
+        params.put("userName", page.getUserName());
+        String templatePath = ossProperties.getPath() + "templates/deadGoods.xlsx";
+        ExportExcel.exportExcel(templatePath, ossProperties.getPath() + "temp/", "呆滞货物明细表（查询）.xlsx", params, request, response);
+
+    }
+
+    @Override
+    public Result<Page<InventoryInfoVo>> deadGoodsSettle(InventoryInfoVoPage page) {
+        Page<InventoryInfoVo> pageData = inventoryInformationMapper.deadGoodsSettle(page);
+        return Result.success(pageData);
+    }
+
+    @Override
+    public void deadGoodsSettleExport(InventoryInfoVoPage page, HttpServletRequest request, HttpServletResponse response) {
+        Page<InventoryInfoVo> pageData = inventoryInformationMapper.deadGoodsSettle(page);
+        int i = 1;
+        for (InventoryInfoVo ii : pageData.getRecords()) {
+            ii.setIndex(i);
+            ii.setConsignorStr(ConsignorUtil.getConsignor(ii.getConsignor()));
+            ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
+            i++;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("list", pageData.getRecords());
+        params.put("gmtCreate", new Date());
+        params.put("userName", page.getUserName());
+        params.put("consignorStr",ConsignorUtil.getConsignor(page.getConsignor()));
+        String templatePath = ossProperties.getPath() + "templates/deadGoodsSettle.xlsx";
+        ExportExcel.exportExcel(templatePath, ossProperties.getPath() + "temp/", "呆滞货物明细表（查询）.xlsx", params, request, response);
+
+    }
+
 
 }

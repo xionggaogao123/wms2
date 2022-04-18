@@ -110,13 +110,19 @@ public class InventoryInformation extends SuperEntity {
     @ApiModelProperty(value = "生产日期")
     private Date produceDate;
 
-    @ApiModelProperty(value = "入库时间：入库单审批生效时间")
+    @ApiModelProperty(value = "入库时间（泰丰）：入库单审批生效时间")
     private Date inDate;
 
-    @ApiModelProperty(value = "采购入库单据编号")
+    @ApiModelProperty(value = "采购入库单据编号（泰丰）")
     private String documentNumber;
 
     @ApiModelProperty(value = "最近一次库存数量更新时间")
     private LocalDateTime lastUpdateInventoryCredit;
+
+    @ApiModelProperty(value = "入库时间（各单位）：入库单审批生效时间")
+    private Date inDateOther;
+
+    @ApiModelProperty(value = "采购入库单据编号（各单位）")
+    private String documentNumberOther;
 
 }

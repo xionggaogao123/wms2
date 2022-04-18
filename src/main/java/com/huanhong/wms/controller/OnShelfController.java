@@ -180,6 +180,10 @@ public class OnShelfController extends BaseController {
                             addInventoryInformationDTO.setInventoryCredit(hindNum.doubleValue());
                             Result resultAdd = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
                             if (resultAdd.isOk()) {
+                                UpdateOnShelfDTO updateOnShelfDTOAgain = new UpdateOnShelfDTO();
+                                updateOnShelfDTOAgain.setId(updateOnShelfDTO.getId());
+                                updateOnShelfDTOAgain.setComplete(1);
+                                onShelfService.updateOnshelf(updateOnShelfDTOAgain);
                                 return Result.success("移动库存成功！");
                             } else {
                                 return resultAdd;

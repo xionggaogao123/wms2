@@ -1,12 +1,17 @@
 package com.huanhong.wms.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.SuperServiceImpl;
+import com.huanhong.wms.bean.ErrorCode;
+import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.WarehouseAreaManagement;
+import com.huanhong.wms.entity.dto.AddWarehouseAreaDTO;
 import com.huanhong.wms.entity.vo.WarehouseAreaVO;
 import com.huanhong.wms.mapper.WarehouseAreaManagementMapper;
 import com.huanhong.wms.service.IWarehouseAreaManagementService;
@@ -78,6 +83,35 @@ public class WarehouseAreaManagementServiceImpl extends SuperServiceImpl<Warehou
     public int isStopUsing(String warehouseAreaId) {
         WarehouseAreaManagement warehouseAreaManagement = getWarehouseAreaByWarehouseAreaId(warehouseAreaId);
         return warehouseAreaManagement.getStopUsing();
+    }
+
+    @Override
+    public Result addWarehouseArea(AddWarehouseAreaDTO addWarehouseAreaDTO) {
+        /**
+         *验证库区编码
+         */
+
+        if(addWarehouseAreaDTO.getWarehouseAreaId().length()!=1||!StrUtils.isEnglish(addWarehouseAreaDTO.getWarehouseAreaId())){
+            return Result.failure(ErrorCode.DATA_IS_NULL, "库区编号为除I和O以外的一位大写字母");
+        }
+
+        /**
+         * 组合子库编号和库区编号为完整库区编号
+         */
+        addWarehouseAreaDTO.setWarehouseAreaId(addWarehouseAreaDTO.getSublibraryId()+addWarehouseAreaDTO.getWarehouseAreaId());
+
+        WarehouseAreaManagement warehouseAreaIsExist = getWarehouseAreaByWarehouseAreaId(addWarehouseAreaDTO.getWarehouseAreaId());
+        if (ObjectUtil.isNotEmpty(warehouseAreaIsExist)) {
+            return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "库区编号重复,库区已存在");
+        }
+        WarehouseAreaManagement warehouseAreaManagement = new WarehouseAreaManagement();
+        BeanUtil.copyProperties(addWarehouseAreaDTO, warehouseAreaManagement);
+        int insert = warehouseAreaManagementMapper.insert(warehouseAreaManagement);
+        if (insert > 0) {
+            return Result.success(getWarehouseAreaByWarehouseAreaId(warehouseAreaManagement.getWarehouseAreaId()));
+        } else {
+            return Result.failure("添加库区失败！");
+        }
     }
 
     /**

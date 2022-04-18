@@ -1,12 +1,18 @@
 package com.huanhong.wms.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.SuperServiceImpl;
+import com.huanhong.wms.bean.ErrorCode;
+import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.SublibraryManagement;
+import com.huanhong.wms.entity.WarehouseManagement;
+import com.huanhong.wms.entity.dto.AddSubliraryDTO;
 import com.huanhong.wms.entity.vo.SublibraryVO;
 import com.huanhong.wms.mapper.SublibraryManagementMapper;
 import com.huanhong.wms.service.ISublibraryManagementService;
@@ -78,6 +84,34 @@ public class SublibraryManagementServiceImpl extends SuperServiceImpl<Sublibrary
     public int isStopUsing(String sublibraryId) {
         SublibraryManagement sublibraryManagement = getSublibraryBySublibraryId(sublibraryId);
         return sublibraryManagement.getStopUsing();
+    }
+
+    @Override
+    public Result addSublibraryManagement(AddSubliraryDTO addSubliraryDTO) {
+            /**
+             * 判断子库编号是否是两位数字
+             */
+            if (addSubliraryDTO.getSublibraryId().length() != 2 || !StrUtils.isNumeric(addSubliraryDTO.getSublibraryId())) {
+                return Result.failure(ErrorCode.DATA_IS_NULL, "子库号为两位数字!");
+            }
+
+            /**
+             *组合仓库编号和子库编号 为完整子库编号
+             */
+            addSubliraryDTO.setSublibraryId(addSubliraryDTO.getWarehouseId()+addSubliraryDTO.getSublibraryId());
+
+            SublibraryManagement sublibrary = getSublibraryBySublibraryId(addSubliraryDTO.getSublibraryId());
+            if (ObjectUtil.isNotEmpty(sublibrary)) {
+                return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "子库编号重复");
+            }
+            SublibraryManagement sublibraryManagement = new SublibraryManagement();
+            BeanUtil.copyProperties(addSubliraryDTO, sublibraryManagement);
+            int insert = sublibraryManagementMapper.insert(sublibraryManagement);
+            if (insert>0){
+                return  Result.success(getSublibraryBySublibraryId(addSubliraryDTO.getSublibraryId()));
+            }else {
+                return Result.failure("新增子库失败！");
+            }
     }
 
     /**

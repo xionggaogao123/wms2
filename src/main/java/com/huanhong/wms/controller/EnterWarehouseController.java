@@ -230,6 +230,8 @@ public class EnterWarehouseController extends BaseController {
                 jsonResult.put("details", entityUtils.jsonField("enterWarehouse", new EnterWarehouseDetails()));
                 jsonResult.put("mainValue", enterWarehouse);
                 jsonResult.put("detailsValue", enterWarehouseList);
+                jsonResult.put("mainKey","updateEnterWarehouseDTO");
+                jsonResult.put("detailKey","updateEnterWarehouseDetailsDTOList");
                 jsonResult.put("mainUpdate", "/wms/api/v1/enter-warehouse/update");
                 jsonResult.put("detailsUpdate", "/wms/api/v1/enter-warehouse-details");
                 jsonResult.put("missionCompleted", "/wms/api/v1/enter-warehouse/missionCompleted");

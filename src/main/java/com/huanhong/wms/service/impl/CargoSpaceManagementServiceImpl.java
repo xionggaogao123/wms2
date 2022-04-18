@@ -7,7 +7,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.SuperServiceImpl;
+import com.huanhong.wms.bean.ErrorCode;
+import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.CargoSpaceManagement;
 import com.huanhong.wms.entity.ShelfManagement;
 import com.huanhong.wms.entity.dto.AddCargoSpacedDTO;
@@ -41,6 +44,9 @@ public class CargoSpaceManagementServiceImpl extends SuperServiceImpl<CargoSpace
 
     @Override
     public int addCargoSpace(AddCargoSpacedDTO addCargoSpacedDTO) {
+
+        addCargoSpacedDTO.setCargoSpaceId(addCargoSpacedDTO.getShelfId() + addCargoSpacedDTO.getCargoSpaceId());
+
         ShelfManagement shelfManagement = shelfManagementService.getShelfByShelfId(addCargoSpacedDTO.getShelfId());
         Integer floor = shelfManagement.getShelfLayer();
         Integer cellNums = shelfManagement.getCellNumber();

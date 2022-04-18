@@ -2,7 +2,9 @@ package com.huanhong.wms.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperService;
+import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.SublibraryManagement;
+import com.huanhong.wms.entity.dto.AddSubliraryDTO;
 import com.huanhong.wms.entity.vo.SublibraryVO;
 
 import java.util.List;
@@ -29,6 +31,9 @@ public interface ISublibraryManagementService extends SuperService<SublibraryMan
 
     //查询某子库是否停用
     int isStopUsing(String sublibraryId);
+
+    //新增子库
+    Result addSublibraryManagement(AddSubliraryDTO addSubliraryDTO);
 
     /**
      *

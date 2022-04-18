@@ -46,7 +46,6 @@ public class UpdateOutboundRecordDTO {
     @ApiModelProperty(value = "出货数量")
     private Double outQuantity;
 
-
     @Min(0)
     @Max(1)
     @ApiModelProperty(value = "状态：0-审批中（锁库存）1-审批生效（出库）")

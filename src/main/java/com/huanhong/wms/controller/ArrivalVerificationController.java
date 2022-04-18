@@ -219,6 +219,8 @@ public class ArrivalVerificationController extends BaseController {
                 jsonResult.put("details", entityUtils.jsonField("arrivalVerification", new ArrivalVerificationDetails()));
                 jsonResult.put("mainValue", arrivalVerification);
                 jsonResult.put("detailsValue", arrivalVerificationDetailsList);
+                jsonResult.put("mainKey","updateArrivalVerificationDTO");
+                jsonResult.put("detailKey","updateArrivalVerificationDetailsDTOList");
                 jsonResult.put("mainUpdate", "/wms/api/v1/arrival-verification/update");
                 jsonResult.put("detailsUpdate", "/wms/api/v1/arrival-verification-details/update");
                 jsonResult.put("missionCompleted", "/wms/api/v1/arrival-verification/missionCompleted");

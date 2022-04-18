@@ -12,11 +12,10 @@ import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.config.JudgeConfig;
-import com.huanhong.wms.entity.SublibraryManagement;
-import com.huanhong.wms.entity.WarehouseManagement;
-import com.huanhong.wms.entity.dto.AddWarehouseDTO;
-import com.huanhong.wms.entity.dto.UpdateWarehouseDTO;
+import com.huanhong.wms.entity.*;
+import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.WarehouseVo;
+import com.huanhong.wms.mapper.CargoSpaceManagementMapper;
 import com.huanhong.wms.mapper.WarehouseManagementMapper;
 import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
@@ -59,6 +58,9 @@ public class WarehouseManagementController extends BaseController {
 
     @Resource
     private ICargoSpaceManagementService cargoSpaceManagementService;
+
+    @Resource
+    private CargoSpaceManagementMapper cargoSpaceManagementMapper;
 
 
     @Autowired
@@ -149,8 +151,82 @@ public class WarehouseManagementController extends BaseController {
                 WarehouseManagement warehouseManagement = new WarehouseManagement();
                 BeanUtil.copyProperties(addWarehouseDTO, warehouseManagement);
                 int insert = warehouseManagementMapper.insert(warehouseManagement);
-                LOGGER.info("添加仓库成功");
-                return render(insert > 0);
+                //新建库房成功后新建子库
+                if (insert>0){
+                    String warehousId = warehouseManagement.getWarehouseId();
+                    AddSubliraryDTO addSubliraryDTO = new AddSubliraryDTO();
+                    addSubliraryDTO.setWarehouseId(warehousId);
+                    addSubliraryDTO.setSublibraryId("01");
+                    addSubliraryDTO.setSublibraryName("暂存子库");
+                    addSubliraryDTO.setSublibraryAcreage("无");
+                    addSubliraryDTO.setSublibraryFloor("无");
+                    addSubliraryDTO.setSublibraryPrincipal("无");
+                    addSubliraryDTO.setSublibraryLength((double)0);
+                    addSubliraryDTO.setSublibraryWidth((double)0);
+                    addSubliraryDTO.setSublibraryHeight((double)0);
+                    addSubliraryDTO.setSublibraryContactNumber("无");
+                    addSubliraryDTO.setRemark("系统自动生成");
+                    Result resultSublibrary = sublibraryManagementService.addSublibraryManagement(addSubliraryDTO);
+                    //新建子库成功后新建暂存库区
+                    if (resultSublibrary.isOk()){
+                        String subliraryId = ((SublibraryManagement)resultSublibrary.getData()).getSublibraryId();
+                        AddWarehouseAreaDTO addWarehouseAreaDTO = new AddWarehouseAreaDTO();
+                        addWarehouseAreaDTO.setSublibraryId(subliraryId);
+                        addWarehouseAreaDTO.setWarehouseAreaId("A");
+                        addWarehouseAreaDTO.setWarehouseAreaName("暂存库区");
+                        addWarehouseAreaDTO.setWarehouseAreaHeight((double)0);
+                        addWarehouseAreaDTO.setWarehouseAreaWidth((double)0);
+                        addWarehouseAreaDTO.setWarehouseAreaLength((double)0);
+                        addWarehouseAreaDTO.setWarehouseAreaPrincipal("无");
+                        addWarehouseAreaDTO.setWarehouseAreaContactNumber("无");
+                        addWarehouseAreaDTO.setRemark("系统自动生成");
+                        Result resultWarehouseArea = warehouseAreaManagementService.addWarehouseArea(addWarehouseAreaDTO);
+                        //新增库区成功后新建临时货位
+                        if (resultWarehouseArea.isOk()){
+                            String warehouseAreaId = ((WarehouseAreaManagement)resultWarehouseArea.getData()).getWarehouseAreaId();
+                            AddShelfDTO addShelfDTO = new AddShelfDTO();
+                            addShelfDTO.setWarehouseAreaId(warehouseAreaId);
+                            addShelfDTO.setShelfId("A00");
+                            addShelfDTO.setShelfType(0);
+                            addShelfDTO.setShelfLoadBearing((double)0);
+                            addShelfDTO.setShelfHeight((double)0);
+                            addShelfDTO.setShelfBottomLength((double)0);
+                            addShelfDTO.setShelfBottomWidth((double)0);
+                            addShelfDTO.setCellNumber(1);
+                            addShelfDTO.setShelfLayer(1);
+                            addShelfDTO.setRemark("系统自动生成");
+                            Result resultShelf = shelfManagementService.addShelf(addShelfDTO);
+                            if (resultShelf.isOk()){
+                                String shelfId = ((ShelfManagement)resultShelf.getData()).getShelfId();
+                                CargoSpaceManagement cargoSpaceManagement = new CargoSpaceManagement();
+                                AddCargoSpacedDTO addCargoSpacedDTO = new AddCargoSpacedDTO();
+                                addCargoSpacedDTO.setShelfId(shelfId);
+                                addCargoSpacedDTO.setCargoSpaceId(shelfId+"00");
+                                addCargoSpacedDTO.setCargoSpaceFloor(1);
+                                addCargoSpacedDTO.setCargoSpaceType(0);
+                                addCargoSpacedDTO.setCargoSpaceHeight((double)0);
+                                addCargoSpacedDTO.setCargoSpaceWidth((double)0);
+                                addCargoSpacedDTO.setCargoSpaceLength((double)0);
+                                addShelfDTO.setRemark("系统自动生成");
+                                BeanUtil.copyProperties(addCargoSpacedDTO,cargoSpaceManagement);
+                                int addCargoSpace = cargoSpaceManagementMapper.insert(cargoSpaceManagement);
+                                if (addCargoSpace>0){
+                                    return Result.success("新增库房、暂存子库、暂存库区、暂存货架、暂存货位成功！");
+                                }else {
+                                    return Result.success("新增库房、暂存子库、暂存库区、暂存货架成功,新建暂存货位失败！");
+                                }
+                            }else{
+                                return Result.success("新增库房、暂存子库、暂存库区成功,新建暂存货架失败！");
+                            }
+                        }else {
+                            return Result.success("新增库房、暂存子库成功,新建暂存库区失败！");
+                        }
+                    }else {
+                        return Result.success("新增库房成功,新建暂存子库失败！");
+                    }
+                }else {
+                    return Result.success("新增库房失败！");
+                }
             } catch (Exception e) {
                 LOGGER.error("添加仓库错误--（插入数据）失败,异常：" + e);
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常--插入数据失败，请稍后再试或联系管理员");

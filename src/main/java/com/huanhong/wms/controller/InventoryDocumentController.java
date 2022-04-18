@@ -1,7 +1,6 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -126,7 +125,7 @@ public class InventoryDocumentController extends BaseController {
             /**
              * 如果此次更新主表要更新为已完成，判断其明细是否都已完成，若没有则主表不能更新为已完成
              */
-            if (updateInventoryDocumentDTO.getComplete() == 1) {
+            if (null != updateInventoryDocumentDTO.getComplete() && updateInventoryDocumentDTO.getComplete() == 1) {
                 //查询已经点验完成的明细以及本次更新的明细总数是否等于明细
                 int updateNum = 0;
                 for (UpdateInventoryDocumentDetailsDTO updateInventoryDocumentDetailsDTO : updateInventoryDocumentDetailsDTOList
@@ -237,7 +236,7 @@ public class InventoryDocumentController extends BaseController {
             }
             return count == inventoryDocumentDetailsList.size() ? Result.success("库存新增成功！") : Result.success(listfalse, "若干点验单新增库存失败！");
         } catch (Exception e) {
-            log.error("更新点验单失败");
+            log.error("更新点验单失败",e);
             return Result.failure("系统异常：更新点验单失败!");
         }
     }

@@ -5,19 +5,31 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huanhong.common.units.DataUtil;
+import com.huanhong.common.units.excel.ExportExcel;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.OutboundRecord;
 import com.huanhong.wms.entity.dto.AddOutboundRecordDTO;
 import com.huanhong.wms.entity.dto.UpdateOutboundRecordDTO;
+import com.huanhong.wms.entity.param.OutboundDetailPage;
+import com.huanhong.wms.entity.vo.OutboundDetailVo;
 import com.huanhong.wms.entity.vo.OutboundRecordVO;
+import com.huanhong.wms.entity.vo.WarehousingDetailVo;
 import com.huanhong.wms.mapper.OutboundRecordMapper;
+import com.huanhong.wms.properties.OssProperties;
 import com.huanhong.wms.service.IOutboundRecordService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -34,6 +46,8 @@ public class OutboundRecordServiceImpl extends SuperServiceImpl<OutboundRecordMa
     @Resource
     private OutboundRecordMapper outboundRecordMapper;
 
+    @Autowired
+    private OssProperties ossProperties;
 
     /**
      * 分页查询
@@ -153,5 +167,37 @@ public class OutboundRecordServiceImpl extends SuperServiceImpl<OutboundRecordMa
         queryWrapper.eq("batch", batch);
         queryWrapper.last("limit 1");
         return outboundRecordMapper.selectOne(queryWrapper);
+    }
+
+    @Override
+    public Result<Page<OutboundDetailVo>> outboundDetail(OutboundDetailPage page) {
+        Page<OutboundDetailVo> pageData = outboundRecordMapper.outboundDetail(page);
+        int i = 1;
+        for (OutboundDetailVo ii : pageData.getRecords()) {
+            ii.setIndex(i);
+            ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
+            i++;
+        }
+        return Result.success(pageData);
+    }
+
+    @Override
+    public void outboundDetailExport(OutboundDetailPage page, HttpServletRequest request, HttpServletResponse response) {
+        Page<OutboundDetailVo> pageData = outboundRecordMapper.outboundDetail(page);
+        int i = 1;
+        for (OutboundDetailVo ii : pageData.getRecords()) {
+            ii.setIndex(i);
+            ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
+            i++;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("list", pageData.getRecords());
+        params.put("gmtCreate", new Date());
+        params.put("userName", page.getUserName());
+        params.put("gmtStart", page.getGmtStart());
+        params.put("gmtEnd", page.getGmtEnd());
+        String templatePath = ossProperties.getPath() + "templates/outboundDetail.xlsx";
+        ExportExcel.exportExcel(templatePath, ossProperties.getPath() + "temp/", "入库明细表.xlsx", params, request, response);
+
     }
 }

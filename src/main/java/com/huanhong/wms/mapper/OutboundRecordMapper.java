@@ -1,7 +1,10 @@
 package com.huanhong.wms.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.entity.OutboundRecord;
+import com.huanhong.wms.entity.param.OutboundDetailPage;
+import com.huanhong.wms.entity.vo.OutboundDetailVo;
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 
@@ -20,4 +23,6 @@ public interface OutboundRecordMapper extends BaseMapper<OutboundRecord> {
 
     @MapKey("id")
     List<Map<String, Object>> countOutboundRecordByWarehouse(@Param("warehouseId") String warehouseId);
+
+    Page<OutboundDetailVo> outboundDetail(OutboundDetailPage page);
 }

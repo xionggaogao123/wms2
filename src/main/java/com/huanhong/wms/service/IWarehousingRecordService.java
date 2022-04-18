@@ -1,17 +1,17 @@
 package com.huanhong.wms.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.PlanUseOut;
-import com.huanhong.wms.entity.WarehousingRecord;
 import com.huanhong.wms.SuperService;
-import com.huanhong.wms.entity.dto.AddPlanUseOutDTO;
+import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.entity.WarehousingRecord;
 import com.huanhong.wms.entity.dto.AddWarehousingRecordDTO;
-import com.huanhong.wms.entity.dto.UpdatePlanUseOutDTO;
 import com.huanhong.wms.entity.dto.UpdateWarehousingRecordDTO;
-import com.huanhong.wms.entity.vo.PlanUseOutVO;
+import com.huanhong.wms.entity.param.WarehousingDetailPage;
+import com.huanhong.wms.entity.vo.WarehousingDetailVo;
 import com.huanhong.wms.entity.vo.WarehousingRecordVO;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -66,5 +66,18 @@ public interface IWarehousingRecordService extends SuperService<WarehousingRecor
      */
     List<WarehousingRecord> getWarehousingRecordByDocNumAndWarhouseId(String docNumber, String warehouseId);
 
+    /**
+     * 入库明细表
+     * @param page
+     * @return
+     */
+    Result<Page<WarehousingDetailVo>> warehousingDetail(WarehousingDetailPage page);
 
+    /**
+     * 入库明细表导出
+     * @param page
+     * @param request
+     * @param response
+     */
+    void warehousingDetailExport(WarehousingDetailPage page, HttpServletRequest request, HttpServletResponse response);
 }

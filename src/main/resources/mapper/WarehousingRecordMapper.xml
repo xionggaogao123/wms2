@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huanhong.wms.mapper.WarehousingRecordMapper">
+
+
+    <select id="warehousingDetail" resultType="com.huanhong.wms.entity.vo.WarehousingDetailVo">
+        select wr.*,m.type_code,m.brand,m.specification_model,m.material_name as materialName,m.measurement_unit,m.supplier as supplier2
+             ,wm.warehouse_name
+        from warehousing_record wr left join material m on wr.material_coding = m.material_coding
+        left join warehouse_management wm on wr.warehouse_id = wm.warehouse_id
+        where wr.del = 0 and m.del = 0 and wm.del = 0
+        <if test="materialCoding != null">
+            and wr.material_coding like concat('%',#{materialCoding},'%')
+        </if>
+        <if test="materialName != null">
+            and m.material_name like concat('%',#{materialName},'%')
+        </if>
+        <if test="specificationModel != null">
+            and m.specification_model = #{specificationModel}
+        </if>
+        <if test="supplier != null">
+            and m.supplier = #{supplier}
+        </if>
+        <if test="typeCode != null">
+            and m.type_code = #{typeCode}
+        </if>
+        <if test="batch != null">
+            and wr.batch = #{batch}
+        </if>
+        <if test="warehouseId != null">
+            and wr.warehouse_id = #{warehouseId}
+        </if>
+        <if test="consignor != null">
+            and wr.consignor = #{consignor}
+        </if>
+
+        <if test="inDateStart != null">
+            and wr.create_time >= #{inDateStart}
+        </if>
+        <if test="inDateEnd != null">
+            <![CDATA[
+            and wr.create_time <= #{inDateEnd}
+            ]]>
+        </if>
+
+    </select>
+</mapper>

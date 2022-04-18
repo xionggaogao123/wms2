@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.huanhong.common.units.ConsignorUtil;
+import com.huanhong.common.units.DataUtil;
 import com.huanhong.common.units.excel.ExportExcel;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
@@ -18,7 +18,7 @@ import com.huanhong.wms.entity.CargoSpaceManagement;
 import com.huanhong.wms.entity.InventoryInformation;
 import com.huanhong.wms.entity.dto.AddInventoryInformationDTO;
 import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
-import com.huanhong.wms.entity.param.InventoryInfoVoPage;
+import com.huanhong.wms.entity.param.InventoryInfoPage;
 import com.huanhong.wms.entity.vo.InventoryInfoVo;
 import com.huanhong.wms.entity.vo.InventoryInformationVO;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
@@ -310,19 +310,30 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     }
 
     @Override
-    public Result<Page<InventoryInfoVo>> inventoryBill(InventoryInfoVoPage page) {
-        Page<InventoryInfoVo> pageData = inventoryInformationMapper.inventoryBill(page);
-        return Result.success(pageData);
-    }
-
-    @Override
-    public void inventoryBillExport(InventoryInfoVoPage page, HttpServletRequest request, HttpServletResponse response) {
+    public Result<Page<InventoryInfoVo>> inventoryBill(InventoryInfoPage page) {
         Page<InventoryInfoVo> pageData = inventoryInformationMapper.inventoryBill(page);
         int i = 1;
         for (InventoryInfoVo ii : pageData.getRecords()) {
             ii.setIndex(i);
-            ii.setConsignorStr(ConsignorUtil.getConsignor(ii.getConsignor()));
-            ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
+            ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
+            if(null != ii.getInDate()){
+                ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
+            }
+            i++;
+        }
+        return Result.success(pageData);
+    }
+
+    @Override
+    public void inventoryBillExport(InventoryInfoPage page, HttpServletRequest request, HttpServletResponse response) {
+        Page<InventoryInfoVo> pageData = inventoryInformationMapper.inventoryBill(page);
+        int i = 1;
+        for (InventoryInfoVo ii : pageData.getRecords()) {
+            ii.setIndex(i);
+            ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
+            if(null != ii.getInDate()){
+                ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
+            }
             i++;
         }
         Map<String, Object> params = new HashMap<>();
@@ -334,20 +345,30 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     }
 
     @Override
-    public Result<Page<InventoryInfoVo>> deadGoods(InventoryInfoVoPage page) {
-        Page<InventoryInfoVo> pageData = inventoryInformationMapper.deadGoods(page);
-        return Result.success(pageData);
-    }
-
-    @Override
-    public void deadGoodsExport(InventoryInfoVoPage page, HttpServletRequest request, HttpServletResponse response) {
+    public Result<Page<InventoryInfoVo>> deadGoods(InventoryInfoPage page) {
         Page<InventoryInfoVo> pageData = inventoryInformationMapper.deadGoods(page);
         int i = 1;
         for (InventoryInfoVo ii : pageData.getRecords()) {
             ii.setIndex(i);
-            ii.setConsignorStr(ConsignorUtil.getConsignor(ii.getConsignor()));
-            ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
-            //TODO: 入库单编号 泰丰  各单位
+            ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
+            if(null != ii.getInDate()){
+                ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
+            }
+            i++;
+        }
+        return Result.success(pageData);
+    }
+
+    @Override
+    public void deadGoodsExport(InventoryInfoPage page, HttpServletRequest request, HttpServletResponse response) {
+        Page<InventoryInfoVo> pageData = inventoryInformationMapper.deadGoods(page);
+        int i = 1;
+        for (InventoryInfoVo ii : pageData.getRecords()) {
+            ii.setIndex(i);
+            ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
+            if(null != ii.getInDate()){
+                ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
+            }
             i++;
         }
         Map<String, Object> params = new HashMap<>();
@@ -360,26 +381,37 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     }
 
     @Override
-    public Result<Page<InventoryInfoVo>> deadGoodsSettle(InventoryInfoVoPage page) {
-        Page<InventoryInfoVo> pageData = inventoryInformationMapper.deadGoodsSettle(page);
-        return Result.success(pageData);
-    }
-
-    @Override
-    public void deadGoodsSettleExport(InventoryInfoVoPage page, HttpServletRequest request, HttpServletResponse response) {
+    public Result<Page<InventoryInfoVo>> deadGoodsSettle(InventoryInfoPage page) {
         Page<InventoryInfoVo> pageData = inventoryInformationMapper.deadGoodsSettle(page);
         int i = 1;
         for (InventoryInfoVo ii : pageData.getRecords()) {
             ii.setIndex(i);
-            ii.setConsignorStr(ConsignorUtil.getConsignor(ii.getConsignor()));
-            ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
+            ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
+            if(null != ii.getInDate()){
+                ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
+            }
+            i++;
+        }
+        return Result.success(pageData);
+    }
+
+    @Override
+    public void deadGoodsSettleExport(InventoryInfoPage page, HttpServletRequest request, HttpServletResponse response) {
+        Page<InventoryInfoVo> pageData = inventoryInformationMapper.deadGoodsSettle(page);
+        int i = 1;
+        for (InventoryInfoVo ii : pageData.getRecords()) {
+            ii.setIndex(i);
+            ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
+            if(null != ii.getInDate()){
+                ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
+            }
             i++;
         }
         Map<String, Object> params = new HashMap<>();
         params.put("list", pageData.getRecords());
         params.put("gmtCreate", new Date());
         params.put("userName", page.getUserName());
-        params.put("consignorStr",ConsignorUtil.getConsignor(page.getConsignor()));
+        params.put("consignorStr", DataUtil.getConsignor(page.getConsignor()));
         String templatePath = ossProperties.getPath() + "templates/deadGoodsSettle.xlsx";
         ExportExcel.exportExcel(templatePath, ossProperties.getPath() + "temp/", "呆滞货物明细表（查询）.xlsx", params, request, response);
 

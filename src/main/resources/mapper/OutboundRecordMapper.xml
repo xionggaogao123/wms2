@@ -13,4 +13,68 @@
           AND outr.`status` = 1
           AND outr.del = 0
     </select>
+    <select id="outboundDetail" resultType="com.huanhong.wms.entity.vo.OutboundDetailVo">
+        select o.*,m.type_code,m.brand,m.specification_model,m.material_name,m.measurement_unit,m.supplier
+        ,wm.warehouse_name,puo.librarian,puo.expense_item,puo.cost_bearing_unit,puo.material_use,puo.requisition_use
+        ,puo.recipient,puo.requisitioning_unit
+        from outbound_record o left join material m on o.material_coding = m.material_coding
+        left join plan_use_out puo on o.document_number = puo.document_number
+        left join warehouse_management wm on o.warehouse_id = wm.warehouse_id
+        where o.del = 0 and m.del = 0 and wm.del = 0 and puo.del = 0
+        <if test="materialCoding != null">
+            and o.material_coding like concat('%',#{materialCoding},'%')
+        </if>
+        <if test="materialName != null">
+            and m.material_name like concat('%',#{materialName},'%')
+        </if>
+        <if test="specificationModel != null">
+            and m.specification_model = #{specificationModel}
+        </if>
+        <if test="supplier != null">
+            and m.supplier = #{supplier}
+        </if>
+        <if test="typeCode != null">
+            and m.type_code = #{typeCode}
+        </if>
+        <if test="batch != null">
+            and o.batch = #{batch}
+        </if>
+        <if test="warehouseId != null">
+            and o.warehouse_id = #{warehouseId}
+        </if>
+        <if test="consignor != null">
+            and o.consignor = #{consignor}
+        </if>
+
+        <if test="gmtStart != null">
+            and o.create_time >= #{gmtStart}
+        </if>
+        <if test="gmtEnd != null">
+            <![CDATA[
+            and o.create_time <= #{gmtEnd}
+            ]]>
+        </if>
+        <if test="librarian != null">
+            and puo.librarian = #{librarian}
+        </if>
+        <if test="recipient != null">
+            and puo.recipient = #{recipient}
+        </if>
+        <if test="requisitioningUnit != null">
+            and puo.requisitioning_unit = #{requisitioningUnit}
+        </if>
+        <if test="costBearingUnit != null">
+            and puo.cost_bearing_unit = #{costBearingUnit}
+        </if>
+        <if test="expenseItem != null">
+            and puo.expense_item = #{expenseItem}
+        </if>
+        <if test="materialUse != null">
+            and puo.material_use = #{materialUse}
+        </if>
+        <if test="requisitionUse != null">
+            and puo.requisition_use = #{requisitionUse}
+        </if>
+
+    </select>
 </mapper>

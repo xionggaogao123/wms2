@@ -6,8 +6,12 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.OutboundRecord;
 import com.huanhong.wms.entity.dto.AddOutboundRecordDTO;
 import com.huanhong.wms.entity.dto.UpdateOutboundRecordDTO;
+import com.huanhong.wms.entity.param.OutboundDetailPage;
+import com.huanhong.wms.entity.vo.OutboundDetailVo;
 import com.huanhong.wms.entity.vo.OutboundRecordVO;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -23,6 +27,7 @@ public interface IOutboundRecordService extends SuperService<OutboundRecord> {
 
     /**
      * 分页查询
+     *
      * @param outboundRecordPage
      * @param outboundRecordVO
      * @return
@@ -32,6 +37,7 @@ public interface IOutboundRecordService extends SuperService<OutboundRecord> {
 
     /**
      * 通过list新增
+     *
      * @param addOutboundRecordDTOList
      * @return
      */
@@ -40,6 +46,7 @@ public interface IOutboundRecordService extends SuperService<OutboundRecord> {
 
     /**
      * 通过单条数据新增出库记录
+     *
      * @param addOutboundRecordDTO
      * @return
      */
@@ -47,6 +54,7 @@ public interface IOutboundRecordService extends SuperService<OutboundRecord> {
 
     /**
      * 更新出库记录
+     *
      * @param updateOutboundRecordDTO
      * @return
      */
@@ -55,6 +63,7 @@ public interface IOutboundRecordService extends SuperService<OutboundRecord> {
 
     /**
      * 根据ID获取出库记录详情
+     *
      * @return
      */
     OutboundRecord getOutboundRecordById(Integer id);
@@ -62,29 +71,51 @@ public interface IOutboundRecordService extends SuperService<OutboundRecord> {
 
     /**
      * 根据原单据编号（出库单）和仓库编号获取出库记录
+     *
      * @param docNum
      * @param warehouseId
      * @return
      */
-    List<OutboundRecord> getOutboundRecordListByDocNumAndWarehouseId(String docNum,String warehouseId);
+    List<OutboundRecord> getOutboundRecordListByDocNumAndWarehouseId(String docNum, String warehouseId);
 
     /**
      * 根据原单据编号（出库单）和仓库编号和物料编码查询出库记录
+     *
      * @param docNum
      * @param warehouseId
      * @param materialCoding
      * @return
      */
-    List<OutboundRecord>  getOutboundRecordByDocNumAndWarehouseIdAndMaterialCoding(String docNum,String warehouseId,String materialCoding);
+    List<OutboundRecord> getOutboundRecordByDocNumAndWarehouseIdAndMaterialCoding(String docNum, String warehouseId, String materialCoding);
 
 
     /**
      * 根据原单据编号 物料编码货位批次检索唯一一条出库记录
+     *
      * @param docNum
      * @param cargoSpace
      * @param MaterialCoding
      * @param batch
      * @return
      */
-    OutboundRecord getOutboundRecordByDocNumAndCargoSpaceAndMaterialCodingAndBatch(String docNum,String cargoSpace,String materialCoding,String batch);
+    OutboundRecord getOutboundRecordByDocNumAndCargoSpaceAndMaterialCodingAndBatch(String docNum, String cargoSpace, String materialCoding, String batch);
+
+    /**
+     * 领料出库明细表_查询
+     *
+     * @param page
+     * @return
+     */
+    Result<Page<OutboundDetailVo>> outboundDetail(OutboundDetailPage page);
+
+    /**
+     * 领料出库明细表_导出
+     *
+     * @param page
+     * @param request
+     * @param response
+     */
+    void outboundDetailExport(OutboundDetailPage page, HttpServletRequest request, HttpServletResponse response);
+
+
 }

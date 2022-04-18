@@ -1,7 +1,7 @@
 package com.huanhong.wms.entity.param;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.huanhong.wms.entity.InventoryInformation;
+import com.huanhong.wms.entity.OutboundRecord;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -11,9 +11,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.util.Date;
 
 @EqualsAndHashCode(callSuper = true)
-@ApiModel(value="库存账分页查询参数", description="库存账分页查询参数")
+@ApiModel(value="领料出库明细表分页查询参数", description="领料出库明细表分页查询参数")
 @Data
-public class InventoryInfoVoPage extends Page<InventoryInformation> {
+public class OutboundDetailPage extends Page<OutboundRecord> {
 
 
     private Integer userId;
@@ -37,38 +37,32 @@ public class InventoryInfoVoPage extends Page<InventoryInformation> {
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;
 
-    @ApiModelProperty(value = "库房名称")
-    private String warehouseName;
-
     @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
     private Integer consignor;
 
     @ApiModelProperty(value = "物料分类")
     private String typeCode;
 
-    @ApiModelProperty(value = "库龄开始 单位天")
-    private Integer inDayStart;
-    @ApiModelProperty(value = "库龄结束 单位天")
-    private Integer inDayEnd;
 
-
-    @ApiModelProperty(value = "失效开始时间")
+    @ApiModelProperty(value = "开始时间")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date effectiveDateStart;
+    private Date gmtStart;
 
-    @ApiModelProperty(value = "失效结束时间")
+    @ApiModelProperty(value = "结束时间")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date effectiveDateEnd;
-
-    @ApiModelProperty(value = "入库开始时间")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date inDateStart;
-
-    @ApiModelProperty(value = "入库结束时间")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date inDateEnd;
-
-
-    @ApiModelProperty(value = "入库后≥6个月")
-    private Integer inMonth;
+    private Date gmtEnd;
+    @ApiModelProperty(value = "领用单位")
+    private String requisitioningUnit;
+    @ApiModelProperty(value = "领用人")
+    private String recipient;
+    @ApiModelProperty(value = "费用项目")
+    private String expenseItem;
+    @ApiModelProperty(value = "费用承担单位")
+    private String costBearingUnit;
+    @ApiModelProperty(value = "物资用途")
+    private String materialUse;
+    @ApiModelProperty(value = "领用用途")
+    private String requisitionUse;
+    @ApiModelProperty(value = "库管员")
+    private String librarian;
 }

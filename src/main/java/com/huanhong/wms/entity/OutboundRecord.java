@@ -63,7 +63,6 @@ public class OutboundRecord extends SuperEntity {
     @ApiModelProperty(value = "最后更新时间")
     private LocalDateTime lastUpdate;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "库管员（提交入库申请表单的用户）")
-    private String warehouseManager;
+    @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
+    private Integer consignor;
 }

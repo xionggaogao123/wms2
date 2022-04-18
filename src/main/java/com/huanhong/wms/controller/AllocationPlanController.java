@@ -96,6 +96,7 @@ public class AllocationPlanController extends BaseController {
                         addAllocationPlanDetailDTO.setAllocationNumber(docNum);
                     }
                 }
+                allocationPlanDetailService.addAllocationPlanDetails(addAllocationPlanDetailDTOList);
                 return result;
             } catch (Exception e) {
                 log.error("新增调拨计划失败");
@@ -192,6 +193,8 @@ public class AllocationPlanController extends BaseController {
                 jsonResult.put("details", entityUtils.jsonField("allocationPlan", new AllocationPlanDetail()));
                 jsonResult.put("mainValue", allocationPlan);
                 jsonResult.put("detailsValue", allocationPlanDetails);
+                jsonResult.put("mainKey","updateAllocationOutDTO");
+                jsonResult.put("detailKey","updateAllocationOutDetailsDTOS");
                 jsonResult.put("mainUpdate", "/wms/api/v1/allocation-plan/update");
                 jsonResult.put("detailsUpdate", "/wms/api/v1/allocation-plan-detail/update");
                 jsonResult.put("missionCompleted", "/wms/api/v1/allocation-plan/missionCompleted");

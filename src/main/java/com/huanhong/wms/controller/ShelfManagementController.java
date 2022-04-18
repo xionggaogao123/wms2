@@ -124,6 +124,7 @@ public class ShelfManagementController extends BaseController {
             if (ObjectUtil.isNotEmpty(shelfManagementIsExist)) {
                 return Result.failure(ErrorCode.DATA_EXISTS_ERROR, "货架编号重复,货架已存在");
             }
+
             try {
                 ShelfManagement shelfManagement = new ShelfManagement();
                 BeanUtil.copyProperties(addShelfDTO,shelfManagement);

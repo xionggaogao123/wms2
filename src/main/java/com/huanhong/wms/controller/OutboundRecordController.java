@@ -168,6 +168,8 @@ public class OutboundRecordController extends BaseController {
                 Result result = outboundRecordService.updateOutboundRecord(updateOutboundRecordDTO);
                 if (!result.isOk()) {
                     return Result.failure("更新出库记录失败！");
+                }else {
+                    return result;
                 }
             } else if (event < 0) {
                 //差值

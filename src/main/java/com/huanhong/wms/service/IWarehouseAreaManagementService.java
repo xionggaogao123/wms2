@@ -2,7 +2,9 @@ package com.huanhong.wms.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperService;
+import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.WarehouseAreaManagement;
+import com.huanhong.wms.entity.dto.AddWarehouseAreaDTO;
 import com.huanhong.wms.entity.vo.WarehouseAreaVO;
 
 import java.util.List;
@@ -28,6 +30,9 @@ public interface IWarehouseAreaManagementService extends SuperService<WarehouseA
 
     //查询某库区是否停用 0- 使用中  1- 停用
     int isStopUsing(String warehouseAreaId);
+
+    //新增库区
+    Result addWarehouseArea(AddWarehouseAreaDTO addWarehouseAreaDTO);
 
     /**
      *

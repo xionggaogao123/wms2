@@ -1,12 +1,18 @@
 package com.huanhong.wms.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.SuperServiceImpl;
+import com.huanhong.wms.bean.ErrorCode;
+import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.ShelfManagement;
+import com.huanhong.wms.entity.dto.AddCargoSpacedDTO;
+import com.huanhong.wms.entity.dto.AddShelfDTO;
 import com.huanhong.wms.entity.vo.ShelfVO;
 import com.huanhong.wms.mapper.ShelfManagementMapper;
 import com.huanhong.wms.service.IShelfManagementService;
@@ -101,5 +107,37 @@ public class ShelfManagementServiceImpl extends SuperServiceImpl<ShelfManagement
         //从库区开始 有2级及以上父级所以需要likeRight 自己的父编码
         updateWrapper.likeRight("warehouse_area_id", parentCode);
         return shelfManagementMapper.update(shelfManagement, updateWrapper);
+    }
+
+    @Override
+    public Result addShelf(AddShelfDTO addShelfDTO) {
+        /**
+         * 验证货架编码是否合法
+         */
+        //是否是三位字符
+        if (addShelfDTO.getShelfId().length()==3) {
+            String str = addShelfDTO.getShelfId();
+            //第一位是否大写且I和O以外的字母
+            if (StrUtils.isEnglish(String.valueOf(str.charAt(0)))){
+                if (StrUtils.isNumeric(str.substring(1))){
+                    //符合规则 拼接库区编号和货架编号为完整货架编号
+                    addShelfDTO.setShelfId(addShelfDTO.getWarehouseAreaId()+addShelfDTO.getShelfId());
+                }else {
+                    return Result.failure(ErrorCode.SYSTEM_ERROR, "货架编号是一位大写字母(I和O除外)加两位数字");
+                }
+            }else {
+                return Result.failure(ErrorCode.SYSTEM_ERROR, "货架编号是一位大写字母(I和O除外)加两位数字");}
+        }else {
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "货架编号是一位大写字母(I和O除外)加两位数字");
+        }
+
+        ShelfManagement shelfManagement = new ShelfManagement();
+        BeanUtil.copyProperties(addShelfDTO,shelfManagement);
+        int insert = shelfManagementMapper.insert(shelfManagement);
+        if (insert>0){
+            return Result.success(getShelfByShelfId(shelfManagement.getShelfId()));
+        }else {
+            return Result.failure("货架新增失败");
+        }
     }
 }

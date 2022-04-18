@@ -2,7 +2,9 @@ package com.huanhong.wms.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperService;
+import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.ShelfManagement;
+import com.huanhong.wms.entity.dto.AddShelfDTO;
 import com.huanhong.wms.entity.vo.ShelfVO;
 
 import java.util.List;
@@ -36,4 +38,6 @@ public interface IShelfManagementService extends SuperService<ShelfManagement> {
      * @return
      */
     int stopUsingByParentCode(String parentCode,boolean enable);
+
+    Result addShelf(AddShelfDTO addShelfDTO);
 }

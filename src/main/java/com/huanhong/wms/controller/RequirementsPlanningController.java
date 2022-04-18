@@ -187,6 +187,8 @@ public class RequirementsPlanningController extends BaseController {
                 jsonResult.put("details", entityUtils.jsonField("requirementsPlanning",new RequiremetsPlanningDetails()));
                 jsonResult.put("mainValue", requirementsPlanning);
                 jsonResult.put("detailsValue", requiremetsPlanningDetailsList);
+                jsonResult.put("mainKey","updateRequirementsPlanningDTO");
+                jsonResult.put("detailKey","updateRequiremetsPlanningDetailsDTOList");
                 jsonResult.put("mainUpdate", "/wms/api/v1/requirements-planning/update");
                 jsonResult.put("detailsUpdate", "/wms/api/v1/requiremets-planning-details/update");
                 jsonResult.put("missionCompleted", "/wms/api/v1/requirements-planning/missionCompleted");

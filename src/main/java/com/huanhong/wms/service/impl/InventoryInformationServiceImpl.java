@@ -20,6 +20,7 @@ import com.huanhong.wms.entity.InventoryInformation;
 import com.huanhong.wms.entity.dto.AddInventoryInformationDTO;
 import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
 import com.huanhong.wms.entity.param.InventoryInfoPage;
+import com.huanhong.wms.entity.param.MaterialProfitParam;
 import com.huanhong.wms.entity.vo.InventoryInfoVo;
 import com.huanhong.wms.entity.vo.InventoryInformationVO;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
@@ -461,6 +462,14 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         String templatePath = ossProperties.getPath() + "templates/deadGoodsSettle.xlsx";
         ExportExcel.exportExcel(templatePath, ossProperties.getPath() + "temp/", "呆滞货物明细表（查询）.xlsx", params, request, response);
 
+    }
+
+    @Override
+    public Result<Object> getMaterialProfit(MaterialProfitParam param) {
+        Map<String, Object> map = new HashMap<>();
+        List<Map<String, Object>> material = inventoryInformationMapper.getMaterialProfitList(param);
+        map.put("material", material);
+        return Result.success(map);
     }
 
 

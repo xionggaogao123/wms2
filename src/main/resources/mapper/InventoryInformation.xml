@@ -181,4 +181,31 @@
         </if>
 
     </select>
+    <select id="getMaterialProfitList" resultType="java.util.Map">
+        SELECT
+        ii.material_name ,
+        round(AVG(ii.management_fee_rate) , 2) AS profit
+        FROM
+        inventory_information ii
+        WHERE
+        ii.del = 0
+        <if test="materialCoding != null">
+            and ii.material_coding = #{materialCoding}
+        </if>
+        <if test="materialName != null">
+            and ii.material_name = #{materialName}
+        </if>
+        <if test="startTime != null">
+            <![CDATA[
+            and ii.in_date_other >= #{startTime}
+            ]]>
+        </if>
+        <if test="endTime != null">
+            <![CDATA[
+            and ii.in_date_other <= #{endTime}
+            ]]>
+        </if>
+        GROUP BY
+        ii.material_coding
+    </select>
 </mapper>

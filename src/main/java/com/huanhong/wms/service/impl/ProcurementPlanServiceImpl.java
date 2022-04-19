@@ -13,6 +13,7 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.ProcurementPlan;
 import com.huanhong.wms.entity.dto.AddProcurementPlanDTO;
 import com.huanhong.wms.entity.dto.UpdateProcurementPlanDTO;
+import com.huanhong.wms.entity.param.DeptMaterialParam;
 import com.huanhong.wms.entity.vo.ProcurementPlanVO;
 import com.huanhong.wms.mapper.ProcurementPlanMapper;
 import com.huanhong.wms.service.IProcurementPlanService;
@@ -21,6 +22,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -174,5 +178,13 @@ public class ProcurementPlanServiceImpl extends SuperServiceImpl<ProcurementPlan
         queryWrapper.eq("process_instance_id",processInstanceId);
         ProcurementPlan procurementPlan = procurementPlanMapper.selectOne(queryWrapper);
         return procurementPlan;
+    }
+
+    @Override
+    public Result<Object> getProcurementPlanFrequencyAndQuantity(DeptMaterialParam param) {
+        Map<String, Object> map = new HashMap<>();
+        List<Map<String, Object>> material = procurementPlanMapper.getProcurementPlanFrequencyAndQuantityByParam(param);
+        map.put("material", material);
+        return Result.success(map);
     }
 }

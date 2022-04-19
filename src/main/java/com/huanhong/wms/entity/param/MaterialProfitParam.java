@@ -6,20 +6,18 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.Pattern;
 import java.util.Date;
 
 @Data
-@ApiModel(description="部门物料需求与领用参数")
-public class DeptMaterialParam {
+@ApiModel(description="物料利润率参数")
+public class MaterialProfitParam {
 
     @ApiModelProperty(value = "物料编码")
     private String materialCoding;
 
     @ApiModelProperty(value = "物料名称")
     private String materialName;
-
-    @ApiModelProperty(value = "部门ID")
-    private Integer deptId;
 
     @ApiModelProperty(value = "开始时间")
     @JsonFormat(pattern = "yyyy-MM")

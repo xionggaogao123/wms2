@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huanhong.wms.mapper.ProcurementPlanMapper">
+
+    <select id="getProcurementPlanFrequencyAndQuantityByParam" resultType="java.util.Map">
+        SELECT
+            COUNT(pp.id) AS num ,
+            pp.planning_department AS deptId ,
+            SUM(ppd.required_quantity) AS amount ,
+            (
+            CASE
+            WHEN d.`name` IS NULL THEN
+            ''
+            END
+            ) AS deptName ,
+            m.material_name ,
+            YEAR(pp.create_time) * 100 + MONTH(pp.create_time) AS timeStr
+        FROM
+            procurement_plan pp
+            LEFT JOIN procurement_plan_details ppd ON pp.plan_number = ppd.plan_number
+            LEFT JOIN dept d ON d.id = pp.planning_department
+            LEFT JOIN material m ON m.material_coding = ppd.material_coding
+        WHERE
+            pp.del = 0
+          AND pp.`status` = 3
+        <if test="materialCoding != null">
+            and ppd.material_coding = #{materialCoding}
+        </if>
+        <if test="materialName != null">
+            and m.material_name = #{materialName}
+        </if>
+        <if test="deptId != null">and d.id = #{deptId}</if>
+        <if test="startTime != null">
+            <![CDATA[
+            and pp.create_time >= #{startTime}
+            ]]>
+        </if>
+        <if test="endTime != null">
+            <![CDATA[
+            and pp.create_time <= #{endTime}
+            ]]>
+        </if>
+        GROUP BY
+            YEAR(pp.create_time) * 100 + MONTH(pp.create_time)
+    </select>
+</mapper>

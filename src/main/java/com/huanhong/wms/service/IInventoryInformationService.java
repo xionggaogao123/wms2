@@ -7,9 +7,10 @@ import com.huanhong.wms.entity.InventoryInformation;
 import com.huanhong.wms.entity.dto.AddInventoryInformationDTO;
 import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
 import com.huanhong.wms.entity.param.InventoryInfoPage;
+import com.huanhong.wms.entity.param.MaterialProfitParam;
+import com.huanhong.wms.entity.param.InventoryInfoPage;
 import com.huanhong.wms.entity.vo.InventoryInfoVo;
 import com.huanhong.wms.entity.vo.InventoryInformationVO;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -110,4 +111,7 @@ public interface IInventoryInformationService extends SuperService<InventoryInfo
     Result<Page<InventoryInfoVo>> deadGoodsSettle(InventoryInfoPage page);
 
     void deadGoodsSettleExport(InventoryInfoPage page, HttpServletRequest request, HttpServletResponse response);
+
+    Result<Object> getMaterialProfit(MaterialProfitParam param);
+
 }

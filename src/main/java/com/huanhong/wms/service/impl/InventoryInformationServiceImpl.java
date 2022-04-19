@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -32,6 +33,11 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -307,6 +313,46 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         queryWrapper.eq("batch", batch);
         queryWrapper.likeRight("cargo_space_id", warehouseId);
         return inventoryInformationMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public HashMap getMaterialPrice(String materialCoding) {
+
+        HashMap hashMap = new HashMap();
+
+        QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("unit_price","sales_unit_price");
+        queryWrapper.eq("material_coding", materialCoding);
+
+        DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime nowDate = LocalDateTime.now();
+        LocalDateTime previousDate = nowDate.minus(6, ChronoUnit.MONTHS);
+        /**
+         * 查询半年内此物料的单价（内外部）
+         */
+        String createDateStart = dtf1.format(previousDate);
+        String createDateEnd = dtf1.format(nowDate);
+        queryWrapper.apply("UNIX_TIMESTAMP(create_time) >= UNIX_TIMESTAMP('" + createDateStart + "')")
+                    .apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + createDateEnd + "')");
+        List<InventoryInformation> inventoryInformationList = inventoryInformationMapper.selectList(queryWrapper);
+        if (ObjectUtil.isAllEmpty(inventoryInformationList)){
+            hashMap.put("unit_price",BigDecimal.valueOf(0));
+            hashMap.put("sales_unit_price",BigDecimal.valueOf(0));
+            return hashMap;
+        }
+
+        BigDecimal uniPriceSum = BigDecimal.valueOf(0);
+        BigDecimal salesPriceSum = BigDecimal.valueOf(0);
+        for (InventoryInformation inventoryInformation:inventoryInformationList
+             ) {
+            //单价(泰丰盛和)
+            uniPriceSum = NumberUtil.add(uniPriceSum,inventoryInformation.getUnitPrice());
+            //单价(使用单位)
+            salesPriceSum = NumberUtil.add(salesPriceSum,inventoryInformation.getSalesUnitPrice());
+        }
+        hashMap.put("unit_price",NumberUtil.div(uniPriceSum,inventoryInformationList.size()));
+        hashMap.put("sales_unit_price",NumberUtil.div(salesPriceSum,inventoryInformationList.size()));
+        return hashMap;
     }
 
     @Override

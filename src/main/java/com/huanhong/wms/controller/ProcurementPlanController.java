@@ -1,20 +1,21 @@
 package com.huanhong.wms.controller;
 
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.common.units.EntityUtils;
 import com.huanhong.wms.BaseController;
+import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.ProcurementPlan;
-import com.huanhong.wms.entity.ProcurementPlanDetails;
+import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.ProcurementPlanVO;
 import com.huanhong.wms.mapper.ProcurementPlanMapper;
-import com.huanhong.wms.service.IProcurementPlanDetailsService;
-import com.huanhong.wms.service.IProcurementPlanService;
+import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -24,6 +25,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
@@ -41,6 +44,19 @@ public class ProcurementPlanController extends BaseController {
 
     @Resource
     private IProcurementPlanDetailsService procurementPlanDetailsService;
+
+    @Resource
+    private IUserService userService;
+
+    @Resource
+    private IRequirementsPlanningService requirementsPlanningService;
+
+    @Resource
+    private IRequiremetsPlanningDetailsService requiremetsPlanningDetailsService;
+
+    @Resource
+    private IInventoryInformationService inventoryInformationService;
+
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -276,6 +292,125 @@ public class ProcurementPlanController extends BaseController {
         } catch (Exception e) {
             log.error("完成审批接口异常", e);
             return Result.failure("系统异常");
+        }
+    }
+
+
+    @ApiOperationSupport(order = 10)
+    @ApiOperation(value = "多条需求计划合并采购计划")
+    @PutMapping("/consolidatedProcurementPlan")
+    public Result consolidatedProcurementPlan(@Valid @RequestBody List<RequirementsPlanning> requirementsPlanningList){
+        try {
+            LoginUser loginUser = this.getLoginUser();
+            AddProcurementPlanDTO addProcurementPlanDTO = new AddProcurementPlanDTO();
+            User user = userService.getById(loginUser.getId());
+            List<String> listOriginalDocumentNumber =  new ArrayList<>();
+            List<AddProcurementPlanDetailsDTO> addProcurementPlanDetailsDTOList = new ArrayList<>();
+            //获取需求计划表
+            int i = 0;
+            for (RequirementsPlanning requirementsPlanning:requirementsPlanningList
+                 ) {
+                listOriginalDocumentNumber.add(requirementsPlanning.getPlanNumber());
+                //获取需求计划明细表
+                List<RequiremetsPlanningDetails> requiremetsPlanningDetailsList = requiremetsPlanningDetailsService.getRequiremetsPlanningDetailsByDocNumAndWarehouseId(requirementsPlanning.getPlanNumber(), requirementsPlanning.getWarehouseId());
+                for (RequiremetsPlanningDetails requiremetsPlanningDetails:requiremetsPlanningDetailsList
+                     ) {
+                    int flag = 0;
+                    String materialCoding = requiremetsPlanningDetails.getMaterialCoding();
+                    if (i==0){
+                        //此物料尚未进入采购计划明细，新增采购计划明细表
+                        AddProcurementPlanDetailsDTO addProcurementPlanDetailsDTOFirst = new AddProcurementPlanDetailsDTO();
+                        //物料编码
+                        addProcurementPlanDetailsDTOFirst.setMaterialCoding(requiremetsPlanningDetails.getMaterialCoding());
+                        //采购需求数量=需求计划批准数量
+                        addProcurementPlanDetailsDTOFirst.setRequiredQuantity(requiremetsPlanningDetails.getApprovedQuantity());
+                        //计划采购数量=需求计划批准数量
+                        addProcurementPlanDetailsDTOFirst.setPlannedPurchaseQuantity(requiremetsPlanningDetails.getApprovedQuantity());
+                        //预估单价-使用单位单价历史价位
+                        addProcurementPlanDetailsDTOFirst.setEstimatedUnitPrice(requiremetsPlanningDetails.getEstimatedUnitPrice());
+                        //预估金额
+                        addProcurementPlanDetailsDTOFirst.setEstimatedAmount(requiremetsPlanningDetails.getEstimatedAmount());
+                        //预期到货时间
+                        addProcurementPlanDetailsDTOFirst.setWarehouseId(requirementsPlanning.getWarehouseId());
+                        //备注
+                        addProcurementPlanDetailsDTOFirst.setRemark("系统自动生成");
+
+                        addProcurementPlanDetailsDTOList.add(addProcurementPlanDetailsDTOFirst);
+                    }else {
+                        for (int j =0; j<addProcurementPlanDetailsDTOList.size();j++) {
+                            AddProcurementPlanDetailsDTO addProcurementPlanDetailsDTO = addProcurementPlanDetailsDTOList.get(j);
+                            //判断物料是否已经进入采购计划
+                            if (addProcurementPlanDetailsDTO.getMaterialCoding().equals(materialCoding)){
+                                //若此物料已有采购明细
+                                //采购明细中此物料的需求数量等于现需求数量加上此物料的需求明细的批准数量
+                                addProcurementPlanDetailsDTO.setRequiredQuantity(NumberUtil.add(addProcurementPlanDetailsDTO.getRequiredQuantity(),requiremetsPlanningDetails.getApprovedQuantity()));
+                                //同上处理计划采购数量=新增后的需求数量
+                                addProcurementPlanDetailsDTO.setPlannedPurchaseQuantity(addProcurementPlanDetailsDTO.getRequiredQuantity());
+                                //预估金额  采购计划明细的预估金额+需求计划明细的预估金额
+                                addProcurementPlanDetailsDTO.setEstimatedAmount(NumberUtil.add(addProcurementPlanDetailsDTO.getEstimatedAmount(),requiremetsPlanningDetails.getEstimatedAmount()));
+                                //备注
+                                addProcurementPlanDetailsDTO.setRemark("系统自动生成");
+                                //执行更新操作后代表当前需求计划明细已经并入采购计划明细中,flag++;
+                                flag++;
+                                //合并后跳出对比物料编码的循环
+                                break;
+                            }
+                        }
+                        //判断明细已经通过合并操作并入采购计划明细 0-无相同物料在采购计划明细中所以未经合并 1-已合并
+                        if (flag==0){
+                            //此物料尚未被合并操作并入采购计划明细，新增采购计划明细表
+                            AddProcurementPlanDetailsDTO addProcurementPlanDetailsDTONew = new AddProcurementPlanDetailsDTO();
+                            //物料编码
+                            addProcurementPlanDetailsDTONew.setMaterialCoding(requiremetsPlanningDetails.getMaterialCoding());
+                            //采购需求数量=需求计划批准数量
+                            addProcurementPlanDetailsDTONew.setRequiredQuantity(requiremetsPlanningDetails.getApprovedQuantity());
+                            //计划采购数量=需求计划批准数量
+                            addProcurementPlanDetailsDTONew.setPlannedPurchaseQuantity(requiremetsPlanningDetails.getApprovedQuantity());
+                            //预估单价-使用单位单价历史价位
+                            addProcurementPlanDetailsDTONew.setEstimatedUnitPrice(requiremetsPlanningDetails.getEstimatedUnitPrice());
+                            //预估金额
+                            addProcurementPlanDetailsDTONew.setEstimatedAmount(requiremetsPlanningDetails.getEstimatedAmount());
+                            //预期到货时间
+                            addProcurementPlanDetailsDTONew.setWarehouseId(requirementsPlanning.getWarehouseId());
+                            //备注
+                            addProcurementPlanDetailsDTONew.setRemark("系统自动生成");
+                            addProcurementPlanDetailsDTOList.add(addProcurementPlanDetailsDTONew);
+                         }
+                       }
+                    }
+                i++;
+            }
+            //将参数赋给采购计划DTO
+            addProcurementPlanDTO.setOriginalDocumentNumber(JSON.toJSONString(listOriginalDocumentNumber));
+            addProcurementPlanDTO.setMaterialUse(requirementsPlanningList.get(0).getMaterialUse());
+            addProcurementPlanDTO.setPlanClassification(requirementsPlanningList.get(0).getPlanClassification());
+            addProcurementPlanDTO.setStatus(1);
+            addProcurementPlanDTO.setPlanningDepartment(user.getDeptId().toString());
+            addProcurementPlanDTO.setPlanner(user.getId().toString());
+            addProcurementPlanDTO.setWarehouseId(requirementsPlanningList.get(0).getWarehouseId());
+            addProcurementPlanDTO.setDemandDepartment(requirementsPlanningList.get(0).getPlanUnit());
+            addProcurementPlanDTO.setRemark("系统自动生成");
+
+            //将主表和明细装填入dto，调用新增方法（接口）
+            AddProcurementPlanAndDetailsDTO addProcurementPlanAndDetailsDTO = new AddProcurementPlanAndDetailsDTO();
+            addProcurementPlanAndDetailsDTO.setAddProcurementPlanDTO(addProcurementPlanDTO);
+            addProcurementPlanAndDetailsDTO.setAddProcurementPlanDetailsDTOList(addProcurementPlanDetailsDTOList);
+            Result result = add(addProcurementPlanAndDetailsDTO);
+            if (result.isOk()){
+                ProcurementPlan procurementPlan = (ProcurementPlan) result.getData();
+                String docNum = procurementPlan.getPlanNumber();
+                String warehouseId = procurementPlan.getWarehouseId();
+                List<ProcurementPlanDetails> procurementPlanDetailsList = procurementPlanDetailsService.getProcurementPlanDetailsByDocNumAndWarehouseId(docNum,warehouseId);
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("main",procurementPlan);
+                jsonObject.put("details",procurementPlanDetailsList);
+                return Result.success(jsonObject);
+            }else {
+                return Result.failure("合并新增采购计划单失败！");
+            }
+        }catch (Exception e){
+            log.error("系统异常,新增采购计划单失败！",e);
+            return Result.failure("系统异常,合并新增采购计划单失败！");
         }
     }
 }

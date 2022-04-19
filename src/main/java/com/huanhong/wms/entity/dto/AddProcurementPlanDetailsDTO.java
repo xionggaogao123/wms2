@@ -33,7 +33,7 @@ public class AddProcurementPlanDetailsDTO {
     @ApiModelProperty(value = "计划采购数量")
     private Double plannedPurchaseQuantity;
 
-    @NotNull
+
     @Min(0)
     @ApiModelProperty(value = "批准数量")
     private Double approvedQuantity;
@@ -43,12 +43,12 @@ public class AddProcurementPlanDetailsDTO {
     @ApiModelProperty(value = "预估单价")
     private BigDecimal estimatedUnitPrice;
 
-    @NotNull
+
     @Min(0)
     @ApiModelProperty(value = "预估金额")
     private BigDecimal estimatedAmount;
 
-    @NotNull
+
     @ApiModelProperty(value = "要求到货时间")
     private LocalDateTime requestArrivalTime;
 
@@ -63,12 +63,10 @@ public class AddProcurementPlanDetailsDTO {
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;
 
-    @NotNull
     @Min(0)
     @ApiModelProperty(value = "库存量")
     private Double inventory;
 
-    @NotNull
     @Min(0)
     @ApiModelProperty(value = "安全库存")
     private Double safetyStock;

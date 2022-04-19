@@ -34,7 +34,6 @@ public class AddRequirementsPlanningDTO {
     private Integer planClassification;
 
     @Min(0)
-    @NotNull
     @ApiModelProperty(value = "预估总金额")
     private BigDecimal estimatedTotalAmount;
 

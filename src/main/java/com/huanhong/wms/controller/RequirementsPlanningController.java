@@ -1,5 +1,6 @@
 package com.huanhong.wms.controller;
 
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -13,6 +14,7 @@ import com.huanhong.wms.entity.RequiremetsPlanningDetails;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.RequirementsPlanningVO;
 import com.huanhong.wms.mapper.RequirementsPlanningMapper;
+import com.huanhong.wms.service.IInventoryInformationService;
 import com.huanhong.wms.service.IRequirementsPlanningService;
 import com.huanhong.wms.service.IRequiremetsPlanningDetailsService;
 import io.swagger.annotations.Api;
@@ -26,6 +28,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
@@ -44,6 +48,9 @@ public class RequirementsPlanningController extends BaseController {
 
     @Resource
     private IRequiremetsPlanningDetailsService requiremetsPlanningDetailsService;
+
+    @Resource
+    private IInventoryInformationService inventoryInformationService;
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -87,6 +94,11 @@ public class RequirementsPlanningController extends BaseController {
                 for (AddRequiremetsPlanningDetailsDTO addRequiremetsPlanningDetailsDTO : addRequirementsPlanningDetailsDTOList) {
                     addRequiremetsPlanningDetailsDTO.setPlanNumber(docNum);
                     addRequiremetsPlanningDetailsDTO.setWarehouseId(warehouseId);
+                    HashMap hashMap = inventoryInformationService.getMaterialPrice(addRequiremetsPlanningDetailsDTO.getMaterialCoding());
+                    //预估单价=历史单价
+                    addRequiremetsPlanningDetailsDTO.setEstimatedUnitPrice((BigDecimal) hashMap.get("sales_unit_price"));
+                    //预估金额
+                    addRequiremetsPlanningDetailsDTO.setEstimatedAmount(NumberUtil.mul(addRequiremetsPlanningDetailsDTO.getEstimatedUnitPrice(),addRequiremetsPlanningDetailsDTO.getApprovedQuantity()));
                 }
                 requiremetsPlanningDetailsService.addRequiremetsPlanningDetails(addRequirementsPlanningDetailsDTOList);
             }

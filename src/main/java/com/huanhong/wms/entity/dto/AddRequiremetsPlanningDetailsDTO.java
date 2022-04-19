@@ -16,7 +16,6 @@ public class AddRequiremetsPlanningDetailsDTO {
 
     private static final long serialVersionUID=1L;
 
-    @NotBlank
     @ApiModelProperty(value = "需求单据编号")
     private String planNumber;
 
@@ -39,12 +38,10 @@ public class AddRequiremetsPlanningDetailsDTO {
     @ApiModelProperty(value = "批准数量")
     private Double approvedQuantity;
 
-    @NotNull
     @Min(0)
     @ApiModelProperty(value = "预估单价")
     private BigDecimal estimatedUnitPrice;
 
-    @NotNull
     @Min(0)
     @ApiModelProperty(value = "预估金额")
     private BigDecimal estimatedAmount;

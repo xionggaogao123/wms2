@@ -25,7 +25,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/variable")
+@RequestMapping("/v1/variable")
 @ApiSort(2)
 @Api(tags = "参数变量 🔧")
 public class VariableController extends BaseController {

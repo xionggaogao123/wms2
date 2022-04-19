@@ -8,6 +8,7 @@ import org.hibernate.validator.constraints.Length;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 @ApiModel(description = "新增用户DTO")
@@ -57,5 +58,8 @@ public class AddUserDTO {
     @Length(max = 256)
     @ApiModelProperty(value = "备注")
     private String remark;
+
+    @ApiModelProperty(value = "角色 ids")
+    private List<Integer> roleIds;
 
 }

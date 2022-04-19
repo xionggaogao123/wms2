@@ -8,6 +8,7 @@ import org.hibernate.validator.constraints.Length;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
+import java.util.List;
 
 @Data
 @ApiModel(description = "更新用户")
@@ -57,4 +58,7 @@ public class UpUserDTO {
     @ApiModelProperty(value = "状态 0.禁用  1.启用")
     private Integer state;
 
+
+    @ApiModelProperty(value = "角色 ids")
+    private List<Integer> roleIds;
 }

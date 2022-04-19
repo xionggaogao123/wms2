@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 @Slf4j
-@Profile("prod")
 @Component
 public class HikMqTask {
 

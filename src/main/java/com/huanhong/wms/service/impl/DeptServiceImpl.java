@@ -58,8 +58,12 @@ public class DeptServiceImpl extends SuperServiceImpl<DeptMapper, Dept> implemen
 
     @Override
     public boolean isStopUsing(int deptId) {
-        int flag = getDeptById(deptId).getState();
-        if (flag==0){
+        int state = 0;
+        Dept dept = getDeptById(deptId);
+        if(null != dept){
+            state = dept.getState();
+        }
+        if (state==0){
             return true;
         }
         return false;

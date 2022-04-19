@@ -1,6 +1,7 @@
 package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Dict;
 import cn.hutool.core.util.ObjectUtil;
@@ -19,6 +20,7 @@ import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.Company;
 import com.huanhong.wms.entity.Dept;
+import com.huanhong.wms.entity.SysUserRole;
 import com.huanhong.wms.entity.User;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.mapper.CompanyMapper;
@@ -71,6 +73,8 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
 
     @Resource
     private ISysRoleMenuService sysRoleMenuService;
+    @Resource
+    private ISysUserRoleService sysUserRoleService;
 
     @Override
     public Result<User> checkLogin(LoginDTO login) {
@@ -177,6 +181,16 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         if (insert > 0) {
             // 更新部门人数
             deptService.updateDeptUserCount();
+            // 添加用户角色
+            if (CollectionUtil.isNotEmpty(dto.getRoleIds())) {
+                List<SysUserRole> sysUserRoleList = dto.getRoleIds().stream().map(roleId -> {
+                    SysUserRole sysUserRole = new SysUserRole();
+                    sysUserRole.setUserId(addUser.getId());
+                    sysUserRole.setRoleId(roleId);
+                    return sysUserRole;
+                }).collect(Collectors.toList());
+                sysUserRoleService.saveBatch(sysUserRoleList);
+            }
         }
         return insert > 0 ? Result.success(addUser.getId()) : Result.failure("新增失败");
     }
@@ -209,7 +223,19 @@ public class UserServiceImpl extends SuperServiceImpl<UserMapper, User> implemen
         } catch (Exception e) {
             log.error("用户信息更新异常: {}", updateUser);
         }
-        return update > 0 ? Result.success(updateUser.getId()) : Result.failure("更新失败");
+        boolean flag = update > 0;
+        // 修改用户角色
+        if (CollectionUtil.isNotEmpty(dto.getRoleIds())) {
+            sysUserRoleService.remove(Wrappers.<SysUserRole>lambdaUpdate().eq(SysUserRole::getUserId, updateUser.getId()));
+            List<SysUserRole> sysUserRoleList = dto.getRoleIds().stream().map(roleId -> {
+                SysUserRole sysUserRole = new SysUserRole();
+                sysUserRole.setUserId(updateUser.getId());
+                sysUserRole.setRoleId(roleId);
+                return sysUserRole;
+            }).collect(Collectors.toList());
+            flag = sysUserRoleService.saveBatch(sysUserRoleList);
+        }
+        return flag ? Result.success(updateUser.getId()) : Result.failure("更新失败");
     }
 
     @Override

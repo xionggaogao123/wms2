@@ -21,7 +21,6 @@ import java.net.UnknownHostException;
 @ServletComponentScan
 @ComponentScan("com.huanhong")
 @SpringBootApplication
-@EnableScheduling
 public class Application {
 
     public static void main(String[] args) throws UnknownHostException {

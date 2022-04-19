@@ -8,7 +8,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 @Slf4j
-@Component
 public class TestTask {
 
 

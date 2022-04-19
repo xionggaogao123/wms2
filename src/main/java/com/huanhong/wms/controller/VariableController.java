@@ -45,7 +45,7 @@ public class VariableController extends BaseController {
                                                   @RequestParam(required = false) boolean isPrivate) {
         LoginUser loginUser = this.getLoginUser();
         QueryWrapper<Variable> wrapper = new QueryWrapper<>();
-        wrapper.select("id", "`key`", "value", "extra", "remark", "gmt_create", "gmt_update")
+        wrapper.select("id", "`key`", "value", "extra", "remark", "create_time", "last_update")
                 .orderByAsc("orders");
         if (isKeys) {
             String[] keys = key.split(",");

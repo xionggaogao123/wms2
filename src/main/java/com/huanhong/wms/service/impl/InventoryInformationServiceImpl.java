@@ -23,6 +23,8 @@ import com.huanhong.wms.entity.param.InventoryInfoPage;
 import com.huanhong.wms.entity.param.MaterialProfitParam;
 import com.huanhong.wms.entity.vo.InventoryInfoVo;
 import com.huanhong.wms.entity.vo.InventoryInformationVO;
+import com.huanhong.wms.entity.vo.PreExpirationInventoryInfoVo;
+import com.huanhong.wms.entity.vo.SafeInventoryInfoVo;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.properties.OssProperties;
 import com.huanhong.wms.service.ICargoSpaceManagementService;
@@ -469,6 +471,25 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         Map<String, Object> map = new HashMap<>();
         List<Map<String, Object>> material = inventoryInformationMapper.getMaterialProfitList(param);
         map.put("material", material);
+        return Result.success(map);
+    }
+
+    @Override
+    public Result<Object> getBelowSafetyStockMaterialWarning(String warehouseId) {
+        Map<String, Object> map = new HashMap<>();
+        List<SafeInventoryInfoVo> vos = inventoryInformationMapper.getBelowSafetyStockMaterialWarningByParam(warehouseId);
+        map.put("material", vos);
+        return Result.success(map);
+    }
+
+    @Override
+    public Result<Object> getPreExpirationWarning(String warehouseId, Integer days) {
+        Map<String, Object> map = new HashMap<>();
+        if (days == null || days ==0 ){
+            days = 30;
+        }
+        List<PreExpirationInventoryInfoVo> vos = inventoryInformationMapper.getPreExpirationWarningByParam(warehouseId,days);
+        map.put("material", vos);
         return Result.success(map);
     }
 

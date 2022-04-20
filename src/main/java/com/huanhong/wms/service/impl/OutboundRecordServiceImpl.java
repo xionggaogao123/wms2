@@ -12,11 +12,13 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.OutboundRecord;
 import com.huanhong.wms.entity.dto.AddOutboundRecordDTO;
 import com.huanhong.wms.entity.dto.UpdateOutboundRecordDTO;
+import com.huanhong.wms.entity.param.MaterialOutInParam;
 import com.huanhong.wms.entity.param.OutboundDetailPage;
 import com.huanhong.wms.entity.vo.OutboundDetailVo;
 import com.huanhong.wms.entity.vo.OutboundRecordVO;
 import com.huanhong.wms.entity.vo.WarehousingDetailVo;
 import com.huanhong.wms.mapper.OutboundRecordMapper;
+import com.huanhong.wms.mapper.WarehousingRecordMapper;
 import com.huanhong.wms.properties.OssProperties;
 import com.huanhong.wms.service.IOutboundRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +47,9 @@ public class OutboundRecordServiceImpl extends SuperServiceImpl<OutboundRecordMa
 
     @Resource
     private OutboundRecordMapper outboundRecordMapper;
+
+    @Resource
+    private WarehousingRecordMapper warehousingRecordMapper;
 
     @Autowired
     private OssProperties ossProperties;
@@ -199,5 +204,18 @@ public class OutboundRecordServiceImpl extends SuperServiceImpl<OutboundRecordMa
         String templatePath = ossProperties.getPath() + "templates/outboundDetail.xlsx";
         ExportExcel.exportExcel(templatePath, ossProperties.getPath() + "temp/", "入库明细表.xlsx", params, request, response);
 
+    }
+
+    @Override
+    public Result<Object> getTheTrendOfWarehouseInboundAndOutbound(MaterialOutInParam param) {
+        Map<String, Object> map = new HashMap<>();
+        if (param.getType() == null){
+            param.setType(1);
+        }
+        List<Map<String, Object>> out = outboundRecordMapper.getTheTrendOfWarehouseOutboundByParam(param);
+        map.put("out", out);
+        List<Map<String, Object>> in = warehousingRecordMapper.getTheTrendOfWarehouseInboundByParam(param);
+        map.put("in", in);
+        return Result.success(map);
     }
 }

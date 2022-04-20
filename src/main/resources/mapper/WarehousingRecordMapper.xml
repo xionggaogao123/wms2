@@ -44,4 +44,41 @@
         </if>
 
     </select>
+    <select id="getTheTrendOfWarehouseInboundByParam" resultType="java.util.Map">
+        SELECT
+            SUM(w.enter_quantity) AS amount ,
+            DATE(w.create_time) AS dateStr ,
+            MONTH(w.create_time) AS monthStr
+        FROM
+            warehousing_record w
+        WHERE
+            w.del = 0
+        <if test="warehouseId != null">
+            and w.warehouse_id = #{warehouseId}
+        </if>
+        <if test="startTime != null">
+            <![CDATA[
+            and w.create_time >= #{startTime}
+            ]]>
+        </if>
+        <if test="endTime != null">
+            <![CDATA[
+            and w.create_time <= #{endTime}
+            ]]>
+        </if>
+        <if test="type != null">
+            <choose>
+                <when test="1">
+                    GROUP BY
+                    DATE(w.create_time)
+                </when>
+                <when test="2">
+                    GROUP BY
+                    MONTH(w.create_time)
+                </when>
+            </choose>
+        </if>
+        ORDER BY
+            w.create_time DESC
+    </select>
 </mapper>

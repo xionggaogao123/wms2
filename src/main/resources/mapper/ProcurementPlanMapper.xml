@@ -6,19 +6,13 @@
         SELECT
             COUNT(pp.id) AS num ,
             pp.planning_department AS deptId ,
-            SUM(ppd.required_quantity) AS amount ,
-            (
-            CASE
-            WHEN d.`name` IS NULL THEN
-            ''
-            END
-            ) AS deptName ,
+            SUM(ppd.approved_quantity) AS amount ,
             m.material_name ,
             YEAR(pp.create_time) * 100 + MONTH(pp.create_time) AS timeStr
         FROM
             procurement_plan pp
             LEFT JOIN procurement_plan_details ppd ON pp.plan_number = ppd.plan_number
-            LEFT JOIN dept d ON d.id = pp.planning_department
+--             LEFT JOIN dept d ON d.id = pp.planning_department
             LEFT JOIN material m ON m.material_coding = ppd.material_coding
         WHERE
             pp.del = 0
@@ -29,7 +23,7 @@
         <if test="materialName != null">
             and m.material_name = #{materialName}
         </if>
-        <if test="deptId != null">and d.id = #{deptId}</if>
+        <if test="deptId != null">and pp.planning_department = #{deptId}</if>
         <if test="startTime != null">
             <![CDATA[
             and pp.create_time >= #{startTime}
@@ -42,5 +36,35 @@
         </if>
         GROUP BY
             YEAR(pp.create_time) * 100 + MONTH(pp.create_time)
+    </select>
+    <select id="getMaterialPurchasingAnalysisOnYearBasisByParam"
+            resultType="com.huanhong.wms.entity.vo.MaterialYearVO">
+        SELECT
+        pp.planning_department AS deptId ,
+        SUM(ppd.approved_quantity) AS amount ,
+        m.material_name ,
+        MONTH(pp.create_time) AS monthTime ,
+        YEAR(pp.create_time) AS yearTime
+        FROM
+        procurement_plan pp
+        LEFT JOIN procurement_plan_details ppd ON pp.plan_number = ppd.plan_number
+        LEFT JOIN material m ON m.material_coding = ppd.material_coding
+        WHERE
+        pp.del = 0
+        AND pp.`status` = 3
+        <if test="materialCoding != null">
+            and ppd.material_coding = #{materialCoding}
+        </if>
+        <if test="materialName != null">
+            and m.material_name = #{materialName}
+        </if>
+        <if test="deptId != null">and pp.planning_department = #{deptId}</if>
+        <if test="yearTime != null">
+            <![CDATA[
+            and YEAR(pp.create_time) = #{yearTime}
+            ]]>
+        </if>
+        GROUP BY
+        YEAR(pp.create_time) * 100 + MONTH(pp.create_time)
     </select>
 </mapper>

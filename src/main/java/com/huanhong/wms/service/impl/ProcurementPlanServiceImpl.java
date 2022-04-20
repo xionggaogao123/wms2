@@ -14,6 +14,9 @@ import com.huanhong.wms.entity.ProcurementPlan;
 import com.huanhong.wms.entity.dto.AddProcurementPlanDTO;
 import com.huanhong.wms.entity.dto.UpdateProcurementPlanDTO;
 import com.huanhong.wms.entity.param.DeptMaterialParam;
+import com.huanhong.wms.entity.param.MaterialYearParam;
+import com.huanhong.wms.entity.vo.MaterialPriceVO;
+import com.huanhong.wms.entity.vo.MaterialYearVO;
 import com.huanhong.wms.entity.vo.ProcurementPlanVO;
 import com.huanhong.wms.mapper.ProcurementPlanMapper;
 import com.huanhong.wms.service.IProcurementPlanService;
@@ -25,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -185,6 +189,14 @@ public class ProcurementPlanServiceImpl extends SuperServiceImpl<ProcurementPlan
         Map<String, Object> map = new HashMap<>();
         List<Map<String, Object>> material = procurementPlanMapper.getProcurementPlanFrequencyAndQuantityByParam(param);
         map.put("material", material);
+        return Result.success(map);
+    }
+
+    @Override
+    public Result<Object> getMaterialPurchasingAnalysisOnYearBasis(MaterialYearParam param) {
+        Map<Integer, List<MaterialYearVO>> map = new HashMap<>();
+        List<MaterialYearVO> list = procurementPlanMapper.getMaterialPurchasingAnalysisOnYearBasisByParam(param);
+        map = list.stream().collect(Collectors.groupingBy(MaterialYearVO::getYearTime));
         return Result.success(map);
     }
 }

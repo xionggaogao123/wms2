@@ -114,4 +114,7 @@ public interface IInventoryInformationService extends SuperService<InventoryInfo
 
     Result<Object> getMaterialProfit(MaterialProfitParam param);
 
+    Result<Object> getBelowSafetyStockMaterialWarning(String warehouseId);
+
+    Result<Object> getPreExpirationWarning(String warehouseId, Integer days);
 }

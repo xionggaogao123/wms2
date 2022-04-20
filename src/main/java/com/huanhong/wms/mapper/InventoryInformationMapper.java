@@ -6,6 +6,10 @@ import com.huanhong.wms.entity.InventoryInformation;
 import com.huanhong.wms.entity.param.InventoryInfoPage;
 import com.huanhong.wms.entity.param.MaterialProfitParam;
 import com.huanhong.wms.entity.vo.InventoryInfoVo;
+import com.huanhong.wms.entity.vo.PreExpirationInventoryInfoVo;
+import com.huanhong.wms.entity.vo.SafeInventoryInfoVo;
+import org.apache.ibatis.annotations.MapKey;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -27,5 +31,10 @@ public interface InventoryInformationMapper extends BaseMapper<InventoryInformat
 
     Page<InventoryInfoVo> deadGoodsSettle(InventoryInfoPage page);
 
+    @MapKey("id")
     List<Map<String, Object>> getMaterialProfitList(MaterialProfitParam param);
+
+    List<SafeInventoryInfoVo> getBelowSafetyStockMaterialWarningByParam(@Param("warehouseId") String warehouseId);
+
+    List<PreExpirationInventoryInfoVo> getPreExpirationWarningByParam(@Param("warehouseId") String warehouseId, @Param("days") Integer days);
 }

@@ -7,6 +7,7 @@ import com.huanhong.wms.entity.ProcurementPlan;
 import com.huanhong.wms.entity.dto.AddProcurementPlanDTO;
 import com.huanhong.wms.entity.dto.UpdateProcurementPlanDTO;
 import com.huanhong.wms.entity.param.DeptMaterialParam;
+import com.huanhong.wms.entity.param.MaterialYearParam;
 import com.huanhong.wms.entity.vo.ProcurementPlanVO;
 
 /**
@@ -65,4 +66,6 @@ public interface IProcurementPlanService extends SuperService<ProcurementPlan> {
     ProcurementPlan getProcurementPlanByProcessInstanceId(String processInstanceId);
 
     Result<Object> getProcurementPlanFrequencyAndQuantity(DeptMaterialParam param);
+
+    Result<Object> getMaterialPurchasingAnalysisOnYearBasis(MaterialYearParam param);
 }

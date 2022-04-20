@@ -19,9 +19,7 @@ import com.huanhong.wms.bean.RedisKey;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.User;
 import com.huanhong.wms.entity.dto.LoginDTO;
-import com.huanhong.wms.entity.param.DeptMaterialParam;
-import com.huanhong.wms.entity.param.MaterialPriceParam;
-import com.huanhong.wms.entity.param.MaterialProfitParam;
+import com.huanhong.wms.entity.param.*;
 import com.huanhong.wms.properties.OssProperties;
 import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
@@ -63,6 +61,9 @@ public class DataController extends BaseController {
 
     @Resource
     private IProcurementPlanService procurementPlanService;
+
+    @Resource
+    private IOutboundRecordService outboundRecordService;
 
 
 
@@ -108,9 +109,9 @@ public class DataController extends BaseController {
     @OperateLog(title = "物料采购同比分析_查询",type = OperateType.QUERY)
     @ApiOperation(value = "物料采购同比分析")
     @GetMapping("/purchasing")
-    public Result<Object> materialPurchasingAnalysisOnYearBasis() {
+    public Result<Object> materialPurchasingAnalysisOnYearBasis(MaterialYearParam param) {
         LoginUser loginUser = this.getLoginUser();
-        return null ;
+        return procurementPlanService.getMaterialPurchasingAnalysisOnYearBasis(param) ;
     }
 
     @OperateLog(title = "物料库存ABC分析_查询",type = OperateType.QUERY)
@@ -124,25 +125,25 @@ public class DataController extends BaseController {
     @OperateLog(title = "低于安全库存物料预警_查询",type = OperateType.QUERY)
     @ApiOperation(value = "低于安全库存物料预警")
     @GetMapping("/belowWarning")
-    public Result<Object> belowSafetyStockMaterialWarning() {
+    public Result<Object> belowSafetyStockMaterialWarning(@RequestParam String warehouseId) {
         LoginUser loginUser = this.getLoginUser();
-        return null ;
+        return inventoryInformationService.getBelowSafetyStockMaterialWarning(warehouseId) ;
     }
 
     @OperateLog(title = "预过期信息预警_查询",type = OperateType.QUERY)
     @ApiOperation(value = "预过期信息预警")
     @GetMapping("/preExpirationWarning")
-    public Result<Object> preExpirationWarning() {
+    public Result<Object> preExpirationWarning(@RequestParam String warehouseId,@RequestParam(required = false,defaultValue = "30") Integer days) {
         LoginUser loginUser = this.getLoginUser();
-        return null ;
+        return inventoryInformationService.getPreExpirationWarning(warehouseId,days) ;
     }
 
     @OperateLog(title = "各仓库出入库趋势分析_查询",type = OperateType.QUERY)
     @ApiOperation(value = "各仓库出入库趋势分析")
     @GetMapping("/trend-in-out")
-    public Result<Object> analysisOfTheTrendOfWarehouseInboundAndOutbound() {
+    public Result<Object> analysisOfTheTrendOfWarehouseInboundAndOutbound(MaterialOutInParam param) {
         LoginUser loginUser = this.getLoginUser();
-        return null ;
+        return outboundRecordService.getTheTrendOfWarehouseInboundAndOutbound(param);
     }
 
     @OperateLog(title = "出入库金额统计分析_查询",type = OperateType.QUERY)

@@ -208,4 +208,50 @@
         GROUP BY
         ii.material_coding
     </select>
+
+    <select id="getBelowSafetyStockMaterialWarningByParam"
+            resultType="com.huanhong.wms.entity.vo.SafeInventoryInfoVo">
+        SELECT
+            i.material_coding ,
+            i.material_name ,
+            i.inventory_credit ,
+            i.safe_quantity ,
+            m.specification_model
+        FROM
+            inventory_information i
+                LEFT JOIN material m ON m.material_coding = i.material_coding
+        WHERE
+            i.del = 0
+        AND i.safe_quantity > i.inventory_credit
+        <if test="warehouseId != null">
+            and i.warehouse_id = #{warehouseId}
+        </if>
+        ORDER BY
+            i.material_coding
+    </select>
+    <select id="getPreExpirationWarningByParam"
+            resultType="com.huanhong.wms.entity.vo.PreExpirationInventoryInfoVo">
+        SELECT
+        i.material_coding ,
+        i.material_name ,
+        i.effective_date ,
+        i.inventory_credit ,
+        m.specification_model
+        FROM
+        inventory_information i
+        LEFT JOIN material m ON m.material_coding = i.material_coding
+        WHERE
+        i.del = 0
+        AND i.inventory_credit > 0
+        AND i.effective_date IS NOT NULL
+        AND DATE(i.effective_date) - DATE(NOW()) > 0
+        <if test="warehouseId != null">
+            and i.warehouse_id = #{warehouseId}
+        </if>
+        <if test="days != null">
+            AND DATE(i.effective_date) - DATE(NOW()) &lt; #{days}
+        </if>
+        ORDER BY
+        i.effective_date
+    </select>
 </mapper>

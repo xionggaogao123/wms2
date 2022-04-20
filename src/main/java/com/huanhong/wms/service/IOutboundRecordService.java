@@ -6,6 +6,7 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.OutboundRecord;
 import com.huanhong.wms.entity.dto.AddOutboundRecordDTO;
 import com.huanhong.wms.entity.dto.UpdateOutboundRecordDTO;
+import com.huanhong.wms.entity.param.MaterialOutInParam;
 import com.huanhong.wms.entity.param.OutboundDetailPage;
 import com.huanhong.wms.entity.vo.OutboundDetailVo;
 import com.huanhong.wms.entity.vo.OutboundRecordVO;
@@ -118,4 +119,5 @@ public interface IOutboundRecordService extends SuperService<OutboundRecord> {
     void outboundDetailExport(OutboundDetailPage page, HttpServletRequest request, HttpServletResponse response);
 
 
+    Result<Object> getTheTrendOfWarehouseInboundAndOutbound(MaterialOutInParam param);
 }

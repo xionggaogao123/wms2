@@ -23,7 +23,7 @@
         <if test="materialCoding != null">and m.material_coding = #{materialCoding}</if>
         <if test="materialName != null">and m.material_name = #{materialName}</if>
         <if test="startTime != null">and rp.createTime > #{startTime}</if>
-        <if test="endTime != null">and rp.createTime lt; #{endTime}</if>
+        <if test="endTime != null">and rp.createTime &lt; #{endTime}</if>
         ORDER BY ew.create_time
     </select>
 </mapper>

@@ -1,5 +1,7 @@
 package com.huanhong.wms.entity.dto;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -14,8 +16,15 @@ import java.time.LocalDateTime;
 @ApiModel(description="到货检验主表")
 public class AddArrivalVerificationDTO {
 
+
+    @NotBlank
+    @ApiModelProperty(value = "清点单编号")
+    private String originalDocumentNumber;
+
+
     @ApiModelProperty(value = "采购合同编号")
     private String contractNumber;
+
 
     @NotBlank
     @ApiModelProperty(value = "询价单编号")
@@ -44,16 +53,17 @@ public class AddArrivalVerificationDTO {
     @ApiModelProperty(value = "理货人")
     private String inspector;
 
-    @NotBlank
     @ApiModelProperty(value = "供应商名称")
     private String supplierName;
 
-    @NotBlank
     @ApiModelProperty(value = "车号")
     private String carNumber;
 
     @NotBlank
     @ApiModelProperty(value = "仓库编号")
     private String warehouseId;
+
+    @ApiModelProperty(value = "备注")
+    private String remark;
 
 }

@@ -1,6 +1,8 @@
 package com.huanhong.wms.controller;
 
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -8,16 +10,13 @@ import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.common.units.EntityUtils;
 import com.huanhong.wms.BaseController;
+import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.ArrivalVerification;
-import com.huanhong.wms.entity.ArrivalVerificationDetails;
-import com.huanhong.wms.entity.Material;
+import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.ArrivalVerificationVO;
 import com.huanhong.wms.mapper.ArrivalVerificationMapper;
-import com.huanhong.wms.service.IArrivalVerificationDetailsService;
-import com.huanhong.wms.service.IArrivalVerificationService;
-import com.huanhong.wms.service.IMaterialService;
+import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -27,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 
 @ApiSort()
@@ -47,6 +47,15 @@ public class ArrivalVerificationController extends BaseController {
 
     @Resource
     private IMaterialService materialService;
+
+    @Resource
+    private IUserService userService;
+
+    @Resource
+    private IInventoryDocumentService inventoryDocumentService;
+
+    @Resource
+    private IInventoryDocumentDetailsService inventoryDocumentDetailsService;
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -170,8 +179,8 @@ public class ArrivalVerificationController extends BaseController {
 
     @ApiOperationSupport(order = 6)
     @ApiOperation(value = "根据单据编号和仓库Id获取到货检验单及其明细")
-    @GetMapping("/getRequirementsPlanningByDocNumAndWarehouseId")
-    public Result getRequirementsPlanningByDocNumAndWarehouseId(
+    @GetMapping("/getArrivalVerificationByDocNumAndWarehouseId")
+    public Result getArrivalVerificationByDocNumAndWarehouseId(
             @RequestParam String docNum, @RequestParam String warehouseId
     ) {
         JSONObject jsonObject = new JSONObject();
@@ -312,5 +321,134 @@ public class ArrivalVerificationController extends BaseController {
         }
     }
 
+
+    @ApiOperationSupport(order = 11)
+    @ApiOperation(value = "合并清点单成到货检验单")
+    @PutMapping("/consolidatedArrivalVerification")
+    public Result consolidatedArrivalVerification(@Valid @RequestBody List<InventoryDocument> inventoryDocumentList){
+        try {
+            LoginUser loginUser = this.getLoginUser();
+            User user = userService.getById(loginUser.getId());
+            List<String> listOriginalDocumentNumber =  new ArrayList<>();
+            AddArrivalVerificationDTO addArrivalVerificationDTO = new AddArrivalVerificationDTO();
+            List<AddArrivalVerificationDetailsDTO> addArrivalVerificationDetailsDTOList = new ArrayList<>();
+            //获取清点单
+            int i = 0;
+            for (InventoryDocument inventoryDocument:inventoryDocumentList
+                 ) {
+                //将清点单编号放入检验单
+                listOriginalDocumentNumber.add(inventoryDocument.getDocumentNumber());
+                //获取到货检验明细表
+                List<InventoryDocumentDetails> inventoryDocumentDetailsList = inventoryDocumentDetailsService.getInventoryDocumentDetailsListByDocNumberAndWarehosue(inventoryDocument.getDocumentNumber(),inventoryDocument.getWarehouse());
+                for (InventoryDocumentDetails inventoryDocumentDetails:inventoryDocumentDetailsList
+                     ) {
+                    int flag = 0;
+                    String materialCoding = inventoryDocumentDetails.getMaterialCoding();
+                    String batch = inventoryDocumentDetails.getBatch();
+                    if (i==0){
+                        //拼装到货检验明细表
+                        AddArrivalVerificationDetailsDTO addArrivalVerificationDetailsDTOFirst = new AddArrivalVerificationDetailsDTO();
+                        //仓库
+                        addArrivalVerificationDetailsDTOFirst.setWarehouseId(inventoryDocumentDetails.getWarehouse());
+                        //检验状态
+                        addArrivalVerificationDetailsDTOFirst.setVerificationStatus(0);
+                        //物料编码
+                        addArrivalVerificationDetailsDTOFirst.setMaterialCoding(materialCoding);
+                        //批次
+                        addArrivalVerificationDetailsDTOFirst.setBatch(inventoryDocumentDetails.getBatch());
+                        //到货数量
+                        addArrivalVerificationDetailsDTOFirst.setArrivalQuantity(inventoryDocumentDetails.getArrivalQuantity());
+                        //合格数量
+                        addArrivalVerificationDetailsDTOFirst.setQualifiedQuantity(inventoryDocumentDetails.getArrivalQuantity());
+                        //备注
+                        addArrivalVerificationDetailsDTOFirst.setRemark("系统自动生成");
+
+                        addArrivalVerificationDetailsDTOList.add(addArrivalVerificationDetailsDTOFirst);
+
+                    }else {
+                        for (int j =0; j<addArrivalVerificationDetailsDTOList.size();j++) {
+                            AddArrivalVerificationDetailsDTO addArrivalVerificationDetailsDTO = addArrivalVerificationDetailsDTOList.get(j);
+                            //判断此物料此批次是否已经进入到货检验明细
+                            if (addArrivalVerificationDetailsDTO.getMaterialCoding().equals(materialCoding)&&addArrivalVerificationDetailsDTO.getBatch().equals(batch)){
+                                //若此物料已有到货检验明细
+                                //变更到货数量
+                                addArrivalVerificationDetailsDTO.setArrivalQuantity(NumberUtil.add(addArrivalVerificationDetailsDTO.getArrivalQuantity(),inventoryDocumentDetails.getArrivalQuantity()));
+                                //变更合格数量=新到货数量
+                                addArrivalVerificationDetailsDTO.setQualifiedQuantity(addArrivalVerificationDetailsDTO.getArrivalQuantity());
+                                //备注
+                                addArrivalVerificationDetailsDTO.setRemark("系统自动生成");
+                                //执行更新操作后代表当前需求计划明细已经并入采购计划明细中,flag++;
+                                flag++;
+                                //合并后跳出对比物料编码的循环
+                                break;
+                            }
+                        }
+                        //判断明细已经通过合并操作并入采购计划明细 0-无相同物料在采购计划明细中所以未经合并 1-已合并
+                        if (flag==0){
+                            //拼装到货检验明细表
+                            AddArrivalVerificationDetailsDTO addArrivalVerificationDetailsDTONew = new AddArrivalVerificationDetailsDTO();
+                            //仓库
+                            addArrivalVerificationDetailsDTONew.setWarehouseId(inventoryDocumentDetails.getWarehouse());
+                            //检验状态
+                            addArrivalVerificationDetailsDTONew.setVerificationStatus(0);
+                            //物料编码
+                            addArrivalVerificationDetailsDTONew.setMaterialCoding(materialCoding);
+                            //批次
+                            addArrivalVerificationDetailsDTONew.setBatch(inventoryDocumentDetails.getBatch());
+                            //到货数量
+                            addArrivalVerificationDetailsDTONew.setArrivalQuantity(inventoryDocumentDetails.getArrivalQuantity());
+                            //合格数量
+                            addArrivalVerificationDetailsDTONew.setQualifiedQuantity(inventoryDocumentDetails.getArrivalQuantity());
+                            //备注
+                            addArrivalVerificationDetailsDTONew.setRemark("系统自动生成");
+
+                            addArrivalVerificationDetailsDTOList.add(addArrivalVerificationDetailsDTONew);
+                        }
+                    }
+                }
+                i++;
+            }
+            //装填到货检验主表
+            //询价单编号
+            addArrivalVerificationDTO.setRfqNumber(inventoryDocumentList.get(0).getRfqNumber());
+            //原单据编号
+            addArrivalVerificationDTO.setOriginalDocumentNumber(JSON.toJSONString(listOriginalDocumentNumber));
+            //计划类别-1正常、2加急、3补计划、请选择（默认）
+            addArrivalVerificationDTO.setPlanClassification(1);
+            //状态: 1草拟 2审批中 3审批生效 4作废
+            addArrivalVerificationDTO.setPlanStatus(1);
+            //检验状态：0-未检验，1-部分检验，2-全部检验
+            addArrivalVerificationDTO.setVerificationStatus(0);
+            //到货日期
+            addArrivalVerificationDTO.setDeliveryDate(inventoryDocumentList.get(0).getCreateTime());
+            //理货人
+            addArrivalVerificationDTO.setInspector(user.getId().toString());
+            //仓库
+            addArrivalVerificationDTO.setWarehouseId(inventoryDocumentList.get(0).getWarehouse());
+            //备注
+            addArrivalVerificationDTO.setRemark("系统自动生成");
+
+            //将主表和明细装填入dto，调用新增方法（接口）
+            AddArrivalVerificationAndDetailsDTO addArrivalVerificationAndDetailsDTO = new AddArrivalVerificationAndDetailsDTO();
+            addArrivalVerificationAndDetailsDTO.setAddArrivalVerificationDTO(addArrivalVerificationDTO);
+            addArrivalVerificationAndDetailsDTO.setAddArrivalVerificationDetailsDTOList(addArrivalVerificationDetailsDTOList);
+            Result result = add(addArrivalVerificationAndDetailsDTO);
+            if (result.isOk()){
+                ArrivalVerification arrivalVerification = (ArrivalVerification) result.getData();
+                String docNum = arrivalVerification.getVerificationDocumentNumber();
+                String warehouseId = arrivalVerification.getWarehouseId();
+                List<ArrivalVerificationDetails> arrivalVerificationDetailsList = arrivalVerificationDetailsService.getArrivalVerificationDetailsByDocNumAndWarehouseId(docNum,warehouseId);
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("main",arrivalVerification);
+                jsonObject.put("details",arrivalVerificationDetailsList);
+                return Result.success(jsonObject);
+            }else {
+                return Result.failure("合并新增到货检验单失败！");
+            }
+        }catch (Exception e){
+            log.error("系统异常,新增到货检验单失败！",e);
+            return Result.failure("系统异常,新增到货检验单失败！");
+        }
+    }
 }
 

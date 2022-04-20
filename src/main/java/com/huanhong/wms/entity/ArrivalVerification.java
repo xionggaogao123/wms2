@@ -24,6 +24,10 @@ public class ArrivalVerification extends SuperEntity {
     private String processInstanceId;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "清点单编号")
+    private String originalDocumentNumber;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "到货检验单编号")
     private String verificationDocumentNumber;
 
@@ -66,6 +70,10 @@ public class ArrivalVerification extends SuperEntity {
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "仓库编号")
     private String warehouseId;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "备注")
+    private String remark;
 
     @Version
     @TableField(fill = FieldFill.INSERT)

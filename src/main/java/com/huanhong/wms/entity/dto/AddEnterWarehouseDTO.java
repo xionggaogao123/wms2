@@ -21,6 +21,7 @@ public class AddEnterWarehouseDTO {
     @ApiModelProperty(value = "入库类型-1. 暂估入库（默认）2.正式入库")
     private Integer storageType;
 
+
     @ApiModelProperty(value = "采购合同编号")
     private String contractNumber;
 
@@ -61,8 +62,10 @@ public class AddEnterWarehouseDTO {
     @ApiModelProperty(value = "仓库")
     private String warehouse;
 
-    @NotBlank
     @ApiModelProperty(value = "供应商名称")
     private String supplierName;
+
+    @ApiModelProperty(value = "备注")
+    private String remark;
 
 }

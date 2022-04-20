@@ -1,5 +1,7 @@
 package com.huanhong.wms.entity.dto;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -55,4 +57,8 @@ public class UpdateArrivalVerificationDTO {
 
     @ApiModelProperty(value = "仓库编号")
     private String warehouseId;
+
+    @ApiModelProperty(value = "备注")
+    private String remark;
+
 }

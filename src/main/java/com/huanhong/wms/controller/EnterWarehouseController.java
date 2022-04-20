@@ -9,10 +9,9 @@ import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.common.units.EntityUtils;
 import com.huanhong.wms.BaseController;
+import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.EnterWarehouse;
-import com.huanhong.wms.entity.EnterWarehouseDetails;
-import com.huanhong.wms.entity.Material;
+import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.EnterWarehouseVO;
 import com.huanhong.wms.mapper.EnterWarehouseMapper;
@@ -21,12 +20,15 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +58,15 @@ public class EnterWarehouseController extends BaseController {
 
     @Resource
     private IWarehouseManagementService warehouseManagementService;
+
+    @Resource
+    private IUserService userService;
+
+    @Resource
+    private IArrivalVerificationService arrivalVerificationService;
+
+    @Resource
+    private IArrivalVerificationDetailsService arrivalVerificationDetailsService;
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -322,5 +333,91 @@ public class EnterWarehouseController extends BaseController {
         }
     }
 
+
+    @ApiOperationSupport(order = 11)
+    @ApiOperation(value = "根据到货检验单生成采购入库单")
+    @PutMapping("/arrivalVerificationToEnterWarehouse")
+    public Result arrivalVerificationToEnterWarehouse(@RequestBody ArrivalVerification arrivalVerification){
+
+        try {
+            LoginUser loginUser = this.getLoginUser();
+            User user = userService.getById(loginUser.getId());
+            /**
+             * 拼装主表
+             */
+            AddEnterWarehouseDTO addEnterWarehouseDTO = new AddEnterWarehouseDTO();
+            //入库类型-1. 暂估入库（默认）2.正式入库
+            addEnterWarehouseDTO.setStorageType(1);
+            //询价单编号
+            addEnterWarehouseDTO.setRfqNumber(arrivalVerification.getRfqNumber());
+            //状态:1.草拟2.审批中3.审批生效4.作废
+            addEnterWarehouseDTO.setState(1);
+            //到货检验单编号
+            addEnterWarehouseDTO.setVerificationDocumentNumber(arrivalVerification.getVerificationDocumentNumber());
+            //计划类别-1.正常、2.加急、3.补计划、请选择（默认）
+            addEnterWarehouseDTO.setPlanClassification(1);
+            //到货日期
+            addEnterWarehouseDTO.setDeliveryDate(arrivalVerification.getDeliveryDate());
+            //经办人
+            addEnterWarehouseDTO.setManager(user.getId().toString());
+            //仓库
+            addEnterWarehouseDTO.setWarehouse(arrivalVerification.getWarehouseId());
+            //备注
+            addEnterWarehouseDTO.setRemark("系统自动生成");
+
+            /**
+             * 拼装明细
+             */
+            //获取到货检验明细
+            List<ArrivalVerificationDetails> arrivalVerificationDetailsList = arrivalVerificationDetailsService.getArrivalVerificationDetailsByDocNumAndWarehouseId(arrivalVerification.getVerificationDocumentNumber(),arrivalVerification.getWarehouseId());
+            List<AddEnterWarehouseDetailsDTO> addEnterWarehouseDetailsDTOList = new ArrayList<>();
+            AddEnterWarehouseDetailsDTO addEnterWarehouseDetailsDTO = new AddEnterWarehouseDetailsDTO();
+            for (ArrivalVerificationDetails arrivalVerificationDetails:arrivalVerificationDetailsList
+            ) {
+                //物料编码
+                addEnterWarehouseDetailsDTO.setMaterialCoding(arrivalVerificationDetails.getMaterialCoding());
+                //批次
+                addEnterWarehouseDetailsDTO.setBatch(arrivalVerificationDetails.getBatch());
+                //应收数量=合格数量
+                addEnterWarehouseDetailsDTO.setQuantityReceivable(arrivalVerificationDetails.getQualifiedQuantity());
+                //实收数量=合格数量
+                addEnterWarehouseDetailsDTO.setActualQuantity(arrivalVerificationDetails.getQualifiedQuantity());
+                //不含税单价
+                addEnterWarehouseDetailsDTO.setUnitPriceWithoutTax(BigDecimal.valueOf(0));
+                //不含税金额
+                addEnterWarehouseDetailsDTO.setExcludingTaxAmount(BigDecimal.valueOf(0));
+                //含税单价
+                addEnterWarehouseDetailsDTO.setUnitPriceIncludingTax(BigDecimal.valueOf(0));
+                //含税金额
+                addEnterWarehouseDetailsDTO.setTaxIncludedAmount(BigDecimal.valueOf(0));
+                //仓库
+                addEnterWarehouseDetailsDTO.setWarehouse(arrivalVerificationDetails.getWarehouseId());
+                //备注
+                addEnterWarehouseDetailsDTO.setRemark("系统自动生成");
+
+                addEnterWarehouseDetailsDTOList.add(addEnterWarehouseDetailsDTO);
+            }
+
+            AddEnterWarehouseAndDetails addEnterWarehouseAndDetails = new AddEnterWarehouseAndDetails();
+            addEnterWarehouseAndDetails.setAddEnterWarehouseDTO(addEnterWarehouseDTO);
+            addEnterWarehouseAndDetails.setAddEnterWarehouseDetailsDTOList(addEnterWarehouseDetailsDTOList);
+            Result result = add(addEnterWarehouseAndDetails);
+            if (result.isOk()){
+                EnterWarehouse enterWarehouse = (EnterWarehouse) result.getData();
+                String docNum = enterWarehouse.getDocumentNumber();
+                String warehouseId = enterWarehouse.getWarehouse();
+                List<EnterWarehouseDetails> enterWarehouseDetailsList = enterWarehouseDetailsService.getListEnterWarehouseDetailsByDocNumberAndWarehosue(docNum,warehouseId);
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("main",enterWarehouse);
+                jsonObject.put("details",enterWarehouseDetailsList);
+                return Result.success(jsonObject);
+            }else {
+                return Result.failure("生成采购入库单失败！");
+            }
+        }catch (Exception e){
+            log.error("系统异常,生成采购入库单失败",e);
+            return Result.failure("系统异常,生成采购入库单失败！");
+        }
+    }
 }
 

@@ -327,6 +327,20 @@ public class ArrivalVerificationController extends BaseController {
     @PutMapping("/consolidatedArrivalVerification")
     public Result consolidatedArrivalVerification(@Valid @RequestBody List<InventoryDocument> inventoryDocumentList){
         try {
+
+
+            /**
+             * 筛查接收的清点单list中是否有不属于同一询价单的
+             */
+            String rfqNum = inventoryDocumentList.get(0).getRfqNumber();
+            for (InventoryDocument inventoryDocument:inventoryDocumentList
+                 ) {
+                if (!inventoryDocument.getRfqNumber().equals(rfqNum)){
+                    return Result.failure("询价单编号不一致,不能合并！");
+                }
+            }
+
+
             LoginUser loginUser = this.getLoginUser();
             User user = userService.getById(loginUser.getId());
             List<String> listOriginalDocumentNumber =  new ArrayList<>();

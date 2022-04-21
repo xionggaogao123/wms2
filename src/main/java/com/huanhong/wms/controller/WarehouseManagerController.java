@@ -2,17 +2,18 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.EnterWarehouse;
-import com.huanhong.wms.entity.PlanUseOut;
-import com.huanhong.wms.entity.PlanUseOutDetails;
+import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.AddWarehouseManagerDTO;
 import com.huanhong.wms.entity.dto.UpdateWarehouseManagerDTO;
 import com.huanhong.wms.entity.vo.WarehouseManagerVO;
+import com.huanhong.wms.service.IWarehouseManagementService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -21,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RestController;
 import com.huanhong.wms.BaseController;
-import com.huanhong.wms.entity.WarehouseManager;
 import com.huanhong.wms.mapper.WarehouseManagerMapper;
 import com.huanhong.wms.service.IWarehouseManagerService;
 import javax.annotation.Resource;
@@ -40,6 +40,9 @@ public class WarehouseManagerController extends BaseController {
 
     @Resource
     private IWarehouseManagerService warehouseManagerService;
+
+    @Resource
+    private IWarehouseManagementService warehouseManagementService;
 
 
 
@@ -127,20 +130,29 @@ public class WarehouseManagerController extends BaseController {
         }
 
         @ApiOperationSupport(order = 6)
-        @ApiOperation(value = "根据用户ID获取管理的仓库")
+        @ApiOperation(value = "根据登录账号获取管理的仓库")
         @GetMapping("getWarehouseManagerListByLoginName/{loginName}")
         public Result getWarehouseManagerListByLoginName(@PathVariable String loginName) {
+
             List<WarehouseManager> warehouseManagerList = warehouseManagerService.getWarehouseManagerListByLoginName(loginName);
+
             if (ObjectUtil.isEmpty(warehouseManagerList)){
                 return Result.failure("未查询到对应信息！");
             }
-            List<String> warehouseIdList = new ArrayList<>();
+            //拼装返回结果
+            JSONArray jsonArray = new JSONArray();
             for (WarehouseManager warehouseManager:warehouseManagerList
                  ) {
+                JSONObject jsonObject = new JSONObject();
                 String warehouseId = warehouseManager.getWarehouseId();
-                warehouseIdList.add(warehouseId);
+                WarehouseManagement warehouseManagement = warehouseManagementService.getWarehouseByWarehouseId(warehouseId);
+                if (ObjectUtil.isNotNull(warehouseManagement)){
+                    jsonObject.put("warehouseId",warehouseId);
+                    jsonObject.put("warehouseName",warehouseManagement.getWarehouseName());
+                    jsonArray.add(jsonObject);
+                }
             }
-            return Result.success(warehouseIdList);
+            return Result.success(jsonArray);
         }
 
 }

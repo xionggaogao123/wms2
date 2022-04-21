@@ -51,13 +51,15 @@ public class UpUserDTO {
     @ApiModelProperty(value = "权限等级")
     private String permissionLevel;
 
+    @ApiModelProperty(value = "绑定仓库")
+    private List<String> warehouseIdList;
+
     @Length(max = 256)
     @ApiModelProperty(value = "备注")
     private String remark;
 
     @ApiModelProperty(value = "状态 0.禁用  1.启用")
     private Integer state;
-
 
     @ApiModelProperty(value = "角色 ids")
     private List<Integer> roleIds;

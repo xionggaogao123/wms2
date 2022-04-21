@@ -23,6 +23,9 @@ public class UpdateAllocationOutDetailsDTO {
     @ApiModelProperty(value = "批次")
     private String batch;
 
+    @ApiModelProperty(value = "出库状态：0-未出库，1-部分出库，2-全部出库")
+    private Integer outStatus;
+
     @ApiModelProperty(value = "准调数量")
     private Double calibrationQuantity;
 

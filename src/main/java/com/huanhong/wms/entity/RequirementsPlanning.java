@@ -50,7 +50,7 @@ public class RequirementsPlanning extends SuperEntity {
     private BigDecimal estimatedTotalAmount;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "状态: 1-草拟、2-审批中、3-审批生效、4-作废")
+    @ApiModelProperty(value = "状态: 0、可导入 1草拟、2审批中、3审批生效、4作废")
     private Integer  planStatus;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)

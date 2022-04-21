@@ -14,14 +14,14 @@ import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.User;
 import com.huanhong.wms.entity.WarehouseManagement;
-import com.huanhong.wms.entity.dto.AddUserDTO;
-import com.huanhong.wms.entity.dto.SignPasswordDTO;
-import com.huanhong.wms.entity.dto.SignPicDTO;
-import com.huanhong.wms.entity.dto.UpUserDTO;
+import com.huanhong.wms.entity.WarehouseManager;
+import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.mapper.UserMapper;
+import com.huanhong.wms.mapper.WarehouseManagerMapper;
 import com.huanhong.wms.service.IDeptService;
 import com.huanhong.wms.service.IUserService;
 import com.huanhong.wms.service.IWarehouseManagementService;
+import com.huanhong.wms.service.IWarehouseManagerService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -34,6 +34,7 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -54,6 +55,12 @@ public class UserController extends BaseController {
 
     @Resource
     private IWarehouseManagementService warehouseManagementService;
+
+    @Resource
+    private IWarehouseManagerService warehouseManagerService;
+
+    @Resource
+    private WarehouseManagerMapper warehouseManagerMapper;
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -143,12 +150,15 @@ public class UserController extends BaseController {
     @ApiOperation("更新用户")
     @PutMapping
     public Result update(@Valid @RequestBody UpUserDTO dto) {
+
         if (StrUtil.isNotEmpty(dto.getIdNumber())) {
             Validator.validateCitizenIdNumber(dto.getIdNumber(), "请输入正确的身份证");
         }
+
         if (StrUtil.isNotEmpty(dto.getPhoneNumber())) {
             Validator.validateMobile(dto.getPhoneNumber(), "请输入正确的手机号");
         }
+
         if (StrUtil.isNotEmpty(dto.getMail())) {
             Validator.validateEmail(dto.getMail(), "请输入正确的Email");
         }
@@ -160,11 +170,49 @@ public class UserController extends BaseController {
             }
         }
 
-
         LoginUser loginUser = this.getLoginUser();
         if (dto.getId() == null) {
             dto.setId(loginUser.getId());
         }
+
+        /**
+         * 绑定仓库
+         */
+        if (ObjectUtil.isNotEmpty(dto.getWarehouseIdList())){
+            String loginName = loginUser.getLoginName();
+            List<WarehouseManager> warehouseManagerList = warehouseManagerService.getWarehouseManagerListByLoginName(loginName);
+            List<String> oldWarehouseManagerList = new ArrayList<>();
+            for (WarehouseManager warehouseManager:warehouseManagerList
+                 ) {
+                oldWarehouseManagerList.add(warehouseManager.getWarehouseId());
+            }
+            //取新传入的list
+            List<String> newWarehouseIdList = dto.getWarehouseIdList();
+            //取新对旧的差集用于新增仓库管理员
+            List<String> addWarehouseIdList =  newWarehouseIdList.stream().filter(item -> !oldWarehouseManagerList.contains(item)).collect(Collectors.toList());
+            //取旧对新的差集用于删除仓库管理员
+            List<String> deleteWarehouseIdList = oldWarehouseManagerList.stream().filter(item -> !newWarehouseIdList.contains(item)).collect(Collectors.toList());
+            //新增仓库管理员DTO
+            AddWarehouseManagerDTO addWarehouseManagerDTO = new AddWarehouseManagerDTO();
+            for (String warehouseId :addWarehouseIdList
+                 ) {
+                addWarehouseManagerDTO.setLoginName(loginName);
+                addWarehouseManagerDTO.setWarehouseId(warehouseId);
+                warehouseManagerService.addWarehouseManager(addWarehouseManagerDTO);
+            }
+            //删除仓库管理员
+            for (String warehouseId:deleteWarehouseIdList
+                 ) {
+                for (WarehouseManager warehouseManage : warehouseManagerList
+                ) {
+                    if (warehouseId.equals(warehouseManage.getWarehouseId())){
+                        Integer id = warehouseManage.getId();
+                        warehouseManagerService.removeById(id);
+                    }
+                }
+            }
+        }
+
         return userService.updateUser(loginUser, dto);
     }
 

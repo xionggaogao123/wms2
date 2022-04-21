@@ -1,7 +1,10 @@
 package com.huanhong.wms.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.entity.MakeInventory;
+import com.huanhong.wms.entity.param.InventorySurplusLossPage;
+import com.huanhong.wms.entity.vo.InventorySurplusLossVo;
 
 /**
  * <p>
@@ -13,4 +16,5 @@ import com.huanhong.wms.entity.MakeInventory;
  */
 public interface MakeInventoryMapper extends BaseMapper<MakeInventory> {
 
+    Page<InventorySurplusLossVo> inventorySurplusLoss(InventorySurplusLossPage page);
 }

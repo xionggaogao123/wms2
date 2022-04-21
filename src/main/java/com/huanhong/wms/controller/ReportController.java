@@ -7,18 +7,9 @@ import com.huanhong.common.enums.OperateType;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.param.AllocationDetailPage;
-import com.huanhong.wms.entity.param.InventoryInfoPage;
-import com.huanhong.wms.entity.param.OutboundDetailPage;
-import com.huanhong.wms.entity.param.WarehousingDetailPage;
-import com.huanhong.wms.entity.vo.AllocationDetailVo;
-import com.huanhong.wms.entity.vo.InventoryInfoVo;
-import com.huanhong.wms.entity.vo.OutboundDetailVo;
-import com.huanhong.wms.entity.vo.WarehousingDetailVo;
-import com.huanhong.wms.service.IAllocationPlanService;
-import com.huanhong.wms.service.IInventoryInformationService;
-import com.huanhong.wms.service.IOutboundRecordService;
-import com.huanhong.wms.service.IWarehousingRecordService;
+import com.huanhong.wms.entity.param.*;
+import com.huanhong.wms.entity.vo.*;
+import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +33,8 @@ public class ReportController extends BaseController {
     private IOutboundRecordService outboundRecordService;
     @Autowired
     private IAllocationPlanService allocationPlanService;
+    @Autowired
+    private IMakeInventoryService makeInventoryService;
 
     @OperateLog(title = "库存账_查询", type = OperateType.QUERY)
     @ApiOperation(value = "库存账_查询")
@@ -201,5 +194,64 @@ public class ReportController extends BaseController {
         page.setUserId(loginUser.getId());
         page.setUserName(loginUser.getUserName());
         allocationPlanService.allocationDetailExport(page,request,response);
+    }
+
+    @OperateLog(title = "库存流水账_查询", type = OperateType.QUERY)
+    @ApiOperation(value = "库存流水账_查询")
+    @GetMapping("/inventoryRecord")
+    public Result<Page<InventoryRecordVo>> inventoryRecord(InventoryRecordPage page){
+        if(null == page.getGmtStart()){
+            page.setGmtStart(DateUtil.lastMonth());
+        }
+        if(null == page.getGmtEnd()){
+            page.setGmtEnd(DateUtil.date());
+        }
+        return warehousingRecordService.inventoryRecord(page);
+    }
+    @OperateLog(title = "库存流水账_导出", type = OperateType.EXPORT)
+    @ApiOperation(value = "库存流水账_导出")
+    @GetMapping("/inventoryRecordExport")
+    public void inventoryRecordExport(InventoryRecordPage page, HttpServletRequest request,
+                                        HttpServletResponse response){
+        if(null == page.getGmtStart()){
+            page.setGmtStart(DateUtil.lastMonth());
+        }
+        if(null == page.getGmtEnd()){
+            page.setGmtEnd(DateUtil.date());
+        }
+        page.setSize(30000);
+        LoginUser loginUser = getLoginUser();
+        page.setUserId(loginUser.getId());
+        page.setUserName(loginUser.getUserName());
+        warehousingRecordService.inventoryRecordExport(page,request,response);
+    }
+    @OperateLog(title = "盘点盈亏表_查询", type = OperateType.QUERY)
+    @ApiOperation(value = "盘点盈亏表_查询")
+    @GetMapping("/inventorySurplusLoss")
+    public Result<Page<InventorySurplusLossVo>> inventorySurplusLoss(InventorySurplusLossPage page){
+        if(null == page.getGmtStart()){
+            page.setGmtStart(DateUtil.lastMonth());
+        }
+        if(null == page.getGmtEnd()){
+            page.setGmtEnd(DateUtil.date());
+        }
+        return makeInventoryService.inventorySurplusLoss(page);
+    }
+    @OperateLog(title = "盘点盈亏表_导出", type = OperateType.EXPORT)
+    @ApiOperation(value = "盘点盈亏表_导出")
+    @GetMapping("/inventorySurplusLossExport")
+    public void inventorySurplusLossExport(InventorySurplusLossPage page, HttpServletRequest request,
+                                        HttpServletResponse response){
+        if(null == page.getGmtStart()){
+            page.setGmtStart(DateUtil.lastMonth());
+        }
+        if(null == page.getGmtEnd()){
+            page.setGmtEnd(DateUtil.date());
+        }
+        page.setSize(30000);
+        LoginUser loginUser = getLoginUser();
+        page.setUserId(loginUser.getId());
+        page.setUserName(loginUser.getUserName());
+        makeInventoryService.inventorySurplusLossExport(page,request,response);
     }
 }

@@ -6,7 +6,12 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.MakeInventory;
 import com.huanhong.wms.entity.dto.AddMakeInventoryDTO;
 import com.huanhong.wms.entity.dto.UpdateMakeInventoryDTO;
+import com.huanhong.wms.entity.param.InventorySurplusLossPage;
+import com.huanhong.wms.entity.vo.InventorySurplusLossVo;
 import com.huanhong.wms.entity.vo.MakeInventoryVO;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * <p>
@@ -60,4 +65,18 @@ public interface IMakeInventoryService extends SuperService<MakeInventory> {
      */
     MakeInventory getMakeInventoryByDocNumAndWarehouse(String docNum,String warehouse);
 
+    /**
+     * 盘点盈亏表分页查询
+     * @param page
+     * @return
+     */
+    Result<Page<InventorySurplusLossVo>> inventorySurplusLoss(InventorySurplusLossPage page);
+
+    /**
+     * 盘点盈亏表导出
+     * @param page
+     * @param request
+     * @param response
+     */
+    void inventorySurplusLossExport(InventorySurplusLossPage page, HttpServletRequest request, HttpServletResponse response);
 }

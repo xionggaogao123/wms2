@@ -12,7 +12,9 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.WarehousingRecord;
 import com.huanhong.wms.entity.dto.AddWarehousingRecordDTO;
 import com.huanhong.wms.entity.dto.UpdateWarehousingRecordDTO;
+import com.huanhong.wms.entity.param.InventoryRecordPage;
 import com.huanhong.wms.entity.param.WarehousingDetailPage;
+import com.huanhong.wms.entity.vo.InventoryRecordVo;
 import com.huanhong.wms.entity.vo.WarehousingDetailVo;
 import com.huanhong.wms.entity.vo.WarehousingRecordVO;
 import com.huanhong.wms.mapper.WarehousingRecordMapper;
@@ -150,6 +152,38 @@ public class WarehousingRecordServiceImpl extends SuperServiceImpl<WarehousingRe
         params.put("inDateStart", page.getInDateStart());
         String templatePath = ossProperties.getPath() + "templates/warehousingDetail.xlsx";
         ExportExcel.exportExcel(templatePath, ossProperties.getPath() + "temp/", "入库明细表.xlsx", params, request, response);
+
+    }
+
+    @Override
+    public Result<Page<InventoryRecordVo>> inventoryRecord(InventoryRecordPage page) {
+        Page<InventoryRecordVo> pageData = warehousingRecordMapper.inventoryRecord(page);
+        int i = 1;
+        for (InventoryRecordVo ii : pageData.getRecords()) {
+            ii.setIndex(i);
+            ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
+            i++;
+        }
+        return Result.success(pageData);
+    }
+
+    @Override
+    public void inventoryRecordExport(InventoryRecordPage page, HttpServletRequest request, HttpServletResponse response) {
+        Page<InventoryRecordVo> pageData = warehousingRecordMapper.inventoryRecord(page);
+        int i = 1;
+        for (InventoryRecordVo ii : pageData.getRecords()) {
+            ii.setIndex(i);
+            ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
+            i++;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("list", pageData.getRecords());
+        params.put("gmtCreate", new Date());
+        params.put("userName", page.getUserName());
+        params.put("gmtStart", page.getGmtStart());
+        params.put("gmtEnd", page.getGmtEnd());
+        String templatePath = ossProperties.getPath() + "templates/inventoryRecord.xlsx";
+        ExportExcel.exportExcel(templatePath, ossProperties.getPath() + "temp/", "库存流水账.xlsx", params, request, response);
 
     }
 }

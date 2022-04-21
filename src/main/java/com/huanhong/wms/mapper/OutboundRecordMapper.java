@@ -8,7 +8,9 @@ import com.huanhong.wms.entity.param.OutboundDetailPage;
 import com.huanhong.wms.entity.vo.OutboundDetailVo;
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -32,4 +34,7 @@ public interface OutboundRecordMapper extends BaseMapper<OutboundRecord> {
 
     @MapKey("id")
     List<Map<String, Object>> getTheTotalMoneyOfOutboundByParam(MaterialOutInParam param);
+    @Select("select sum(out_quantity) from outbound_record where del = 0 and material_coding={materialCoding} " +
+            "and create_time between #{startTime} and #{endTime}")
+    double sumNumber(@Param("materialCoding") String materialCoding, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
 }

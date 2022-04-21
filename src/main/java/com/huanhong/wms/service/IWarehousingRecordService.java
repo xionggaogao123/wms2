@@ -6,7 +6,9 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.WarehousingRecord;
 import com.huanhong.wms.entity.dto.AddWarehousingRecordDTO;
 import com.huanhong.wms.entity.dto.UpdateWarehousingRecordDTO;
+import com.huanhong.wms.entity.param.InventoryRecordPage;
 import com.huanhong.wms.entity.param.WarehousingDetailPage;
+import com.huanhong.wms.entity.vo.InventoryRecordVo;
 import com.huanhong.wms.entity.vo.WarehousingDetailVo;
 import com.huanhong.wms.entity.vo.WarehousingRecordVO;
 
@@ -80,4 +82,19 @@ public interface IWarehousingRecordService extends SuperService<WarehousingRecor
      * @param response
      */
     void warehousingDetailExport(WarehousingDetailPage page, HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 库存流水账分页
+     * @param page
+     * @return
+     */
+    Result<Page<InventoryRecordVo>> inventoryRecord(InventoryRecordPage page);
+
+    /**
+     * 库存流水账导出
+     * @param page
+     * @param request
+     * @param response
+     */
+    void inventoryRecordExport(InventoryRecordPage page, HttpServletRequest request, HttpServletResponse response);
 }

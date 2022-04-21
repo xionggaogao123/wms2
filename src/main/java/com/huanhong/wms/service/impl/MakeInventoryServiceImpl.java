@@ -6,20 +6,34 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huanhong.common.units.DataUtil;
 import com.huanhong.common.units.StrUtils;
+import com.huanhong.common.units.excel.ExportExcel;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.MakeInventory;
 import com.huanhong.wms.entity.dto.AddMakeInventoryDTO;
 import com.huanhong.wms.entity.dto.UpdateMakeInventoryDTO;
+import com.huanhong.wms.entity.param.InventoryRecordPage;
+import com.huanhong.wms.entity.param.InventorySurplusLossPage;
+import com.huanhong.wms.entity.vo.InventorySurplusLossVo;
 import com.huanhong.wms.entity.vo.MakeInventoryVO;
+import com.huanhong.wms.mapper.EnterWarehouseMapper;
 import com.huanhong.wms.mapper.MakeInventoryMapper;
+import com.huanhong.wms.mapper.OutboundRecordMapper;
+import com.huanhong.wms.properties.OssProperties;
 import com.huanhong.wms.service.IMakeInventoryService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>
@@ -34,7 +48,13 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
 
     @Resource
     private MakeInventoryMapper makeInventoryMapper;
+    @Resource
+    private EnterWarehouseMapper enterWarehouseMapper;
+    @Resource
+    private OutboundRecordMapper outboundRecordMapper;
 
+    @Autowired
+    private OssProperties ossProperties;
     /**
      * 分页查询
      * @param makeInventoryPage
@@ -276,5 +296,43 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
         queryWrapper.likeRight("sublibrary_id",warehouse);
         MakeInventory makeInventory = makeInventoryMapper.selectOne(queryWrapper);
         return ObjectUtil.isNotNull(makeInventory) ? makeInventory : null;
+    }
+
+    @Override
+    public Result<Page<InventorySurplusLossVo>> inventorySurplusLoss(InventorySurplusLossPage page) {
+        Page<InventorySurplusLossVo> pageData = makeInventoryMapper.inventorySurplusLoss(page);
+        int i = 1;
+        for (InventorySurplusLossVo ii : pageData.getRecords()) {
+            ii.setIndex(i);
+            ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
+            // 查询期间入库出库数
+            double inTotal = enterWarehouseMapper.sumNumber(ii.getMaterialCoding(),ii.getStartTime(),ii.getEndTime());
+            ii.setInTotal(inTotal);
+            double outTotal = outboundRecordMapper.sumNumber(ii.getMaterialCoding(),ii.getStartTime(),ii.getEndTime());
+            ii.setOutTotal(outTotal);
+            //账面-实盘-入库+出库 负值是盘盈 正值是盘亏 二选一
+            double num = ii.getInventoryCredit()-ii.getCheckCredit()-inTotal+outTotal;
+            if(num<0){
+                ii.setNumSurplus(Math.abs(num));
+            }else {
+                ii.setNumLoss(num);
+            }
+            i++;
+        }
+        return Result.success(pageData);
+    }
+
+    @Override
+    public void inventorySurplusLossExport(InventorySurplusLossPage page, HttpServletRequest request, HttpServletResponse response) {
+        Page<InventorySurplusLossVo> pageData = inventorySurplusLoss(page).getData();
+        Map<String, Object> params = new HashMap<>();
+        params.put("list", pageData.getRecords());
+        params.put("gmtCreate", new Date());
+        params.put("userName", page.getUserName());
+        params.put("gmtStart", page.getGmtStart());
+        params.put("gmtEnd", page.getGmtEnd());
+        String templatePath = ossProperties.getPath() + "templates/inventorySurplusLoss.xlsx";
+        ExportExcel.exportExcel(templatePath, ossProperties.getPath() + "temp/", "库存流水账.xlsx", params, request, response);
+
     }
 }

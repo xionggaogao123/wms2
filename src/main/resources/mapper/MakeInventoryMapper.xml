@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huanhong.wms.mapper.MakeInventoryMapper">
+
+
+    <select id="inventorySurplusLoss" resultType="com.huanhong.wms.entity.vo.InventorySurplusLossVo">
+        select mi.id, mi.document_number, mi.sublibrary_id, mi.warehouse_area_id, mi.cargo_space_id, mi.material_coding,
+        mi.material_name, mi.specification_model, mi.batch, mi.inventory_credit, mi.check_credit, mi.measurement_unit,
+        mi.check_status, mi.remark, mi.version, mi.create_time, mi.last_update, mi.del, mi.consignor, mi.unit_price,
+        mi.sales_unit_price, mi.start_time, mi.end_time, mi.reason, mi.user_id, mi.user_name, mi.warehouse_id,
+        mi.supplier,
+        m.type_code,
+        m.brand,
+        m.measurement_unit,
+        m.supplier as supplier2,
+        wm.warehouse_name
+        from make_inventory mi
+        left join material m on mi.material_coding = m.material_coding
+        left join warehouse_management wm on mi.warehouse_id = wm.warehouse_id
+        where mi.del = 0 and m.del = 0 and wm.del = 0
+        <if test="materialCoding != null">
+            and mi.material_coding like concat('%',#{materialCoding},'%')
+        </if>
+        <if test="materialName != null">
+            and mi.material_name like concat('%',#{materialName},'%')
+        </if>
+        <if test="specificationModel != null">
+            and mi.specification_model = #{specificationModel}
+        </if>
+        <if test="supplier != null">
+            and mi.supplier = #{supplier}
+        </if>
+        <if test="supplier2 != null">
+            and m.supplier = #{supplier2}
+        </if>
+        <if test="typeCode != null">
+            and m.type_code = #{typeCode}
+        </if>
+        <if test="batch != null">
+            and mi.batch = #{batch}
+        </if>
+        <if test="consignor != null">
+            and mi.consignor = #{consignor}
+        </if>
+
+        <if test="checker != null">
+            and mi.user_name = #{checker}
+        </if>
+        <if test="gmtStart != null">
+            and mi.start_time >= #{gmtStart}
+        </if>
+        <if test="gmtEnd != null">
+            <![CDATA[
+            and mi.end_time <= #{gmtEnd}
+            ]]>
+        </if>
+    </select>
+</mapper>

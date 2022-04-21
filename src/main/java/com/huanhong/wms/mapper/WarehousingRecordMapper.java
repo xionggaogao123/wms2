@@ -1,10 +1,12 @@
 package com.huanhong.wms.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.entity.WarehousingRecord;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.huanhong.wms.entity.param.InventoryRecordPage;
 import com.huanhong.wms.entity.param.MaterialOutInParam;
 import com.huanhong.wms.entity.param.WarehousingDetailPage;
+import com.huanhong.wms.entity.vo.InventoryRecordVo;
 import com.huanhong.wms.entity.vo.WarehousingDetailVo;
 import org.apache.ibatis.annotations.MapKey;
 
@@ -25,6 +27,8 @@ public interface WarehousingRecordMapper extends BaseMapper<WarehousingRecord> {
 
     @MapKey("id")
     List<Map<String, Object>> getTheTrendOfWarehouseInboundByParam(MaterialOutInParam param);
+
+    Page<InventoryRecordVo> inventoryRecord(InventoryRecordPage page);
 
     @MapKey("id")
     List<Map<String, Object>> getTheTotalMoneyOfWarehouseInboundByParam(MaterialOutInParam param);

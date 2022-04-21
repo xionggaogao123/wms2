@@ -74,4 +74,6 @@ public class WarehousingRecord extends SuperEntity {
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "库管员（提交入库申请表单的用户）")
     private String warehouseManager;
+    @ApiModelProperty(value = "备注")
+    private String remark;
 }

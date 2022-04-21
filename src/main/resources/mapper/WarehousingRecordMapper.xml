@@ -4,8 +4,9 @@
 
 
     <select id="warehousingDetail" resultType="com.huanhong.wms.entity.vo.WarehousingDetailVo">
-        select wr.*,m.type_code,m.brand,m.specification_model,m.material_name as materialName,m.measurement_unit,m.supplier as supplier2
-             ,wm.warehouse_name
+        select wr.*,m.type_code,m.brand,m.specification_model,m.material_name as
+        materialName,m.measurement_unit,m.supplier as supplier2
+        ,wm.warehouse_name
         from warehousing_record wr left join material m on wr.material_coding = m.material_coding
         left join warehouse_management wm on wr.warehouse_id = wm.warehouse_id
         where wr.del = 0 and m.del = 0 and wm.del = 0
@@ -46,13 +47,13 @@
     </select>
     <select id="getTheTrendOfWarehouseInboundByParam" resultType="java.util.Map">
         SELECT
-            SUM(w.enter_quantity) AS amount ,
-            DATE(w.create_time) AS dateStr ,
-            MONTH(w.create_time) AS monthStr
+        SUM(w.enter_quantity) AS amount ,
+        DATE(w.create_time) AS dateStr ,
+        MONTH(w.create_time) AS monthStr
         FROM
-            warehousing_record w
+        warehousing_record w
         WHERE
-            w.del = 0
+        w.del = 0
         <if test="warehouseId != null">
             and w.warehouse_id = #{warehouseId}
         </if>
@@ -79,7 +80,109 @@
             </choose>
         </if>
         ORDER BY
-            w.create_time DESC
+        w.create_time DESC
+    </select>
+    <select id="inventoryRecord" resultType="com.huanhong.wms.entity.vo.InventoryRecordVo">
+        SELECT *
+        FROM (select
+        wr.supplier
+        ,'入库' as objectType
+        , wr.material_coding
+        , wr.enter_quantity as outQuantity
+        , wr.unit_price as unitPrice
+        , wr.batch
+        , wr.cargo_space_id
+        , wr.consignor
+        , wr.create_time
+        , wr.remark
+        , wr.warehouse_manager as librarian
+        , m.type_code
+        , m.brand
+        , m.specification_model
+        , m.material_name
+        , m.measurement_unit
+        , m.supplier as supplier2
+        , wm.warehouse_name
+        ,wr.del
+        from warehousing_record wr
+        left join material m on wr.material_coding = m.material_coding
+        left join warehouse_management wm on wr.warehouse_id = wm.warehouse_id
+        where wr.del = 0
+        and m.del = 0
+        and wm.del = 0
+        UNION
+        select
+        '泰丰盛合' as supplier,
+        '出库' as objectType,
+        o.material_coding,
+        o.out_quantity,
+        o.sales_unit_price as unitPrice,
+        o.batch,
+        o.cargo_space_id,
+        o.consignor,
+        o.create_time,
+        puo.remark,
+        puo.librarian,
+        m.type_code,
+        m.brand,
+        m.specification_model,
+        m.material_name,
+        m.measurement_unit,
+        m.supplier as supplier2,
+        wm.warehouse_name,
+        o.del
+        from outbound_record o
+        left join material m on o.material_coding = m.material_coding
+        left join plan_use_out puo on o.document_number = puo.document_number
+        left join warehouse_management wm on o.warehouse_id = wm.warehouse_id
+        where o.del = 0
+        and m.del = 0
+        and wm.del = 0
+        and puo.del = 0) a
+        where a.del = 0
+        <if test="materialCoding != null">
+            and a.material_coding like concat('%',#{materialCoding},'%')
+        </if>
+        <if test="materialName != null">
+            and a.material_name like concat('%',#{materialName},'%')
+        </if>
+        <if test="specificationModel != null">
+            and a.specification_model = #{specificationModel}
+        </if>
+        <if test="supplier != null">
+            and a.supplier = #{supplier}
+        </if>
+        <if test="supplier2 != null">
+            and a.supplier2 = #{supplier2}
+        </if>
+        <if test="typeCode != null">
+            and a.type_code = #{typeCode}
+        </if>
+        <if test="batch != null">
+            and a.batch = #{batch}
+        </if>
+
+        <if test="consignor != null">
+            and a.consignor = #{consignor}
+        </if>
+
+        <if test="librarian != null">
+            and a.librarian = #{librarian}
+        </if>
+
+        <if test="objectType != null">
+            and a.objectType = #{objectType}
+        </if>
+
+        <if test="gmtStart != null">
+            and a.create_time >= #{gmtStart}
+        </if>
+        <if test="gmtEnd != null">
+            <![CDATA[
+            and a.create_time <= #{gmtEnd}
+            ]]>
+        </if>
+
     </select>
     <select id="getTheTotalMoneyOfWarehouseInboundByParam" resultType="java.util.Map">
         SELECT

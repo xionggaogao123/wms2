@@ -29,4 +29,7 @@ public interface OutboundRecordMapper extends BaseMapper<OutboundRecord> {
 
     @MapKey("id")
     List<Map<String, Object>> getTheTrendOfWarehouseOutboundByParam(MaterialOutInParam param);
+
+    @MapKey("id")
+    List<Map<String, Object>> getTheTotalMoneyOfOutboundByParam(MaterialOutInParam param);
 }

@@ -81,4 +81,35 @@
         ORDER BY
             w.create_time DESC
     </select>
+    <select id="getTheTotalMoneyOfWarehouseInboundByParam" resultType="java.util.Map">
+        SELECT
+            FORMAT(
+                    SUM(
+                            w.enter_quantity * w.sales_unit_price
+                        ) ,
+                    2
+                ) AS amount ,
+            w.warehouse_id ,
+            wm.warehouse_name
+        FROM
+            warehousing_record w
+                LEFT JOIN warehouse_management wm ON wm.warehouse_id = w.warehouse_id
+        WHERE
+            w.del = 0
+        <if test="warehouseId != null">
+            and w.warehouse_id = #{warehouseId}
+        </if>
+        <if test="startTime != null">
+            <![CDATA[
+            and w.create_time >= #{startTime}
+            ]]>
+        </if>
+        <if test="endTime != null">
+            <![CDATA[
+            and w.create_time <= #{endTime}
+            ]]>
+        </if>
+        GROUP BY
+            w.warehouse_id
+    </select>
 </mapper>

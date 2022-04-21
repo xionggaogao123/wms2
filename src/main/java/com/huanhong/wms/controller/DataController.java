@@ -149,9 +149,9 @@ public class DataController extends BaseController {
     @OperateLog(title = "出入库金额统计分析_查询",type = OperateType.QUERY)
     @ApiOperation(value = "出入库金额统计分析")
     @GetMapping("/amount-in-out")
-    public Result<Object> statisticalAnalysisOfInboundAndOutboundAmount() {
+    public Result<Object> statisticalAnalysisOfInboundAndOutboundAmount(MaterialOutInParam param) {
         LoginUser loginUser = this.getLoginUser();
-        return null ;
+        return outboundRecordService.getStatisticalAnalysisOfInboundAndOutboundAmount(param);
     }
 
     @OperateLog(title = "仓库使用情况分析_查询",type = OperateType.QUERY)
@@ -162,11 +162,11 @@ public class DataController extends BaseController {
         return null ;
     }
 
-    @OperateLog(title = "合同跟踪分析_查询",type = OperateType.QUERY)
-    @ApiOperation(value = "合同跟踪分析")
-    @GetMapping("/contractTracking")
-    public Result<Object> contractTrackingAnalysis() {
-        LoginUser loginUser = this.getLoginUser();
-        return null ;
-    }
+    //@OperateLog(title = "合同跟踪分析_查询",type = OperateType.QUERY)
+    //@ApiOperation(value = "合同跟踪分析")
+    //@GetMapping("/contractTracking")
+    //public Result<Object> contractTrackingAnalysis() {
+    //    LoginUser loginUser = this.getLoginUser();
+    //    return null ;
+    //}
 }

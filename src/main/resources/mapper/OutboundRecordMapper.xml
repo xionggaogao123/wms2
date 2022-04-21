@@ -3,13 +3,11 @@
 <mapper namespace="com.huanhong.wms.mapper.OutboundRecordMapper">
 
     <select id="countOutboundRecordByWarehouse" resultType="java.util.Map">
-        SELECT
-            outr.*, m.material_name
-        FROM
-            outbound_record outr
-                LEFT JOIN material m ON m.material_coding = outr.material_coding
-        WHERE
-            outr.warehouse_id = #{warehouseId}
+        SELECT outr.*,
+               m.material_name
+        FROM outbound_record outr
+                 LEFT JOIN material m ON m.material_coding = outr.material_coding
+        WHERE outr.warehouse_id = #{warehouseId}
           AND outr.`status` = 1
           AND outr.del = 0
     </select>
@@ -79,14 +77,14 @@
     </select>
     <select id="getTheTrendOfWarehouseOutboundByParam" resultType="java.util.Map">
         SELECT
-            SUM(o.out_quantity) AS amount ,
-            DATE(o.create_time) AS dateStr ,
-            MONTH(o.create_time) AS monthStr
+        SUM(o.out_quantity) AS amount ,
+        DATE(o.create_time) AS dateStr ,
+        MONTH(o.create_time) AS monthStr
         FROM
-            outbound_record o
+        outbound_record o
         WHERE
-            o.del = 0
-          AND o.`status` = 1
+        o.del = 0
+        AND o.`status` = 1
         <if test="warehouseId != null">
             and o.warehouse_id = #{warehouseId}
         </if>
@@ -113,6 +111,35 @@
             </choose>
         </if>
         ORDER BY
-            o.create_time DESC
+        o.create_time DESC
+    </select>
+    <select id="getTheTotalMoneyOfOutboundByParam" resultType="java.util.Map">
+        SELECT
+        FORMAT(SUM(
+        o.out_quantity * o.sales_unit_price
+        ),2 )AS amount ,
+        o.warehouse_id ,
+        wm.warehouse_name
+        FROM
+        outbound_record o
+        LEFT JOIN warehouse_management wm ON wm.warehouse_id = o.warehouse_id
+        WHERE
+        o.del = 0
+        AND o.`status` = 1
+        <if test="warehouseId != null">
+            and o.warehouse_id = #{warehouseId}
+        </if>
+        <if test="startTime != null">
+            <![CDATA[
+            and o.create_time >= #{startTime}
+            ]]>
+        </if>
+        <if test="endTime != null">
+            <![CDATA[
+            and o.create_time <= #{endTime}
+            ]]>
+        </if>
+        GROUP BY
+        o.warehouse_id
     </select>
 </mapper>

@@ -25,4 +25,7 @@ public interface WarehousingRecordMapper extends BaseMapper<WarehousingRecord> {
 
     @MapKey("id")
     List<Map<String, Object>> getTheTrendOfWarehouseInboundByParam(MaterialOutInParam param);
+
+    @MapKey("id")
+    List<Map<String, Object>> getTheTotalMoneyOfWarehouseInboundByParam(MaterialOutInParam param);
 }

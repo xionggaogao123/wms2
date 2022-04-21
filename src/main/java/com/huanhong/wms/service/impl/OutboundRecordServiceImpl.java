@@ -218,4 +218,14 @@ public class OutboundRecordServiceImpl extends SuperServiceImpl<OutboundRecordMa
         map.put("in", in);
         return Result.success(map);
     }
+
+    @Override
+    public Result<Object> getStatisticalAnalysisOfInboundAndOutboundAmount(MaterialOutInParam param) {
+        Map<String, Object> map = new HashMap<>();
+        List<Map<String, Object>> out = outboundRecordMapper.getTheTotalMoneyOfOutboundByParam(param);
+        map.put("out", out);
+        List<Map<String, Object>> in = warehousingRecordMapper.getTheTotalMoneyOfWarehouseInboundByParam(param);
+        map.put("in", in);
+        return Result.success(map);
+    }
 }

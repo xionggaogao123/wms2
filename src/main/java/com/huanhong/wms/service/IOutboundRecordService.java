@@ -120,4 +120,6 @@ public interface IOutboundRecordService extends SuperService<OutboundRecord> {
 
 
     Result<Object> getTheTrendOfWarehouseInboundAndOutbound(MaterialOutInParam param);
+
+    Result<Object> getStatisticalAnalysisOfInboundAndOutboundAmount(MaterialOutInParam param);
 }

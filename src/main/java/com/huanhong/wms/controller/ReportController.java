@@ -7,12 +7,15 @@ import com.huanhong.common.enums.OperateType;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.entity.param.AllocationDetailPage;
 import com.huanhong.wms.entity.param.InventoryInfoPage;
 import com.huanhong.wms.entity.param.OutboundDetailPage;
 import com.huanhong.wms.entity.param.WarehousingDetailPage;
+import com.huanhong.wms.entity.vo.AllocationDetailVo;
 import com.huanhong.wms.entity.vo.InventoryInfoVo;
 import com.huanhong.wms.entity.vo.OutboundDetailVo;
 import com.huanhong.wms.entity.vo.WarehousingDetailVo;
+import com.huanhong.wms.service.IAllocationPlanService;
 import com.huanhong.wms.service.IInventoryInformationService;
 import com.huanhong.wms.service.IOutboundRecordService;
 import com.huanhong.wms.service.IWarehousingRecordService;
@@ -37,6 +40,8 @@ public class ReportController extends BaseController {
     private IWarehousingRecordService warehousingRecordService;
     @Autowired
     private IOutboundRecordService outboundRecordService;
+    @Autowired
+    private IAllocationPlanService allocationPlanService;
 
     @OperateLog(title = "库存账_查询", type = OperateType.QUERY)
     @ApiOperation(value = "库存账_查询")
@@ -167,5 +172,34 @@ public class ReportController extends BaseController {
         page.setUserId(loginUser.getId());
         page.setUserName(loginUser.getUserName());
         outboundRecordService.outboundDetailExport(page,request,response);
+    }
+    @OperateLog(title = "调拨明细汇总表_查询", type = OperateType.QUERY)
+    @ApiOperation(value = "调拨明细汇总表_查询")
+    @GetMapping("/allocationDetail")
+    public Result<Page<AllocationDetailVo>> allocationDetail(AllocationDetailPage page){
+        if(null == page.getGmtStart()){
+            page.setGmtStart(DateUtil.lastMonth());
+        }
+        if(null == page.getGmtEnd()){
+            page.setGmtEnd(DateUtil.date());
+        }
+        return allocationPlanService.allocationDetail(page);
+    }
+    @OperateLog(title = "调拨明细汇总表_导出", type = OperateType.EXPORT)
+    @ApiOperation(value = "调拨明细汇总表_导出")
+    @GetMapping("/allocationDetailExport")
+    public void allocationDetailExport(AllocationDetailPage page, HttpServletRequest request,
+                                        HttpServletResponse response){
+        if(null == page.getGmtStart()){
+            page.setGmtStart(DateUtil.lastMonth());
+        }
+        if(null == page.getGmtEnd()){
+            page.setGmtEnd(DateUtil.date());
+        }
+        page.setSize(30000);
+        LoginUser loginUser = getLoginUser();
+        page.setUserId(loginUser.getId());
+        page.setUserName(loginUser.getUserName());
+        allocationPlanService.allocationDetailExport(page,request,response);
     }
 }

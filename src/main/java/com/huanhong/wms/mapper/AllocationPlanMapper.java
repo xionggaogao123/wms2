@@ -1,7 +1,10 @@
 package com.huanhong.wms.mapper;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.entity.AllocationPlan;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.huanhong.wms.entity.param.AllocationDetailPage;
+import com.huanhong.wms.entity.vo.AllocationDetailVo;
 
 /**
  * <p>
@@ -13,4 +16,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface AllocationPlanMapper extends BaseMapper<AllocationPlan> {
 
+
+    Page<AllocationDetailVo> allocationDetail(AllocationDetailPage page);
 }

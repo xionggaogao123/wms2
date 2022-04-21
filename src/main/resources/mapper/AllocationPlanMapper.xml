@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huanhong.wms.mapper.AllocationPlanMapper">
+    <select id="allocationDetail" resultType="com.huanhong.wms.entity.vo.AllocationDetailVo">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        m.material_name,m.specification_model,m.supplier as supplier2,m.type_code,
+               m.measurement_unit,apd.unit_price,m.brand,apd.supplier,ap.create_time,
+               ap.receive_user,ap.send_user,ap.id,ap.remark,apd.batch,
+               apd.calibration_quantity,apd.consignor,apd.total_amount,ap.allocation_number,
+               ap.applicant,ap.send_warehouse,ap.receive_warehouse,ap.del,apd.material_coding
+        FROM
+        allocation_plan_detail apd
+        LEFT JOIN allocation_plan ap ON apd.allocation_number = ap.allocation_number
+        LEFT JOIN material m ON apd.material_coding = m.material_coding
+        AND m.del = 0
+        ) a
+        LEFT JOIN ( SELECT aod.batch,aod.allocation_out_number,aod.total_amount as totalAmount2,aod.create_time as createTime2,aod.outbound_quantity,aod.material_coding,
+                           ao.allocation_number,ao.send_company,ao.librarian as librarian2 FROM allocation_out_details aod LEFT JOIN allocation_out ao ON aod.allocation_out_number = ao.allocation_out_number ) b ON a.material_coding = b.material_coding
+        AND a.batch = b.batch
+        AND a.allocation_number = b.allocation_number
+        LEFT JOIN ( SELECT aed.batch,aed.allocation_enter_number,aed.total_amount as totalAmount3,aed.outbound_quantity as outboundQuantity3,aed.material_coding,
+                           aed.create_time as createTime3,ae.librarian as librarian3,ae.allocation_number,ae.receive_company FROM allocation_enter_details aed LEFT JOIN allocation_enter ae ON ae.allocation_enter_number = aed.allocation_enter_number ) c ON a.material_coding = c.material_coding
+        AND a.batch = c.batch
+        AND a.allocation_number = c.allocation_number
+        WHERE
+        a.del = 0
+        <if test="materialCoding != null">
+            and a.material_coding like concat('%',#{materialCoding},'%')
+        </if>
+        <if test="materialName != null">
+            and a.material_name like concat('%',#{materialName},'%')
+        </if>
+        <if test="specificationModel != null">
+            and a.specification_model = #{specificationModel}
+        </if>
+        <if test="supplier2 != null">
+            and a.supplier2 = #{supplier2}
+        </if>
+        <if test="supplier != null">
+            and a.supplier = #{supplier}
+        </if>
+        <if test="typeCode != null">
+            and a.type_code = #{typeCode}
+        </if>
+        <if test="batch != null">
+            and a.batch = #{batch}
+        </if>
+
+        <if test="consignor != null">
+            and a.consignor = #{consignor}
+        </if>
+
+        <if test="gmtStart != null">
+            and a.create_time >= #{gmtStart}
+        </if>
+        <if test="gmtEnd != null">
+            <![CDATA[
+            and a.create_time <= #{gmtEnd}
+            ]]>
+        </if>
+        <if test="allocationNumber != null">
+            and a.allocation_number = #{allocationNumber}
+        </if>
+        <if test="receiveUser != null">
+            and a.receive_user = #{receiveUser}
+        </if>
+        <if test="receiveUser != null">
+            and a.receive_user = #{receiveUser}
+        </if>
+        <if test="sendCompany != null">
+            and b.send_company = #{sendCompany}
+        </if>
+        <if test="receiveCompany != null">
+            and c.receive_company = #{receiveCompany}
+        </if>
+
+
+    </select>
+</mapper>

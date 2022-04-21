@@ -6,24 +6,38 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huanhong.common.units.DataUtil;
 import com.huanhong.common.units.StrUtils;
+import com.huanhong.common.units.excel.ExportExcel;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.*;
+import com.huanhong.wms.entity.AllocationPlan;
+import com.huanhong.wms.entity.AllocationPlanDetail;
+import com.huanhong.wms.entity.InventoryInformation;
+import com.huanhong.wms.entity.OutboundRecord;
 import com.huanhong.wms.entity.dto.*;
+import com.huanhong.wms.entity.param.AllocationDetailPage;
+import com.huanhong.wms.entity.vo.AllocationDetailVo;
 import com.huanhong.wms.entity.vo.AllocationPlanVO;
 import com.huanhong.wms.mapper.AllocationPlanMapper;
+import com.huanhong.wms.properties.OssProperties;
 import com.huanhong.wms.service.IAllocationPlanDetailService;
 import com.huanhong.wms.service.IAllocationPlanService;
 import com.huanhong.wms.service.IInventoryInformationService;
 import com.huanhong.wms.service.IOutboundRecordService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -47,6 +61,9 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
 
     @Resource
     private IOutboundRecordService outboundRecordService;
+
+    @Autowired
+    private OssProperties ossProperties;
     @Override
     public Page<AllocationPlan> pageFuzzyQuery(Page<AllocationPlan> allocationPlanPage, AllocationPlanVO allocationPlanVO) {
 
@@ -345,6 +362,39 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
         }
         return Result.success();
     }
+
+    @Override
+    public Result<Page<AllocationDetailVo>> allocationDetail(AllocationDetailPage page) {
+        Page<AllocationDetailVo> pageData = allocationPlanMapper.allocationDetail(page);
+        int i = 1;
+        for (AllocationDetailVo ii : pageData.getRecords()) {
+            ii.setIndex(i);
+            ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
+            i++;
+        }
+        return Result.success(pageData);
+    }
+
+    @Override
+    public void allocationDetailExport(AllocationDetailPage page, HttpServletRequest request, HttpServletResponse response) {
+        Page<AllocationDetailVo> pageData = allocationPlanMapper.allocationDetail(page);
+        int i = 1;
+        for (AllocationDetailVo ii : pageData.getRecords()) {
+            ii.setIndex(i);
+            ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
+            i++;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("list", pageData.getRecords());
+        params.put("gmtCreate", new Date());
+        params.put("userName", page.getUserName());
+        params.put("gmtStart", page.getGmtStart());
+        params.put("gmtEnd", page.getGmtEnd());
+        String templatePath = ossProperties.getPath() + "templates/allocationDetail.xlsx";
+        ExportExcel.exportExcel(templatePath, ossProperties.getPath() + "temp/", "调拨明细汇总表.xlsx", params, request, response);
+
+    }
+
     /**
      * 完整审批时-如果请调数量和准调数量不一致--回滚库存
      * 出库明细单据已更新,需要根据批准数量-应出数量=出库数量回滚部分库存并更新出库记录

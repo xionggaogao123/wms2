@@ -1,7 +1,5 @@
 package com.huanhong.wms.entity;
 
-import java.time.LocalDateTime;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -11,6 +9,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.time.LocalDateTime;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -66,5 +66,8 @@ public class AllocationPlan extends SuperEntity {
     @TableField(value = "last_update",fill = FieldFill.INSERT_UPDATE)
     @ApiModelProperty(value = "最后更新时间")
     private LocalDateTime lastUpdate;
-
+    @ApiModelProperty(value = "调出负责人")
+    private String sendUser;
+    @ApiModelProperty(value = "调入负责人")
+    private String receiveUser;
 }

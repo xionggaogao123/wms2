@@ -6,7 +6,12 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.AllocationPlan;
 import com.huanhong.wms.entity.dto.AddAllocationPlanDTO;
 import com.huanhong.wms.entity.dto.UpdateAllocationPlanDTO;
+import com.huanhong.wms.entity.param.AllocationDetailPage;
+import com.huanhong.wms.entity.vo.AllocationDetailVo;
 import com.huanhong.wms.entity.vo.AllocationPlanVO;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * <p>
@@ -68,4 +73,19 @@ public interface IAllocationPlanService extends SuperService<AllocationPlan> {
     Result checkStock(AllocationPlan allocationPlan);
 
     Result updateOutboundRecordAndInventory(AllocationPlan allocationPlan);
+
+    /**
+     * 调拨明细汇总表分页查询
+     * @param page
+     * @return
+     */
+    Result<Page<AllocationDetailVo>> allocationDetail(AllocationDetailPage page);
+
+    /**
+     * 调拨明细汇总表导出
+     * @param page
+     * @param request
+     * @param response
+     */
+    void allocationDetailExport(AllocationDetailPage page, HttpServletRequest request, HttpServletResponse response);
 }

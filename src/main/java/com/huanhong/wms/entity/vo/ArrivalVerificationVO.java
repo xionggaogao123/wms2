@@ -35,7 +35,7 @@ public class ArrivalVerificationVO {
 
     @Min(0)
     @Max(2)
-    @ApiModelProperty(value = "检验状态：0-未检验，1-部分检验，2-全部检验")
+    @ApiModelProperty(value = "检验状态：0-未检验，1-部分检验，2-全部检验//PDA端 0-未检验&部分检验 1-全部检验")
     private Integer verificationStatus;
 
     @ApiModelProperty(value = "到货日期")

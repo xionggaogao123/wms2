@@ -11,6 +11,7 @@ import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.ArrivalVerification;
+import com.huanhong.wms.entity.PlanUseOut;
 import com.huanhong.wms.entity.dto.AddArrivalVerificationDTO;
 import com.huanhong.wms.entity.dto.UpdateArrivalVerificationDTO;
 import com.huanhong.wms.entity.vo.ArrivalVerificationVO;
@@ -84,6 +85,30 @@ public class ArrivalVerificationServiceImpl extends SuperServiceImpl<ArrivalVeri
                     .apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + createDateEnd + "')");
 
         }
+        return baseMapper.selectPage(arrivalVerificationPage, query);
+    }
+
+    @Override
+    public Page<ArrivalVerification> pageFuzzyQueryPDA(Page<ArrivalVerification> arrivalVerificationPage, ArrivalVerificationVO arrivalVerificationVO) {
+        //新建QueryWrapper对象
+        QueryWrapper<ArrivalVerification> query = new QueryWrapper<>();
+
+        //根据id排序
+        query.orderByAsc("id");
+
+        //单据编号
+        query.like(StringUtils.isNotBlank(arrivalVerificationVO.getVerificationDocumentNumber()), "verification_document_number", arrivalVerificationVO.getVerificationDocumentNumber());
+
+        //仓库
+        query.like(StringUtils.isNotBlank(arrivalVerificationVO.getWarehouseId()), "warehouse_id", arrivalVerificationVO.getWarehouseId());
+
+        //单据状态
+        if (ObjectUtil.isNotNull(arrivalVerificationVO.getVerificationStatus()) && arrivalVerificationVO.getVerificationStatus() == 0) {
+            query.eq("verification_status", 0).or().eq("verification_status", 1);
+        } else if (ObjectUtil.isNotNull(arrivalVerificationVO.getVerificationStatus()) && arrivalVerificationVO.getVerificationStatus() == 1) {
+            query.eq("verification_status", 2);
+        }
+
         return baseMapper.selectPage(arrivalVerificationPage, query);
     }
 

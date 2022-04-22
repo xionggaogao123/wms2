@@ -15,6 +15,8 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.ArrivalVerificationVO;
+import com.huanhong.wms.entity.vo.OnShelfVO;
+import com.huanhong.wms.entity.vo.PlanUseOutVO;
 import com.huanhong.wms.mapper.ArrivalVerificationMapper;
 import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
@@ -462,6 +464,28 @@ public class ArrivalVerificationController extends BaseController {
         }catch (Exception e){
             log.error("系统异常,新增到货检验单失败！",e);
             return Result.failure("系统异常,新增到货检验单失败！");
+        }
+    }
+
+
+
+    @ApiOperationSupport(order = 12)
+    @ApiOperation(value = "PDA端分页查询")
+    @GetMapping("/PDApage")
+    public Result<Page<ArrivalVerification>> pagePda(@RequestParam(defaultValue = "1") Integer current,
+                                            @RequestParam(defaultValue = "10") Integer size,
+                                            ArrivalVerificationVO arrivalVerificationVO
+    ){
+        try {
+            //调用服务层方法，传入page对象和查询条件对象
+            Page<ArrivalVerification> pageResult = arrivalVerificationService.pageFuzzyQueryPDA(new Page<>(current,size),arrivalVerificationVO);
+            if (ObjectUtil.isEmpty(pageResult.getRecords())) {
+                return Result.success(pageResult, "未查询到到货检验单据信息");
+            }
+            return Result.success(pageResult);
+        } catch (Exception e) {
+            log.error("分页查询异常", e);
+            return Result.failure("查询失败--系统异常，请联系管理员");
         }
     }
 }

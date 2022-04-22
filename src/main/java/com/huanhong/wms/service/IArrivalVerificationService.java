@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.ArrivalVerification;
+import com.huanhong.wms.entity.PlanUseOut;
 import com.huanhong.wms.entity.dto.AddArrivalVerificationDTO;
 import com.huanhong.wms.entity.dto.UpdateArrivalVerificationDTO;
 import com.huanhong.wms.entity.vo.ArrivalVerificationVO;
+import com.huanhong.wms.entity.vo.PlanUseOutVO;
 
 /**
  * <p>
@@ -22,6 +24,16 @@ public interface IArrivalVerificationService extends SuperService<ArrivalVerific
      * 分页查询
      */
     Page<ArrivalVerification> pageFuzzyQuery(Page<ArrivalVerification> arrivalVerificationPage, ArrivalVerificationVO arrivalVerificationVO);
+
+
+    /**
+     *  PDA端分页查询
+     * @param arrivalVerificationPage
+     * @param arrivalVerificationVO
+     * @return
+     */
+    Page<ArrivalVerification> pageFuzzyQueryPDA(Page<ArrivalVerification> arrivalVerificationPage, ArrivalVerificationVO arrivalVerificationVO);
+
 
 
     /**

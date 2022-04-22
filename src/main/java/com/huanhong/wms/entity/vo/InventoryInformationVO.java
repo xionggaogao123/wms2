@@ -1,5 +1,7 @@
 package com.huanhong.wms.entity.vo;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -14,11 +16,18 @@ public class InventoryInformationVO {
     @ApiModelProperty(value = "物料名称")
     private String materialName;
 
+    @ApiModelProperty(value = "库房编号")
+    private String warehouseId;
+
+    @ApiModelProperty(value = "库区编号")
+    private String warehouseAreaId;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "库房名称")
+    private String warehouseName;
+
     @ApiModelProperty(value = "货位编码")
     private String cargoSpaceId;
-
-    @ApiModelProperty(value = "父级编码,likeRight货位编码")
-    private String parentCode;
 
     @ApiModelProperty(value = "批次")
     private String batch;

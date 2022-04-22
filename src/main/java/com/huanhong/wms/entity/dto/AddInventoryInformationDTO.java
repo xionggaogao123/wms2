@@ -1,6 +1,8 @@
 package com.huanhong.wms.entity.dto;
 
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -11,6 +13,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 @ApiModel(description = "新增库存")
@@ -52,7 +55,7 @@ public class AddInventoryInformationDTO {
     private String batch;
 
     @Min(0)
-    @Max(1)
+    @Max(5)
     @NotNull
     @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
     private Integer consignor;
@@ -80,6 +83,33 @@ public class AddInventoryInformationDTO {
     @ApiModelProperty(value = "供应商")
     private String supplier;
 
+    @ApiModelProperty(value = "库房编号")
+    private String warehouseId;
+
+    @ApiModelProperty(value = "库区编号")
+    private String warehouseAreaId;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "库房名称")
+    private String warehouseName;
+
+    @ApiModelProperty(value = "生产日期")
+    private Date produceDate;
+
+    @ApiModelProperty(value = "入库时间（泰丰）：入库单审批生效时间")
+    private Date inDate;
+
+    @ApiModelProperty(value = "采购入库单据编号（泰丰）")
+    private String documentNumber;
+
+    @ApiModelProperty(value = "最近一次库存数量更新时间")
+    private LocalDateTime lastUpdateInventoryCredit;
+
+    @ApiModelProperty(value = "入库时间（各单位）：入库单审批生效时间")
+    private Date inDateOther;
+
+    @ApiModelProperty(value = "采购入库单据编号（各单位）")
+    private String documentNumberOther;
 
     @ApiModelProperty(value = "备注")
     private String remark;

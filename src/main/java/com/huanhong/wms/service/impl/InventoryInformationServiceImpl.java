@@ -93,13 +93,19 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 
 //      query.like(StringUtils.isNotBlank(inventoryInformationVO.getCargoSpaceId()), "cargo_space_id", inventoryInformationVO.getCargoSpaceId());
 
+        query.like(StringUtils.isNotBlank(inventoryInformationVO.getWarehouseId()),"warehouse_id",inventoryInformationVO.getWarehouseId());
+
+        query.like(StringUtils.isNotBlank(inventoryInformationVO.getWarehouseAreaId()),"warehouse_area_id",inventoryInformationVO.getWarehouseAreaId());
+
+        query.like(StringUtils.isNotBlank(inventoryInformationVO.getWarehouseName()),"warehouse_name",inventoryInformationVO.getWarehouseName());
+
+        query.like(StringUtils.isNotBlank(inventoryInformationVO.getCargoSpaceId()), "cargo_space_id", inventoryInformationVO.getCargoSpaceId());
+
         query.like(StringUtils.isNotBlank(inventoryInformationVO.getBatch()), "batch", inventoryInformationVO.getBatch());
 
         query.like(ObjectUtil.isNotNull(inventoryInformationVO.getConsignor()), "consignor", inventoryInformationVO.getConsignor());
 
         query.like(StringUtils.isNotBlank(inventoryInformationVO.getSupplier()), "supplier", inventoryInformationVO.getSupplier());
-
-        query.likeRight(StringUtils.isNotBlank(inventoryInformationVO.getParentCode()), "cargo_space_id", inventoryInformationVO.getParentCode());
 
         return baseMapper.selectPage(inventoryInformationPage, query);
     }
@@ -123,39 +129,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         /**
          * vesion 对比veision 如果一致则更新并加一  不一致则不更新
          */
-        if (StringUtils.isNotBlank(updateInventoryInformationDTO.getCargoSpaceId())) {
-            inventoryInformationOld.setCargoSpaceId(updateInventoryInformationDTO.getCargoSpaceId());
-        }
-        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getInventoryCredit())) {
-            inventoryInformationOld.setInventoryCredit(updateInventoryInformationDTO.getInventoryCredit());
-        }
-        if (ObjectUtil.isNotEmpty(updateInventoryInformationDTO.getSafeQuantity())) {
-            inventoryInformationOld.setSafeQuantity(updateInventoryInformationDTO.getSafeQuantity());
-        }
-        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getConsignor())) {
-            inventoryInformationOld.setConsignor(updateInventoryInformationDTO.getConsignor());
-        }
-        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getEffectiveDate())) {
-            inventoryInformationOld.setEffectiveDate(updateInventoryInformationDTO.getEffectiveDate());
-        }
-        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getUnitPrice())) {
-            inventoryInformationOld.setUnitPrice(updateInventoryInformationDTO.getUnitPrice());
-        }
-        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getManagementFeeRate())) {
-            inventoryInformationOld.setManagementFeeRate(updateInventoryInformationDTO.getManagementFeeRate());
-        }
-        if (ObjectUtil.isNotNull(updateInventoryInformationDTO.getSalesUnitPrice())) {
-            inventoryInformationOld.setSalesUnitPrice(updateInventoryInformationDTO.getSalesUnitPrice());
-        }
-        if (StringUtils.isNotBlank(updateInventoryInformationDTO.getSupplier())) {
-            inventoryInformationOld.setSupplier(updateInventoryInformationDTO.getSupplier());
-        }
-        if (StringUtils.isNotBlank(updateInventoryInformationDTO.getPriorityStorageLocation())) {
-            inventoryInformationOld.setPriorityStorageLocation(updateInventoryInformationDTO.getPriorityStorageLocation());
-        }
-        if (StringUtils.isNotBlank(updateInventoryInformationDTO.getRemark())) {
-            inventoryInformationOld.setRemark(updateInventoryInformationDTO.getRemark());
-        }
+        BeanUtil.copyProperties(updateInventoryInformationDTO,inventoryInformationOld);
         int i = inventoryInformationMapper.updateById(inventoryInformationOld);
         if (i > 0) {
             return Result.success("更新成功！");
@@ -206,10 +180,10 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         /**
          * 根据货位编码前四位获取当前仓库-库位编号前四位
          */
-        String parentCode = addInventoryInformationDTO.getCargoSpaceId().substring(0, 4);
+        String warehouseId = addInventoryInformationDTO.getWarehouseId();
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.select("priority_storage_location");
-        queryWrapper.likeRight("cargo_space_id", parentCode);
+        queryWrapper.like("warehouse_id", warehouseId);
         queryWrapper.eq("material_coding", addInventoryInformationDTO.getMaterialCoding());
 
         /**
@@ -241,7 +215,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
             //更新同一库同一物料的推荐存放位置
             UpdateWrapper updateWrapper = new UpdateWrapper();
             updateWrapper.eq("material_coding", addInventoryInformationDTO.getMaterialCoding());
-            updateWrapper.likeRight("cargo_space_id", parentCode);
+            updateWrapper.like("warehouse_id", warehouseId);
             InventoryInformation inventoryInformationUpdate = new InventoryInformation();
             String[] strings = listPSL.toArray(new String[listPSL.size()]);
             String resultString = StringUtil.join(strings, ",");

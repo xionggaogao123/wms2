@@ -18,6 +18,8 @@ import com.huanhong.wms.service.IWarehouseManagementService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.lang.annotation.ElementType;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +53,8 @@ public class WarehouseManagementServiceImpl extends SuperServiceImpl<WarehouseMa
     private ProcessAssignmentMapper processAssignmentMapper;
     @Resource
     private OutboundRecordMapper outboundRecordMapper;
+    @Resource
+    private WarehousingRecordMapper warehousingRecordMapper;
 
     @Override
     public List<WarehouseManagement> getWarehouseByCompanyId(Integer CompanyId) {
@@ -123,7 +127,7 @@ public class WarehouseManagementServiceImpl extends SuperServiceImpl<WarehouseMa
         List<WarehouseManagement> warehouseManagements = warehouseManagementMapper.selectList(qw);
         if (warehouseManagements.size() > 0) {
             for (WarehouseManagement wm : warehouseManagements) {
-                //    TODO 查询仓库占用率
+                //    查询仓库占用率
                 //    查询子库
                 //    查询库区
                 //    查询货架
@@ -138,68 +142,117 @@ public class WarehouseManagementServiceImpl extends SuperServiceImpl<WarehouseMa
                     }
                 }
                 warehouseMap.put("warehouseName", wm.getWarehouseName());
-                warehouseMap.put("occupation", (occupation / total) * 100);
+                warehouseMap.put("occupation", String.format("%.2f", (occupation / total) * 100));
 
-                //    TODO 查询品类占用情况
+                //    查询品类占用情况
                 List<Map<String, Object>> cas = warehouseManagementMapper.selectMaterialByWarehouse(wm.getWarehouseId());
                 warehouseMap.put("material", cas);
 
 
-                //    TODO 查询出库情况
+                //     查询出库情况
                 Map<String, Object> outMap = new HashMap<>();
-                List<Map<String, Object>> outboundRecords = outboundRecordMapper.countOutboundRecordByWarehouse(wm.getWarehouseId());
-                outMap.put("total", 3000.00);
-                for (int i = 0; i < 3; i++) {
-                    Map<String, Object> record = new HashMap<>();
-                    switch (i) {
-                        case 1:
-                            record.put("name", "手套");
-                            record.put("num", "20%");
-                            outboundRecords.add(record);
-                        case 2:
-                            record.put("name", "钢材");
-                            record.put("num", "67%");
-                            outboundRecords.add(record);
-                        case 0:
-                            record.put("name", "螺丝");
-                            record.put("num", "13%");
-                            outboundRecords.add(record);
-
-                    }
+                Double totalMoney = outboundRecordMapper.getTotalOutboundByWarehouse(wm.getWarehouseId());
+                outMap.put("total", totalMoney);
+                List<Map<String, Object>> outboundRecords = new ArrayList<>();
+                if (totalMoney>0){
+                    outboundRecords = outboundRecordMapper.countOutboundRecordByWarehouse(wm.getWarehouseId(),totalMoney);
                 }
                 outMap.put("outList", outboundRecords);
                 warehouseMap.put("out", outMap);
 
-//    TODO 查询入库情况
-                Map<String, Object> inMap = new HashMap<>();
-                List<Map<String, Object>> inRecords = outboundRecordMapper.countOutboundRecordByWarehouse(wm.getWarehouseId());
-                inMap.put("total", 6000.00);
-                for (int i = 0; i < 3; i++) {
-                    Map<String, Object> record = new HashMap<>();
-                    switch (i) {
-                        case 1:
-                            record.put("name", "手套");
-                            record.put("num", "10%");
-                            inRecords.add(record);
-                        case 2:
-                            record.put("name", "钢材");
-                            record.put("num", "77%");
-                            inRecords.add(record);
-                        case 0:
-                            record.put("name", "螺丝");
-                            record.put("num", "13%");
-                            inRecords.add(record);
 
-                    }
+                //for (int i = 0; i < 3; i++) {
+                //    Map<String, Object> record = new HashMap<>();
+                //    switch (i) {
+                //        case 1:
+                //            record.put("name", "手套");
+                //            record.put("num", "20%");
+                //            outboundRecords.add(record);
+                //        case 2:
+                //            record.put("name", "钢材");
+                //            record.put("num", "67%");
+                //            outboundRecords.add(record);
+                //        case 0:
+                //            record.put("name", "螺丝");
+                //            record.put("num", "13%");
+                //            outboundRecords.add(record);
+                //
+                //    }
+                //}
+                //outMap.put("outList", outboundRecords);
+                //warehouseMap.put("out", outMap);
+
+//     查询入库情况
+                Map<String, Object> inMap = new HashMap<>();
+                Double inMoney = outboundRecordMapper.getTotalWarehousingRecordByWarehouse(wm.getWarehouseId());
+                inMap.put("total", inMoney);
+                List<Map<String, Object>> inRecords = new ArrayList<>();
+                if (inMoney>0){
+                    inRecords = warehousingRecordMapper.countWarehousingRecordByWarehouse(wm.getWarehouseId(),inMoney);
                 }
                 inMap.put("inList", inRecords);
                 warehouseMap.put("in", inMap);
+
+                //for (int i = 0; i < 3; i++) {
+                //    Map<String, Object> record = new HashMap<>();
+                //    switch (i) {
+                //        case 1:
+                //            record.put("name", "手套");
+                //            record.put("num", "10%");
+                //            inRecords.add(record);
+                //        case 2:
+                //            record.put("name", "钢材");
+                //            record.put("num", "77%");
+                //            inRecords.add(record);
+                //        case 0:
+                //            record.put("name", "螺丝");
+                //            record.put("num", "13%");
+                //            inRecords.add(record);
+                //
+                //    }
+                //}
+                //inMap.put("inList", inRecords);
+                //warehouseMap.put("in", inMap);
 
                 mapList.add(warehouseMap);
             }
             map.put("warehouseList", mapList);
         }
         return Result.success(map);
+    }
+
+    @Override
+    public Result<Object> getWarehouseUsageAnalysis(String warehouseId) {
+        QueryWrapper<WarehouseManagement> qw = new QueryWrapper<>();
+        qw.eq("warehouse_id", warehouseId);
+        List<WarehouseManagement> warehouseManagements = warehouseManagementMapper.selectList(qw);
+        if (warehouseManagements.size() > 0) {
+            WarehouseManagement wm = warehouseManagements.get(0);
+            //    查询仓库占用率
+            //    查询子库
+            //    查询库区
+            //    查询货架
+            Map<String, Object> warehouseMap = new HashMap<>();
+            int total = 0;
+            float occupation = 0.00f;
+            List<Map<String, Object>> list = warehouseManagementMapper.countWarehouseOccupationByWarehouse(wm.getWarehouseId());
+            for (Map<String, Object> map0 : list) {
+                total = total + Convert.toInt(map0.get("num"));
+                if (Convert.toFloat(map0.get("full"), 0.00f) > 0) {
+                    occupation = occupation + Convert.toFloat(map0.get("full")) * Convert.toInt(map0.get("num"));
+                }
+            }
+            log.debug("占用量："+occupation +"；总数："+total);
+            warehouseMap.put("warehouseName", wm.getWarehouseName());
+            warehouseMap.put("occupation", String.format("%.2f", (occupation / total) * 100));
+
+            //   查询品类占用情况
+            List<Map<String, Object>> cas = warehouseManagementMapper.selectMaterialByWarehouse(wm.getWarehouseId());
+            warehouseMap.put("material", cas);
+            return Result.success(warehouseMap);
+        } else {
+            return Result.failure("该仓库不存在");
+        }
     }
 
 }

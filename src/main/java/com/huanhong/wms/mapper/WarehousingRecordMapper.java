@@ -9,6 +9,7 @@ import com.huanhong.wms.entity.param.WarehousingDetailPage;
 import com.huanhong.wms.entity.vo.InventoryRecordVo;
 import com.huanhong.wms.entity.vo.WarehousingDetailVo;
 import org.apache.ibatis.annotations.MapKey;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -32,4 +33,7 @@ public interface WarehousingRecordMapper extends BaseMapper<WarehousingRecord> {
 
     @MapKey("id")
     List<Map<String, Object>> getTheTotalMoneyOfWarehouseInboundByParam(MaterialOutInParam param);
+
+    @MapKey("id")
+    List<Map<String, Object>> countWarehousingRecordByWarehouse(@Param("warehouseId") String warehouseId, @Param("total") Double total);
 }

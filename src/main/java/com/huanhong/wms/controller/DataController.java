@@ -157,9 +157,9 @@ public class DataController extends BaseController {
     @OperateLog(title = "仓库使用情况分析_查询",type = OperateType.QUERY)
     @ApiOperation(value = "仓库使用情况分析")
     @GetMapping("/warehouseUsage")
-    public Result<Object> warehouseUsageAnalysis() {
+    public Result<Object> warehouseUsageAnalysis(@RequestParam String warehouseId) {
         LoginUser loginUser = this.getLoginUser();
-        return null ;
+        return warehouseManagementService.getWarehouseUsageAnalysis(warehouseId) ;
     }
 
     //@OperateLog(title = "合同跟踪分析_查询",type = OperateType.QUERY)

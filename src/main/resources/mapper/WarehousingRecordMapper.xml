@@ -215,4 +215,27 @@
         GROUP BY
             w.warehouse_id
     </select>
+    <select id="countWarehousingRecordByWarehouse" resultType="java.util.Map">
+        SELECT
+            FORMAT(
+                    IFNULL(
+                            SUM(
+                                    w.enter_quantity * w.sales_unit_price/#{total}*100
+                                ) ,
+                            0
+                        ) ,
+                    2
+                ) AS num ,
+            IFNULL(m.material_name , '未命名') AS name ,
+            w.material_coding
+        FROM
+            warehousing_record w
+        LEFT JOIN material m ON m.material_coding = w.material_coding
+        WHERE
+            w.warehouse_id = #{warehouseId}
+          AND w.del = 0
+          AND to_days(w.last_update) = to_days(now())
+        GROUP BY
+            w.material_coding
+    </select>
 </mapper>

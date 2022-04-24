@@ -3,13 +3,27 @@
 <mapper namespace="com.huanhong.wms.mapper.OutboundRecordMapper">
 
     <select id="countOutboundRecordByWarehouse" resultType="java.util.Map">
-        SELECT outr.*,
-               m.material_name
-        FROM outbound_record outr
-                 LEFT JOIN material m ON m.material_coding = outr.material_coding
+        SELECT
+            FORMAT(
+                    IFNULL(
+                            SUM(
+                                    outr.out_quantity * outr.sales_unit_price / #{totalMoney} * 100
+                                ) ,
+                            0
+                        ) ,
+                    2
+                ) AS num ,
+            IFNULL(m.material_name , '未命名') AS name ,
+            outr.material_coding
+        FROM
+            outbound_record outr
+        LEFT JOIN material m ON m.material_coding = outr.material_coding
         WHERE outr.warehouse_id = #{warehouseId}
           AND outr.`status` = 1
           AND outr.del = 0
+          AND to_days(outr.last_update) = to_days(now())
+        GROUP BY
+            outr.material_coding
     </select>
     <select id="outboundDetail" resultType="com.huanhong.wms.entity.vo.OutboundDetailVo">
         select o.*,m.type_code,m.brand,m.specification_model,m.material_name,m.measurement_unit,m.supplier

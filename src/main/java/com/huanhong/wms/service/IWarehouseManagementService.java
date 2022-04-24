@@ -40,4 +40,6 @@ public interface IWarehouseManagementService extends SuperService<WarehouseManag
 
 
     Result<Object> selectWarehouseInfo(Integer id);
+
+    Result<Object> getWarehouseUsageAnalysis(String warehouseId);
 }

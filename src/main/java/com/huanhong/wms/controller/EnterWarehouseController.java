@@ -1,5 +1,7 @@
 package com.huanhong.wms.controller;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -7,6 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
+import com.huanhong.common.units.DataUtil;
 import com.huanhong.common.units.EntityUtils;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.LoginUser;
@@ -20,6 +23,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import lombok.Data;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -323,7 +327,35 @@ public class EnterWarehouseController extends BaseController {
                  *  4.作废
                  */
                 updateEnterWarehouseDTO.setState(3);
-                return enter_warehouseService.updateEnterWarehouse(updateEnterWarehouseDTO);
+                Result result = enter_warehouseService.updateEnterWarehouse(updateEnterWarehouseDTO);
+                if (result.isOk()){
+                    List<EnterWarehouseDetails> enterWarehouseDetailsList = enterWarehouseDetailsService.getListEnterWarehouseDetailsByDocNumberAndWarehosue(enterWarehouse.getDocumentNumber(),enterWarehouse.getWarehouse());
+                    if (ObjectUtil.isNotNull(enterWarehouseDetailsList)){
+                        UpdateInventoryInformationDTO updateInventoryInformationDTO = new UpdateInventoryInformationDTO();
+                        for (EnterWarehouseDetails enterWarehouseDetails:enterWarehouseDetailsList
+                        ) {
+                            String materialCoding = enterWarehouseDetails.getMaterialCoding();
+                            String batch = enterWarehouseDetails.getBatch();
+                            String warehouseId = enterWarehouseDetails.getWarehouse();
+                            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndBatchAndWarehouseId(materialCoding,batch,warehouseId);
+                            for (InventoryInformation inventoryInformation:inventoryInformationList
+                                 ) {
+                                //更新库存信息为已入库 入库时间 入库单编号
+                                BeanUtil.copyProperties(inventoryInformation,updateInventoryInformationDTO);
+                                //已入库
+                                updateInventoryInformationDTO.setIsEnter(1);
+                                //入库时间
+                                updateInventoryInformationDTO.setInDate(DateUtil.date());
+                                //入库单百年好
+                                updateInventoryInformationDTO.setDocumentNumber(enterWarehouse.getDocumentNumber());
+                                inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
+                            }
+                        }
+                    }
+                    return result;
+                }else {
+                    return Result.failure("完成审批失败！");
+                }
             } else {
                 return Result.failure("单据异常无法完成");
             }

@@ -89,6 +89,8 @@ public class OutboundRecordServiceImpl extends SuperServiceImpl<OutboundRecordMa
 
         query.like(ObjectUtil.isNotNull(outboundRecordVO.getStatus()), "status", outboundRecordVO.getStatus());
 
+        query.like(ObjectUtil.isNotNull(outboundRecordVO.getConsignor()),"consignor",outboundRecordVO.getConsignor());
+
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         /**
          * 创建时间时间区间

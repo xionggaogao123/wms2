@@ -1,5 +1,7 @@
 package com.huanhong.wms.entity.vo;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -33,8 +35,21 @@ public class MakeInventoryVO {
     @ApiModelProperty(value = "批次")
     private String batch;
 
+    @ApiModelProperty(value = "盘点人名字")
+    private String userName;
+
+    @ApiModelProperty(value = "库房编号")
+    private String warehouseId;
+
+    @ApiModelProperty(value = "供应商")
+    private String supplier;
+
     @ApiModelProperty(value = "状态: 0-待盘点，1-已盘点")
     private Integer checkStatus;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
+    private Integer consignor;
 
     @ApiModelProperty(value = "创建日期-起始")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

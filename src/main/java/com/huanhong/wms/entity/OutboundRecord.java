@@ -55,6 +55,9 @@ public class OutboundRecord extends SuperEntity {
     @ApiModelProperty(value = "状态：0-审批中（锁库存）1-审批生效（出库）")
     private Integer status;
 
+    @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
+    private Integer consignor;
+
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     @ApiModelProperty(value = "创建日期")
     private LocalDateTime createTime;
@@ -63,6 +66,4 @@ public class OutboundRecord extends SuperEntity {
     @ApiModelProperty(value = "最后更新时间")
     private LocalDateTime lastUpdate;
 
-    @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
-    private Integer consignor;
 }

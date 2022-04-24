@@ -4,9 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 
 @Data
@@ -44,6 +42,11 @@ public class AddOutboundRecordDTO {
     @NotNull
     @ApiModelProperty(value = "出货数量")
     private Double outQuantity;
+
+    @Min(0)
+    @Max(5)
+    @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
+    private Integer consignor;
 
     @NotNull
     @ApiModelProperty(value = "状态：0-审批中（锁库存）1-审批生效（出库）")

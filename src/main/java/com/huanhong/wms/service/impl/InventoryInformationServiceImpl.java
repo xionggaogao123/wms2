@@ -107,6 +107,12 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 
         query.like(StringUtils.isNotBlank(inventoryInformationVO.getSupplier()), "supplier", inventoryInformationVO.getSupplier());
 
+        query.like(ObjectUtil.isNotNull(inventoryInformationVO.getIsVerification()),"is_verification",inventoryInformationVO.getIsVerification());
+
+        query.like(ObjectUtil.isNotNull(inventoryInformationVO.getIsEnter()),"is_enter",inventoryInformationVO.getIsEnter());
+
+        query.like(ObjectUtil.isNotNull(inventoryInformationVO.getIsOnshelf()),"is_onshelf",inventoryInformationVO.getIsOnshelf());
+
         return baseMapper.selectPage(inventoryInformationPage, query);
     }
 
@@ -130,6 +136,15 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
          * vesion 对比veision 如果一致则更新并加一  不一致则不更新
          */
         BeanUtil.copyProperties(updateInventoryInformationDTO,inventoryInformationOld);
+
+        /**
+         * 比对前后库存数量是否相同，若不同则更新 最近一次库存数量更新时间字段
+         */
+        int event = NumberUtil.compare(inventoryInformationOld.getInventoryCredit(),updateInventoryInformationDTO.getInventoryCredit());
+        if (event!=0){
+            inventoryInformationOld.setLastUpdateInventoryCredit(LocalDateTime.parse(DateUtil.now()));
+        }
+
         int i = inventoryInformationMapper.updateById(inventoryInformationOld);
         if (i > 0) {
             return Result.success("更新成功！");

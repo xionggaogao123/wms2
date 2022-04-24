@@ -58,6 +58,21 @@ public class UpdateInventoryInformationDTO {
     @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
     private Integer consignor;
 
+    @Min(0)
+    @Max(1)
+    @ApiModelProperty(value = "是否检验 0-未检验 1-已检验")
+    private Integer isVerification;
+
+    @Min(0)
+    @Max(1)
+    @ApiModelProperty(value = "是否入库 0-未入库 1-已入库")
+    private Integer isEnter;
+
+    @Min(0)
+    @Max(1)
+    @ApiModelProperty(value = "是否上架 0-未上架 1-已上架")
+    private Integer isOnshelf;
+
     @ApiModelProperty(value = "有效日期")
     private LocalDateTime effectiveDate;
 

@@ -75,6 +75,12 @@ public class WarehousingRecordServiceImpl extends SuperServiceImpl<WarehousingRe
 
         query.like(StringUtils.isNotBlank(warehousingRecordVO.getBatch()), "batch", warehousingRecordVO.getBatch());
 
+        query.like(ObjectUtil.isNotNull(warehousingRecordVO.getConsignor()),"consignor",warehousingRecordVO.getConsignor());
+
+        query.like(StringUtils.isNotBlank(warehousingRecordVO.getSupplier()),"supplier",warehousingRecordVO.getSupplier());
+
+        query.like(StringUtils.isNotBlank(warehousingRecordVO.getWarehouseManager()),"warehouse_manager",warehousingRecordVO.getWarehouseManager());
+
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         /**
          * 创建时间时间区间

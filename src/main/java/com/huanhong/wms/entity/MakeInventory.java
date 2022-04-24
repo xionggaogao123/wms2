@@ -113,6 +113,7 @@ public class MakeInventory extends SuperEntity {
 
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;
+
     @ApiModelProperty(value = "供应商")
     private String supplier;
 }

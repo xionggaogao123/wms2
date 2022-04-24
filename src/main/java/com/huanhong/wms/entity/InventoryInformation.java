@@ -97,9 +97,11 @@ public class InventoryInformation extends SuperEntity {
     @TableField(fill = FieldFill.INSERT)
     private Integer version;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "库区编号")
     private String warehouseAreaId;
 
@@ -107,22 +109,41 @@ public class InventoryInformation extends SuperEntity {
     @ApiModelProperty(value = "库房名称")
     private String warehouseName;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "生产日期")
     private Date produceDate;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "入库时间（泰丰）：入库单审批生效时间")
     private Date inDate;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "采购入库单据编号（泰丰）")
     private String documentNumber;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "最近一次库存数量更新时间")
     private LocalDateTime lastUpdateInventoryCredit;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "入库时间（各单位）：入库单审批生效时间")
     private Date inDateOther;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "采购入库单据编号（各单位）")
     private String documentNumberOther;
+
+
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "是否检验 0-未检验 1-已检验")
+    private Integer isVerification;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "是否入库 0-未入库 1-已入库")
+    private Integer isEnter;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "是否上架 0-未上架 1-已上架")
+    private Integer isOnshelf;
 
 }

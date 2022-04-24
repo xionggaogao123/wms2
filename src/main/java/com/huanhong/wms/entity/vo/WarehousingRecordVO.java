@@ -5,6 +5,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.time.LocalDateTime;
 
 
@@ -15,6 +17,8 @@ public class WarehousingRecordVO {
     @ApiModelProperty(value = "原单据编号")
     private String documentNumber;
 
+    @Min(1)
+    @Max(2)
     @ApiModelProperty(value = "入库类型：1-采购入库 2-调拨入库")
     private Integer enterType;
 
@@ -29,6 +33,17 @@ public class WarehousingRecordVO {
 
     @ApiModelProperty(value = "批次")
     private String batch;
+
+    @Min(0)
+    @Max(5)
+    @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
+    private Integer consignor;
+
+    @ApiModelProperty(value = "供应商")
+    private String supplier;
+
+    @ApiModelProperty(value = "库管员（提交入库申请表单的用户）")
+    private String warehouseManager;
 
     @ApiModelProperty(value = "创建日期-起始")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

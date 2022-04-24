@@ -121,7 +121,28 @@ public class OnShelfController extends BaseController {
             return Result.failure("新待上数量不能大于旧待上数量！");
         }
         Result result = onShelfService.updateOnshelf(updateOnShelfDTO);
+
+
+
         if (result.isOk()){
+            //如果更新为已上架则更新库存信息中的已上架字段
+            if (updateOnShelfDTO.getComplete()==1){
+                UpdateInventoryInformationDTO updateInventoryInformationDTO = new UpdateInventoryInformationDTO();
+                String materialCoding = onShelfOld.getMaterialCoding();
+                String batch = onShelfOld.getBatch();
+                String warehouseId = onShelfOld.getWarehouse();
+                List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndBatchAndWarehouseId(materialCoding,batch,warehouseId);
+                if (ObjectUtil.isNotNull(inventoryInformationList)){
+                    for (InventoryInformation inventoryInformation:inventoryInformationList
+                    ) {
+                        //更新库存信息为已上架
+                        BeanUtil.copyProperties(inventoryInformation,updateInventoryInformationDTO);
+                        updateInventoryInformationDTO.setIsOnshelf(1);
+                        inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
+                    }
+                }
+            }
+
             try {
 
                 //获取临时货位的存货数量=可移动数量

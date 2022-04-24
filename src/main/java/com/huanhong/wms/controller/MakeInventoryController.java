@@ -68,6 +68,9 @@ public class MakeInventoryController extends BaseController {
     @ApiOperation(value = "添加", notes = "生成代码")
     @PostMapping("/add")
     public Result add(@Valid @RequestBody AddMakeInventoryDTO addMakeInventoryDTO) {
+
+
+
         return makeInventoryService.addMakeInventory(addMakeInventoryDTO);
     }
 

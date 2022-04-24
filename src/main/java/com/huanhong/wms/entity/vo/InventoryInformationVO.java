@@ -38,4 +38,13 @@ public class InventoryInformationVO {
     @ApiModelProperty(value = "供应商")
     private String supplier;
 
+    @ApiModelProperty(value = "是否检验 0-未检验 1-已检验")
+    private Integer isVerification;
+
+    @ApiModelProperty(value = "是否入库 0-未入库 1-已入库")
+    private Integer isEnter;
+
+    @ApiModelProperty(value = "是否上架 0-未上架 1-已上架")
+    private Integer isOnshelf;
+
 }

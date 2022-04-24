@@ -36,6 +36,11 @@ public class OutboundRecordVO {
     private String batch;
 
     @Min(0)
+    @Max(5)
+    @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
+    private Integer consignor;
+
+    @Min(0)
     @Max(1)
     @ApiModelProperty(value = "状态：0-审批中（锁库存）1-审批生效（出库）")
     private Integer status;

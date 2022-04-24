@@ -102,10 +102,22 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
         //盘点状态
         query.eq(ObjectUtil.isNotNull(makeInventoryVO.getCheckStatus()),"check_status",makeInventoryVO.getCheckStatus());
 
+        //货主
+        query.like(ObjectUtil.isNotNull(makeInventoryVO.getConsignor()),"consignor",makeInventoryVO.getConsignor());
+
+        //仓库编号
+        query.like(StringUtils.isNotBlank(makeInventoryVO.getWarehouseId()),"warehouse_id",makeInventoryVO.getWarehouseId());
+
+        //盘点人名字
+        query.like(StringUtils.isNotBlank(makeInventoryVO.getUserName()),"user_name",makeInventoryVO.getUserName());
+
+        //供应商
+        query.like(StringUtils.isNotBlank(makeInventoryVO.getSupplier()),"supplier",makeInventoryVO.getSupplier());
+
 
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         /**
-         * 清点单时间区间查询
+         * 盘点单创建时间区间查询
          */
         if (ObjectUtil.isNotEmpty(makeInventoryVO.getCreateDateStart()) && ObjectUtil.isNotEmpty(makeInventoryVO.getCreateDateEnd())) {
 

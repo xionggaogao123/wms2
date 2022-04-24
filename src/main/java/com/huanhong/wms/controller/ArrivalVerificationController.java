@@ -1,5 +1,6 @@
 package com.huanhong.wms.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
@@ -30,6 +31,7 @@ import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @ApiSort()
 @Api(tags = "到货检验主表")
@@ -58,6 +60,9 @@ public class ArrivalVerificationController extends BaseController {
 
     @Resource
     private IInventoryDocumentDetailsService inventoryDocumentDetailsService;
+
+    @Resource
+    private IInventoryInformationService inventoryInformationService;
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -124,9 +129,34 @@ public class ArrivalVerificationController extends BaseController {
             if (!result.isOk()) {
                 return Result.failure("更新到货检验计划表失败！");
             }
-            return arrivalVerificationDetailsService.updateArrivalVerificationDetails(updateArrivalVerificationDetailsDTOList);
+            ArrivalVerification arrivalVerification = arrivalVerificationService.getArrivalVerificationById(updateArrivalVerificationDTO.getId());
+
+            Result resultDetails = arrivalVerificationDetailsService.updateArrivalVerificationDetails(updateArrivalVerificationDetailsDTOList);
+            /**
+             * 如果主表更新为全部检验，根据检验明细list更新库存中的是否检验字段
+             */
+            UpdateInventoryInformationDTO updateInventoryInformationDTO = new UpdateInventoryInformationDTO();
+            if (arrivalVerification.getVerificationStatus()==2){
+                for (UpdateArrivalVerificationDetailsDTO updateArrivalVerificationDetailsDTO : updateArrivalVerificationDetailsDTOList
+                     ) {
+                    String materialCoding = updateArrivalVerificationDetailsDTO.getMaterialCoding();
+                    String batch = updateArrivalVerificationDetailsDTO.getBatch();
+                    String warehouseId = updateArrivalVerificationDTO.getWarehouseId();
+                    List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndBatchAndWarehouseId(materialCoding,batch,warehouseId);
+                    if (ObjectUtil.isNotNull(inventoryInformationList)){
+                        for (InventoryInformation inventoryInformation:inventoryInformationList
+                             ) {
+                            //更新库存信息为已检验
+                            BeanUtil.copyProperties(inventoryInformation,updateInventoryInformationDTO);
+                            updateInventoryInformationDTO.setIsVerification(1);
+                            inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
+                        }
+                    }
+                }
+            }
+            return resultDetails;
         } catch (Exception e) {
-            log.error("更新采购计划失败");
+            log.error("更新到货检验失败");
             return Result.failure("系统异常：更新到货检验失败!");
         }
     }

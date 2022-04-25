@@ -11,6 +11,7 @@ import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.AllocationOut;
 import com.huanhong.wms.entity.AllocationPlan;
+import com.huanhong.wms.entity.PlanUseOut;
 import com.huanhong.wms.entity.dto.AddAllocationOutDTO;
 import com.huanhong.wms.entity.dto.UpdateAllocationOutDTO;
 import com.huanhong.wms.entity.vo.AllocationOutVO;
@@ -58,6 +59,8 @@ public class AllocationOutServiceImpl extends SuperServiceImpl<AllocationOutMapp
 
         query.like(StringUtils.isNotBlank(allocationOutVO.getSendWarehouse()), "send_warehouse", allocationOutVO.getSendWarehouse());
 
+        query.like(ObjectUtil.isNotNull(allocationOutVO.getOutStatus()),"out_status",allocationOutVO.getOutStatus());
+
         query.like(StringUtils.isNotBlank(allocationOutVO.getEnterWarehouse()), "enter_warehouse", allocationOutVO.getEnterWarehouse());
 
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -74,6 +77,28 @@ public class AllocationOutServiceImpl extends SuperServiceImpl<AllocationOutMapp
             query.apply("UNIX_TIMESTAMP(create_time) >= UNIX_TIMESTAMP('" + createDateStart + "')")
                     .apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + createDateEnd + "')");
 
+        }
+
+        return allocationOutMapper.selectPage(allocationOutPage, query);
+    }
+
+    @Override
+    public Page<AllocationOut> pageFuzzyQueryPDA(Page<AllocationOut> allocationOutPage, AllocationOutVO allocationOutVO) {
+
+        //新建QueryWrapper对象
+        QueryWrapper<AllocationOut> query = new QueryWrapper<>();
+
+        //根据id排序
+        query.orderByAsc("id");
+
+        //单据编号
+        query.like(ObjectUtil.isNotNull(allocationOutVO.getAllocationOutNumber()), "allocation_out_number", allocationOutVO.getAllocationOutNumber());
+
+        //单据状态
+        if (ObjectUtil.isNotNull(allocationOutVO.getOutStatus()) && allocationOutVO.getOutStatus() == 0) {
+            query.eq("out_status", 0).or().eq("out_status", 1);
+        } else if (ObjectUtil.isNotNull(allocationOutVO.getOutStatus()) && allocationOutVO.getOutStatus() == 1) {
+            query.eq("out_status", 2);
         }
 
         return allocationOutMapper.selectPage(allocationOutPage, query);

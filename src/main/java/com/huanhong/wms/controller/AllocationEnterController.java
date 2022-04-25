@@ -116,7 +116,21 @@ public class AllocationEnterController extends BaseController {
     @ApiOperation(value = "删除", notes = "生成代码")
     @DeleteMapping("delete/{id}")
     public Result delete(@PathVariable Integer id) {
-        return render(allocationEnterService.removeById(id));
+       AllocationEnter allocationEnter = allocationEnterService.getAllocationEnterById(id);
+       if (ObjectUtil.isNull(allocationEnter)){
+           return Result.failure("单据不存在！");
+       }
+       Boolean delete = allocationEnterService.removeById(id);
+       //主表删除成功,删除明细
+       if (delete){
+           String docNum = allocationEnter.getAllocationEnterNumber();
+           List<AllocationEnterDetails> allocationEnterDetailsList = allocationEnterDetailsService.getAllocationEnterDetailsListByDocNum(docNum);
+           for (AllocationEnterDetails allocationEnterDetails:allocationEnterDetailsList
+                ) {
+                allocationEnterDetailsService.removeById(allocationEnterDetails.getId());
+           }
+       }
+       return Result.success("删除成功");
     }
 
     @ApiOperationSupport(order = 5)

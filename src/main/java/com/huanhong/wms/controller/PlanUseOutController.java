@@ -486,7 +486,7 @@ public class PlanUseOutController extends BaseController {
             //查询领料出库
             PlanUseOutVO planUseOutVO = new PlanUseOutVO();
             BeanUtil.copyProperties(outboundDocOfPageQueryForPdaVO,planUseOutVO);
-            Page<PlanUseOut> pageResultPlanUseOut = planUseOutService.pageFuzzyQuery(new Page<>(current, size), planUseOutVO);
+            Page<PlanUseOut> pageResultPlanUseOut = planUseOutService.pageFuzzyQueryPDA(new Page<>(current, size), planUseOutVO);
             /**
              * 组装领料出库参数
              */
@@ -494,16 +494,6 @@ public class PlanUseOutController extends BaseController {
             ) {
                 OutboundForPdaVO outboundForPdaVO = new OutboundForPdaVO();
                 BeanUtil.copyProperties(planUseOut,outboundForPdaVO);
-                /**
-                 * 单据出库状态为0-未出库 1-部分出库 2-全部出库
-                 * 2 VO状态为完成
-                 * 0、1 VO状态未完成
-                 */
-                if (planUseOut.getOutStatus()>1){
-                    outboundForPdaVO.setOutStatus(1);
-                }else {
-                    outboundForPdaVO.setOutStatus(0);
-                }
                 //单据编号
                 outboundForPdaVO.setDocNum(planUseOut.getDocumentNumber());
                 //单据类型
@@ -513,9 +503,9 @@ public class PlanUseOutController extends BaseController {
 
             //查询调拨出库
             AllocationOutVO allocationOutVO = new AllocationOutVO();
+            BeanUtil.copyProperties(outboundDocOfPageQueryForPdaVO,allocationOutVO);
             allocationOutVO.setAllocationOutNumber(outboundDocOfPageQueryForPdaVO.getDocumentNumber());
-            allocationOutVO.setSendWarehouse(outboundDocOfPageQueryForPdaVO.getWarehouseId());
-            Page<AllocationOut> pageResultAllocationOut = allocationOutService.pageFuzzyQuery(new Page<>(current,size),allocationOutVO);
+            Page<AllocationOut> pageResultAllocationOut = allocationOutService.pageFuzzyQueryPDA(new Page<>(current,size),allocationOutVO);
             if (ObjectUtil.isAllEmpty(pageResultAllocationOut.getRecords())&&ObjectUtil.isAllEmpty(pageResultAllocationOut)) {
                 return Result.success(null, "未查询到调拨入库单信息");
             }
@@ -527,16 +517,6 @@ public class PlanUseOutController extends BaseController {
             ) {
                 OutboundForPdaVO outboundForPdaVO = new OutboundForPdaVO();
                 BeanUtil.copyProperties(allocationOut,outboundForPdaVO);
-                /**
-                 * 单据出库状态为0-未出库 1-部分出库 2-全部出库
-                 * 2 VO状态为完成
-                 * 0、1 VO状态未完成
-                 */
-                if (allocationOut.getOutStatus()>1){
-                    outboundForPdaVO.setOutStatus(1);
-                }else {
-                    outboundForPdaVO.setOutStatus(0);
-                }
                 //单据编号
                 outboundForPdaVO.setDocNum(allocationOut.getAllocationOutNumber());
                 //单据类型

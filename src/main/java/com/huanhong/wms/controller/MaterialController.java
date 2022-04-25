@@ -355,10 +355,10 @@ public class MaterialController extends BaseController {
         inventoryDocumentDocNumList=inventoryDocumentDocNumList.stream()
                 .distinct()
                 .collect(Collectors.toList());
-        JSONObject jsonObjectInventory = new JSONObject();
         JSONArray  jsonArrayInventory = new JSONArray();
         for (String docNum:inventoryDocumentDocNumList
              ) {
+            JSONObject jsonObjectInventory = new JSONObject();
             InventoryDocument inventoryDocument = inventoryDocumentService.getInventoryDocumentByDocumentNumberAndWarehouseId(docNum, warehouseId);
             if (ObjectUtil.isNotEmpty(inventoryDocument)){
                 jsonObjectInventory.put("id", inventoryDocument.getId());
@@ -382,10 +382,10 @@ public class MaterialController extends BaseController {
         arrivalVerificationDocNumList = arrivalVerificationDocNumList.stream()
                 .distinct()
                 .collect(Collectors.toList());
-        JSONObject jsonObjectArrivalVerification = new JSONObject();
         JSONArray  jsonArrayArrivalVerification= new JSONArray();
         for (String docNum:arrivalVerificationDocNumList
         ) {
+            JSONObject jsonObjectArrivalVerification = new JSONObject();
             ArrivalVerification arrivalVerification = arrivalVerificationService.getArrivalVerificationByDocNumberAndWarhouseId(docNum, warehouseId);
             if (ObjectUtil.isNotNull(arrivalVerification)){
                 jsonObjectArrivalVerification.put("id", arrivalVerification.getId());
@@ -400,10 +400,10 @@ public class MaterialController extends BaseController {
          * 上架单
          */
         List<OnShelf> onShelfList = onShelfService.getOnshelfByMaterialCodingAndWarehouseId(materialCoding, warehouseId);
-        JSONObject jsonObjectOnShelf= new JSONObject();
         JSONArray  jsonArrayOnShelf= new JSONArray();
         for (OnShelf onshelf: onShelfList
              ) {
+            JSONObject jsonObjectOnShelf= new JSONObject();
             jsonObjectOnShelf.put("id", onshelf.getId());
             jsonObjectOnShelf.put("docNum", onshelf.getDocumentNumber());
             jsonArrayOnShelf.add(jsonObjectOnShelf);

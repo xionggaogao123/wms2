@@ -5,12 +5,14 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.AllocationOut;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.entity.AllocationPlan;
+import com.huanhong.wms.entity.PlanUseOut;
 import com.huanhong.wms.entity.dto.AddAllocationOutDTO;
 import com.huanhong.wms.entity.dto.AddAllocationPlanDTO;
 import com.huanhong.wms.entity.dto.UpdateAllocationOutDTO;
 import com.huanhong.wms.entity.dto.UpdateAllocationPlanDTO;
 import com.huanhong.wms.entity.vo.AllocationOutVO;
 import com.huanhong.wms.entity.vo.AllocationPlanVO;
+import com.huanhong.wms.entity.vo.PlanUseOutVO;
 
 /**
  * <p>
@@ -26,6 +28,16 @@ public interface IAllocationOutService extends SuperService<AllocationOut> {
      * 分页查询
      */
     Page<AllocationOut> pageFuzzyQuery(Page<AllocationOut> allocationOutPage, AllocationOutVO allocationOutVO);
+
+
+    /**
+     * PDA端分页查询
+     * @param allocationOutPage
+     * @param allocationOutVO
+     * @return
+     */
+    Page<AllocationOut>  pageFuzzyQueryPDA(Page<AllocationOut> allocationOutPage, AllocationOutVO allocationOutVO);
+
 
 
     /**

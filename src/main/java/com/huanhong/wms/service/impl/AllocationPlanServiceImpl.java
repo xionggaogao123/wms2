@@ -34,10 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>
@@ -212,9 +209,7 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
     @Override
     public Result addOutboundRecordUpdateInventory(AllocationPlan allocationPlan) {
         List<AllocationPlanDetail> allocationPlanDetailsList = allocationPlanDetailService.getAllocationPlanDetailsListByDocNum(allocationPlan.getAllocationNumber());
-
-        //留存出库记录
-        AddOutboundRecordDTO addOutboundRecordDTO = new AddOutboundRecordDTO();
+        List<AddOutboundRecordDTO> addOutboundRecordDTOList = new ArrayList<>();
         /**
          * 获取当前库存是否满足领用
          * 1.warehouseId和materialCoding和批次
@@ -234,6 +229,8 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
                     BigDecimal tempNum = planNum;
                     List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndBatchAndWarehouseId(allocationPlanDetail.getMaterialCoding(), allocationPlanDetail.getBatch(),allocationPlan.getSendWarehouse());
                     for (InventoryInformation inventoryInformation : inventoryInformationList) {
+                        //留存出库记录
+                        AddOutboundRecordDTO addOutboundRecordDTO = new AddOutboundRecordDTO();
                         /**
                          * 1.将一条库存的数据（编码、批次、货位）中的库存数量放入出库记录的出库数量中：库存数量更新为零，出库数量新增一条数据
                          * 2.每搬空一条库存数据，tempNum减去对应的数量
@@ -254,6 +251,20 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
                                     addOutboundRecordDTO.setBatch(inventoryInformation.getBatch());
                                     addOutboundRecordDTO.setOutQuantity(inventoryInformation.getInventoryCredit());
                                     tempNum = tempNum.subtract(BigDecimal.valueOf(inventoryInformation.getInventoryCredit()));
+                                    /**
+                                     * 单据进入流程时，根据领用数量生成出库记录
+                                     * 1.原单据编号
+                                     * 2.库房ID
+                                     * 3.物料编码
+                                     * 4.状态：0-审批中（锁库存）1-审批生效（出库）
+                                     * 5.出库类型：1-领料出库 2-调拨出库
+                                     */
+                                    addOutboundRecordDTO.setDocumentNumber(allocationPlanDetail.getAllocationNumber());
+                                    addOutboundRecordDTO.setWarehouseId(allocationPlan.getSendWarehouse());
+                                    addOutboundRecordDTO.setMaterialCoding(allocationPlanDetail.getMaterialCoding());
+                                    addOutboundRecordDTO.setStatus(0);
+                                    addOutboundRecordDTO.setOutType(2);
+                                    addOutboundRecordDTOList.add(addOutboundRecordDTO);
                                 } else {
                                     log.error("更新库存失败");
                                     return Result.failure("更新库存失败");
@@ -271,6 +282,20 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
                                     addOutboundRecordDTO.setBatch(inventoryInformation.getBatch());
                                     addOutboundRecordDTO.setOutQuantity(tempNum.doubleValue());
                                     tempNum = tempNum.subtract(BigDecimal.valueOf(inventoryInformation.getInventoryCredit()));
+                                    /**
+                                     * 单据进入流程时，根据领用数量生成出库记录
+                                     * 1.原单据编号
+                                     * 2.库房ID
+                                     * 3.物料编码
+                                     * 4.状态：0-审批中（锁库存）1-审批生效（出库）
+                                     * 5.出库类型：1-领料出库 2-调拨出库
+                                     */
+                                    addOutboundRecordDTO.setDocumentNumber(allocationPlanDetail.getAllocationNumber());
+                                    addOutboundRecordDTO.setWarehouseId(allocationPlan.getSendWarehouse());
+                                    addOutboundRecordDTO.setMaterialCoding(allocationPlanDetail.getMaterialCoding());
+                                    addOutboundRecordDTO.setStatus(0);
+                                    addOutboundRecordDTO.setOutType(2);
+                                    addOutboundRecordDTOList.add(addOutboundRecordDTO);
                                 } else {
                                     log.error("更新库存失败");
                                     return Result.failure("更新库存失败");
@@ -280,35 +305,20 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
                             break;
                         }
                     }
-                    /**
-                     * 单据进入流程时，根据领用数量生成出库记录
-                     * 1.原单据编号
-                     * 2.库房ID
-                     * 3.物料编码
-                     * 4.状态：0-审批中（锁库存）1-审批生效（出库）
-                     * 5.出库类型：1-领料出库 2-调拨出库
-                     */
-                    addOutboundRecordDTO.setDocumentNumber(allocationPlanDetail.getAllocationNumber());
-                    addOutboundRecordDTO.setWarehouseId(allocationPlan.getSendWarehouse());
-                    addOutboundRecordDTO.setMaterialCoding(allocationPlanDetail.getMaterialCoding());
-                    addOutboundRecordDTO.setStatus(0);
-                    addOutboundRecordDTO.setOutType(2);
-                    //放入新增出库记录List
-                    Result result = outboundRecordService.addOutboundRecord(addOutboundRecordDTO);
-
-                    if (!result.isOk()) {
-                        return Result.failure("新增库存记录失败");
-                    } else {
-                        return Result.success("新增库存记录成功");
-                    }
                 } else {
                     return Result.failure("物料：" + allocationPlanDetail.getMaterialCoding() + " 库存不足，请重拟领用单！");
                 }
             }
+            //放入新增出库记录List
+            Result result = outboundRecordService.addOutboundRecordList(addOutboundRecordDTOList);
+            if (!result.isOk()) {
+                return Result.failure("新增库存记录失败");
+            } else {
+                return Result.success("新增库存记录成功");
+            }
         } else {
             return Result.failure("未查询到明细单据信息");
         }
-        return Result.failure("未知错误");
     }
 
     @Override

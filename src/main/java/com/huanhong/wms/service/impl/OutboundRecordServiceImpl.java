@@ -128,7 +128,7 @@ public class OutboundRecordServiceImpl extends SuperServiceImpl<OutboundRecordMa
             OutboundRecord outboundRecord = new OutboundRecord();
             BeanUtil.copyProperties(addOutboundRecordDTO, outboundRecord);
             int add = outboundRecordMapper.insert(outboundRecord);
-            if (add > 1) {
+            if (add > 0) {
                 count++;
             }
         }

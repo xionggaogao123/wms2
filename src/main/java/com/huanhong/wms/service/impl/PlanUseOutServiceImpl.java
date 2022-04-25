@@ -408,7 +408,6 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
                             break;
                         }
                     }
-
                 } else {
                     return Result.failure("物料：" + planUseOutDetails.getMaterialCoding() + " 库存不足，请重拟领用单！");
                 }

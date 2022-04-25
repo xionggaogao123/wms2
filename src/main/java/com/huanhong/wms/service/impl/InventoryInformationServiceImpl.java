@@ -294,6 +294,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     public List<InventoryInformation> getInventoryInformationListByMaterialCodingAndWarehouseId(String materialCoding, String warehouseId) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("material_coding", materialCoding);
+        queryWrapper.ne("inventory_credit",0);
         queryWrapper.likeRight("cargo_space_id", warehouseId);
         return inventoryInformationMapper.selectList(queryWrapper);
     }

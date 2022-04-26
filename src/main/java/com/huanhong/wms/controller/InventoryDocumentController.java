@@ -245,8 +245,26 @@ public class InventoryDocumentController extends BaseController {
     @ApiOperation(value = "删除", notes = "生成代码")
     @DeleteMapping("delete/{id}")
     public Result delete(@PathVariable Integer id) {
-        int i = inventoryDocumentMapper.deleteById(id);
-        return render(i > 0);
+
+        InventoryDocument inventoryDocument = inventoryDocumentService.getInventoryDocumentById(id);
+
+        if (ObjectUtil.isNull(inventoryDocument)){
+            return Result.failure("单据不存在！");
+        }
+        boolean delete = inventoryDocumentService.removeById(id);
+
+        //主表删除成功,删除明细
+        if (delete){
+            String docNum = inventoryDocument.getDocumentNumber();
+
+            List<InventoryDocumentDetails> inventoryDocumentDetailsList = inventoryDocumentDetailsService.getInventoryDocumentDetailsListByDocNumberAndWarehosue(inventoryDocument.getDocumentNumber(),inventoryDocument.getWarehouse());
+
+            for (InventoryDocumentDetails inventoryDocumentDetails:inventoryDocumentDetailsList
+            ) {
+                inventoryDocumentDetailsService.removeById(inventoryDocumentDetails.getId());
+            }
+        }
+        return Result.success("删除成功");
     }
 
     @ApiOperationSupport(order = 5)

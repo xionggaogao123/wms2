@@ -9,6 +9,8 @@ import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.common.units.EntityUtils;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.entity.ProcurementPlan;
+import com.huanhong.wms.entity.ProcurementPlanDetails;
 import com.huanhong.wms.entity.RequirementsPlanning;
 import com.huanhong.wms.entity.RequiremetsPlanningDetails;
 import com.huanhong.wms.entity.dto.*;
@@ -131,8 +133,26 @@ public class RequirementsPlanningController extends BaseController {
     @ApiOperation(value = "删除需求计划表", notes = "生成代码")
     @DeleteMapping("deleteByid/{id}")
     public Result delete(@PathVariable Integer id) {
-        int i = requirementsPlanningMapper.deleteById(id);
-        return render(i > 0);
+
+        RequirementsPlanning requirementsPlanning = requirementsPlanningService.getRequirementsPlanningById(id);
+
+        if (ObjectUtil.isNull(requirementsPlanning)){
+            return Result.failure("单据不存在！");
+        }
+        boolean delete = requirementsPlanningService.removeById(id);
+
+        //主表删除成功,删除明细
+        if (delete){
+            String docNum = requirementsPlanning.getPlanNumber();
+
+            List<RequiremetsPlanningDetails> requiremetsPlanningDetailsList = requiremetsPlanningDetailsService.getRequiremetsPlanningDetailsByDocNumAndWarehouseId(docNum,requirementsPlanning.getWarehouseId());
+
+            for (RequiremetsPlanningDetails requiremetsPlanningDetails:requiremetsPlanningDetailsList
+            ) {
+                requiremetsPlanningDetailsService.removeById(requiremetsPlanningDetails.getId());
+            }
+        }
+        return Result.success("删除成功");
     }
 
     @ApiOperationSupport(order = 5)

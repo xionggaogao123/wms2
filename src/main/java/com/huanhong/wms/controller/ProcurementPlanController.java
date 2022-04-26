@@ -132,8 +132,26 @@ public class ProcurementPlanController extends BaseController {
     @ApiOperation(value = "删除采购计划主表", notes = "生成代码")
     @DeleteMapping("/{id}")
     public Result delete(@PathVariable Integer id) {
-        int i = procurementPlanMapper.deleteById(id);
-        return render(i > 0);
+
+        ProcurementPlan procurementPlan = procurementPlanService.getProcurementPlanById(id);
+
+        if (ObjectUtil.isNull(procurementPlan)){
+            return Result.failure("单据不存在！");
+        }
+        boolean delete = procurementPlanService.removeById(id);
+
+        //主表删除成功,删除明细
+        if (delete){
+            String docNum = procurementPlan.getPlanNumber();
+
+            List<ProcurementPlanDetails> procurementPlanDetailsList= procurementPlanDetailsService.getProcurementPlanDetailsByDocNumAndWarehouseId(docNum,procurementPlan.getWarehouseId());
+
+            for (ProcurementPlanDetails procurementPlanDetails:procurementPlanDetailsList
+            ) {
+                procurementPlanDetailsService.removeById(procurementPlanDetails.getId());
+            }
+        }
+        return Result.success("删除成功");
     }
 
 

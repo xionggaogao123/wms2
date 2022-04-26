@@ -121,7 +121,21 @@ public class AllocationOutController extends BaseController {
         @ApiOperation(value = "删除", notes = "生成代码")
         @DeleteMapping("/{id}")
         public Result delete(@PathVariable Integer id) {
-            return render(allocationOutService.removeById(id));
+            AllocationOut allocationOut = allocationOutService.getAllocationOutById(id);
+            if (ObjectUtil.isNull(allocationOut)){
+                return Result.failure("单据不存在！");
+            }
+            Boolean delete = allocationOutService.removeById(id);
+            //主表删除成功,删除明细
+            if (delete){
+                String docNum = allocationOut.getAllocationOutNumber();
+                List<AllocationOutDetails> allocationOutDetailsList = allocationOutDetailsService.getAllocationOutDetailsListByDocNum(docNum);
+                for (AllocationOutDetails allocationOutDetails:allocationOutDetailsList
+                ) {
+                    allocationOutDetailsService.removeById(allocationOutDetails.getId());
+                }
+            }
+            return Result.success("删除成功");
         }
 
 

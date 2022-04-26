@@ -865,8 +865,18 @@ public class EntityUtils {
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "readOnly");
                 return jsonObject;
+            case "sendUser":
+                jsonObject.put("name", "调出负责人");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
             case "receiveWarehouse":
                 jsonObject.put("name", "调入仓库");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "receiveUser":
+                jsonObject.put("name", "调入负责人");
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "readOnly");
                 return jsonObject;
@@ -914,6 +924,19 @@ public class EntityUtils {
                 jsonObject.put("name", "单价");
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "input");
+                return jsonObject;
+            case "consignor":
+                jsonObject.put("name", "货主");
+                jsonObject.put("type", "select");
+                jsonObject.put("class", "readOnly");
+                //下拉菜单的值
+                value.put("0", "泰丰盛和");
+                value.put("1", "润中");
+                value.put("2", "雅店");
+                value.put("3", "蒋家河");
+                value.put("4", "下沟");
+                value.put("5", "精煤");
+                jsonObject.put("value", value);
                 return jsonObject;
             case "totalAmount":
                 jsonObject.put("name", "总金额");

@@ -148,8 +148,24 @@ public class EnterWarehouseController extends BaseController {
     @ApiOperation(value = "删除采购入库单主表", notes = "生成代码")
     @DeleteMapping("deleteByid/{id}")
     public Result delete(@PathVariable Integer id) {
-        int i = enter_warehouseMapper.deleteById(id);
-        return render(i > 0);
+
+        EnterWarehouse enterWarehouse= enter_warehouseService.getEnterWarehouseById(id);
+
+        if (ObjectUtil.isNull(enterWarehouse)){
+            return Result.failure("单据不存在！");
+        }
+        boolean delete = enter_warehouseService.removeById(id);
+
+        //主表删除成功,删除明细
+        if (delete){
+            String docNum = enterWarehouse.getDocumentNumber();
+            List<EnterWarehouseDetails> enterWarehouseDetailsList = enterWarehouseDetailsService.getListEnterWarehouseDetailsByDocNumberAndWarehosue(enterWarehouse.getDocumentNumber(),enterWarehouse.getWarehouse());
+            for (EnterWarehouseDetails enterWarehouseDetails:enterWarehouseDetailsList
+            ) {
+                enterWarehouseDetailsService.removeById(enterWarehouseDetails.getId());
+            }
+        }
+        return Result.success("删除成功");
     }
 
 

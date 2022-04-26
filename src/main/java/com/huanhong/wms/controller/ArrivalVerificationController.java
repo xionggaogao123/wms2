@@ -165,7 +165,24 @@ public class ArrivalVerificationController extends BaseController {
     @ApiOperation(value = "删除到货检验主表", notes = "生成代码")
     @DeleteMapping("delte/{id}")
     public Result delete(@PathVariable Integer id) {
-        return render(arrivalVerificationService.removeById(id));
+
+        ArrivalVerification arrivalVerification= arrivalVerificationService.getArrivalVerificationById(id);
+
+        if (ObjectUtil.isNull(arrivalVerification)){
+            return Result.failure("单据不存在！");
+        }
+        boolean delete = arrivalVerificationService.removeById(id);
+
+        //主表删除成功,删除明细
+        if (delete){
+            String docNum = arrivalVerification.getVerificationDocumentNumber();
+            List<ArrivalVerificationDetails> arrivalVerificationDetailsList = arrivalVerificationDetailsService.getArrivalVerificationDetailsByDocNumAndWarehouseId(arrivalVerification.getVerificationDocumentNumber(), arrivalVerification.getWarehouseId());
+            for (ArrivalVerificationDetails arrivalVerificationDetails:arrivalVerificationDetailsList
+            ) {
+                arrivalVerificationDetailsService.removeById(arrivalVerificationDetails.getId());
+            }
+        }
+        return Result.success("删除成功");
     }
 
 

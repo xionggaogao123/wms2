@@ -34,8 +34,14 @@ public class AllocationPlanVO {
     @ApiModelProperty(value = "调出仓库")
     private String sendWarehouse;
 
+    @ApiModelProperty(value = "调出负责人")
+    private String sendUser;
+
     @ApiModelProperty(value = "调入仓库")
     private String receiveWarehouse;
+
+    @ApiModelProperty(value = "调入负责人")
+    private String receiveUser;
 
     @ApiModelProperty(value = "申请人")
     private String applicant;

@@ -89,6 +89,10 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
 
         query.like(StringUtils.isNotBlank(allocationPlanVO.getApplicant()), "applicant",allocationPlanVO.getApplicant());
 
+        query.like(StringUtils.isNotBlank(allocationPlanVO.getSendUser()),"send_user",allocationPlanVO.getSendUser());
+
+        query.like(StringUtils.isNotBlank(allocationPlanVO.getReceiveUser()),"receive_user",allocationPlanVO.getReceiveUser());
+
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         /**

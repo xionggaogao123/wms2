@@ -9,10 +9,7 @@ import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.common.units.EntityUtils;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.AllocationPlan;
-import com.huanhong.wms.entity.AllocationPlanDetail;
-import com.huanhong.wms.entity.InventoryInformation;
-import com.huanhong.wms.entity.OutboundRecord;
+import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.AllocationPlanVO;
 import com.huanhong.wms.mapper.AllocationPlanMapper;
@@ -126,8 +123,21 @@ public class AllocationPlanController extends BaseController {
         @ApiOperation(value = "删除调拨计划主表", notes = "生成代码")
         @DeleteMapping("/{id}")
         public Result delete(@PathVariable Integer id) {
-            int i = allocationPlanMapper.deleteById(id);
-            return render(i > 0);
+            AllocationPlan allocationPlan = allocationPlanService.getAllocationPlanById(id);
+            if (ObjectUtil.isNull(allocationPlan)){
+                return Result.failure("单据不存在！");
+            }
+            boolean delete = allocationPlanService.removeById(id);
+            //主表删除成功,删除明细
+            if (delete){
+                String docNum = allocationPlan.getAllocationNumber();
+                List<AllocationPlanDetail> allocationPlanDetailsList = allocationPlanDetailService.getAllocationPlanDetailsListByDocNum(docNum);
+                for (AllocationPlanDetail allocationPlanDetail:allocationPlanDetailsList
+                ) {
+                    allocationPlanDetailService.removeById(allocationPlanDetail.getId());
+                }
+            }
+            return Result.success("删除成功");
         }
 
     @ApiOperationSupport(order = 5)

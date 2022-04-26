@@ -183,8 +183,26 @@ public class PlanUseOutController extends BaseController {
     @ApiOperation(value = "删除领料出库主表", notes = "生成代码")
     @DeleteMapping("/deleteById/{id}")
     public Result delete(@PathVariable Integer id) {
-        int i = planUseOutMapper.deleteById(id);
-        return render(i > 0);
+
+        PlanUseOut planUseOut = planUseOutService.getPlanUseOutById(id);
+
+        if (ObjectUtil.isNull(planUseOut)){
+            return Result.failure("单据不存在！");
+        }
+        boolean delete = planUseOutService.removeById(id);
+
+        //主表删除成功,删除明细
+        if (delete){
+            String docNum = planUseOut.getDocumentNumber();
+
+            List<PlanUseOutDetails> planUseOutDetailsList = planUseOutDetailsService.getListPlanUseOutDetailsByDocNumberAndWarehosue(planUseOut.getDocumentNumber(),planUseOut.getWarehouseId());
+
+            for (PlanUseOutDetails planUseOutDetails:planUseOutDetailsList
+            ) {
+                planUseOutDetailsService.removeById(planUseOutDetails.getId());
+            }
+        }
+        return Result.success("删除成功");
     }
 
 

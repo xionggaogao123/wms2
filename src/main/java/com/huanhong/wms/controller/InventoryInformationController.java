@@ -166,6 +166,9 @@ public class InventoryInformationController extends BaseController {
                  * 3、 可移数量<移动数量 返回错误
                  */
                 InventoryInformation preInventory = inventoryInformationService.getInventoryById(movingInventoryDTO.getId());
+                if (ObjectUtil.isNull(preInventory)){
+                    return Result.failure("库存不存在");
+                }
                 BigDecimal preNum = BigDecimal.valueOf(preInventory.getInventoryCredit());
                 BigDecimal hindNum = BigDecimal.valueOf(movingInventoryDTO.getHindInventoryCredit());
                 int event = preNum.compareTo(hindNum);
@@ -178,9 +181,10 @@ public class InventoryInformationController extends BaseController {
                         UpdateInventoryInformationDTO updateInventoryInformationDTO = new UpdateInventoryInformationDTO();
                         updateInventoryInformationDTO.setId(movingInventoryDTO.getId());
                         updateInventoryInformationDTO.setCargoSpaceId(movingInventoryDTO.getHindCargoSpaceId());
+                        updateInventoryInformationDTO.setInventoryCredit(movingInventoryDTO.getHindInventoryCredit());
                         Result resultUpdate = inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
                         if (!resultUpdate.isOk()){
-                            return Result.failure("移库失败：更新原库存失败！");
+                            return resultUpdate;
                         }else {
                             addMovingInventoryRecordsDTOArrayList.add(addMovingInventoryRecords(preInventory,movingInventoryDTO));
                         }
@@ -203,7 +207,10 @@ public class InventoryInformationController extends BaseController {
                             addInventoryInformationDTO.setInventoryCredit(hindNum.doubleValue());
                             Result resultAdd = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
                             if (!resultAdd.isOk()) {
-                                return Result.failure("移库失败：新增库存失败！");
+                                UpdateInventoryInformationDTO rollUpdate = new UpdateInventoryInformationDTO();
+                                BeanUtil.copyProperties(preInventory,rollUpdate);
+                                inventoryInformationService.updateInventoryInformation(rollUpdate);
+                                return resultAdd;
                             }else {
                                 addMovingInventoryRecordsDTOArrayList.add(addMovingInventoryRecords(preInventory,movingInventoryDTO));
                             }

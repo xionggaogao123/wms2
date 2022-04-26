@@ -66,8 +66,10 @@ public class AllocationPlan extends SuperEntity {
     @TableField(value = "last_update",fill = FieldFill.INSERT_UPDATE)
     @ApiModelProperty(value = "最后更新时间")
     private LocalDateTime lastUpdate;
+
     @ApiModelProperty(value = "调出负责人")
     private String sendUser;
+
     @ApiModelProperty(value = "调入负责人")
     private String receiveUser;
 }

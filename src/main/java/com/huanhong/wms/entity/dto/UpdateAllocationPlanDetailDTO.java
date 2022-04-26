@@ -40,6 +40,12 @@ public class UpdateAllocationPlanDetailDTO {
     @ApiModelProperty(value = "总金额")
     private BigDecimal totalAmount;
 
+    @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
+    private Integer consignor;
+
+    @ApiModelProperty(value = "供应商")
+    private String supplier;
+
     @ApiModelProperty(value = "备注")
     private String remark;
 

@@ -29,4 +29,7 @@ public class UpdateAllocationEnterDTO {
     @ApiModelProperty(value = "备注")
     private String remark;
 
+    @ApiModelProperty(value = "调入单位")
+    private String receiveCompany;
+
 }

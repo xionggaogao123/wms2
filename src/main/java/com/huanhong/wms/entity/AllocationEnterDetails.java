@@ -32,7 +32,7 @@ public class AllocationEnterDetails extends SuperEntity {
     private Double calibrationQuantity;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "实出数量")
+    @ApiModelProperty(value = "实收数量")
     private Double outboundQuantity;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)

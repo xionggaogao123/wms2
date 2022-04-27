@@ -1,5 +1,6 @@
 package com.huanhong.wms.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -7,13 +8,14 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
+import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.AllocationEnterDetails;
-import com.huanhong.wms.entity.AllocationOut;
-import com.huanhong.wms.entity.AllocationOutDetails;
+import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.AllocationEnterVO;
 import com.huanhong.wms.service.IAllocationEnterDetailsService;
+import com.huanhong.wms.service.IAllocationOutDetailsService;
+import com.huanhong.wms.service.IAllocationOutService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -22,12 +24,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RestController;
 import com.huanhong.wms.BaseController;
-import com.huanhong.wms.entity.AllocationEnter;
 import com.huanhong.wms.mapper.AllocationEnterMapper;
 import com.huanhong.wms.service.IAllocationEnterService;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +37,7 @@ import java.util.Map;
 @Api(tags = "调拨入库")
 @Slf4j
 @RestController
-@RequestMapping("/allocation-enter")
+@RequestMapping("/v1//allocation-enter")
 public class AllocationEnterController extends BaseController {
 
     @Resource
@@ -43,6 +45,12 @@ public class AllocationEnterController extends BaseController {
 
     @Resource
     private IAllocationEnterDetailsService allocationEnterDetailsService;
+
+    @Resource
+    private IAllocationOutService allocationOutService;
+
+    @Resource
+    private IAllocationOutDetailsService allocationOutDetailsService;
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -164,5 +172,51 @@ public class AllocationEnterController extends BaseController {
         return Result.success(jsonObject);
     }
 
+
+    @ApiOperationSupport(order = 7)
+    @ApiOperation(value = "根据调拨出库单生成调拨入库单")
+    @PutMapping("allocationOutToAllocationEnter")
+    public Result allocationOutToAllocationEnter(@Valid @RequestBody AllocationOut allocationOut){
+
+        LoginUser loginUser = this.getLoginUser();
+
+        AddAllocationEnterAndDetailsDTO addAllocationEnterAndDetailsDTO = new AddAllocationEnterAndDetailsDTO();
+
+        /**
+         * 处理主表
+         */
+        AddAllocationEnterDTO addAllocationEnterDTO = new AddAllocationEnterDTO();
+
+        BeanUtil.copyProperties(allocationOut,addAllocationEnterDTO);
+
+        addAllocationEnterDTO.setLibrarian(loginUser.getLoginName());
+
+        addAllocationEnterDTO.setReceiveCompany(loginUser.getCompanyId().toString());
+
+        addAllocationEnterDTO.setRemark("系统自动生成");
+
+        addAllocationEnterAndDetailsDTO.setAddAllocationEnterDTO(addAllocationEnterDTO);
+
+        /**
+         * 处理明细表
+         */
+        List<AllocationOutDetails> allocationOutDetailsList = allocationOutDetailsService.getAllocationOutDetailsListByDocNum(allocationOut.getAllocationOutNumber());
+        List<AddAllocationEnterDetailsDTO> addAllocationEnterDetailsDTOList = new ArrayList<>();
+        for (AllocationOutDetails allocationOutDetails:allocationOutDetailsList
+             ) {
+            AddAllocationEnterDetailsDTO addAllocationEnterDetailsDTO = new AddAllocationEnterDetailsDTO();
+            BeanUtil.copyProperties(allocationOutDetails,addAllocationEnterDetailsDTO);
+            //应收数量
+            addAllocationEnterDetailsDTO.setCalibrationQuantity(allocationOutDetails.getOutboundQuantity());
+            //实收数量
+            addAllocationEnterDetailsDTO.setOutboundQuantity((double)0);
+
+            addAllocationEnterDetailsDTO.setRemark("系统自动生成");
+
+            addAllocationEnterDetailsDTOList.add(addAllocationEnterDetailsDTO);
+        }
+        addAllocationEnterAndDetailsDTO.setAddAllocationEnterDetailsDTOList(addAllocationEnterDetailsDTOList);
+        return add(addAllocationEnterAndDetailsDTO);
+    }
 }
 

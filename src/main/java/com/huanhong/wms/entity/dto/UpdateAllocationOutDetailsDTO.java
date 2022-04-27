@@ -26,6 +26,9 @@ public class UpdateAllocationOutDetailsDTO {
     @ApiModelProperty(value = "出库状态：0-未出库，1-部分出库，2-全部出库")
     private Integer outStatus;
 
+    @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
+    private Integer consignor;
+
     @ApiModelProperty(value = "准调数量")
     private Double calibrationQuantity;
 

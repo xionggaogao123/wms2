@@ -35,6 +35,8 @@ public class UpdateAllocationOutDTO {
     @ApiModelProperty(value = "检验人")
     private String verification;
 
+    @ApiModelProperty(value = "调出单位")
+    private String sendCompany;
 
     @ApiModelProperty(value = "备注")
     private String remark;

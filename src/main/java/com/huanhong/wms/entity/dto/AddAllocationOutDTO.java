@@ -35,6 +35,10 @@ public class AddAllocationOutDTO {
     private String verification;
 
 
+    @ApiModelProperty(value = "调出单位")
+    private String sendCompany;
+
+
     @ApiModelProperty(value = "备注")
     private String remark;
 }

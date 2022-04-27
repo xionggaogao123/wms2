@@ -245,6 +245,17 @@ public class InventoryInformationController extends BaseController {
         }
     }
 
+
+
+    @ApiOperationSupport(order = 7)
+    @ApiOperation(value = "根据物料编码、批次和仓库编号获取库存数量")
+    @GetMapping("/getNumByMaterialCodingAndBatchAndWarehouseId")
+    public Result getNumByMaterialCodingAndBatchAndWarehouseId(@RequestParam String materialCoding,@RequestParam String batch,@RequestParam String warehouseId){
+        List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndBatchAndWarehouseId(materialCoding,batch,warehouseId);
+        return ObjectUtil.isAllNotEmpty(    inventoryInformationList) ? Result.success(inventoryInformationList) : Result.failure("未发现库存信息");
+    }
+
+
     private AddMovingInventoryRecordsDTO addMovingInventoryRecords(InventoryInformation preInventory,MovingInventoryDTO movingInventoryDTO){
 
         /**

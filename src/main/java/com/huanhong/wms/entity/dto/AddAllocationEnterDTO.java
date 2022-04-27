@@ -38,6 +38,9 @@ public class AddAllocationEnterDTO {
     @ApiModelProperty(value = "库管员")
     private String librarian;
 
+    @ApiModelProperty(value = "调入单位")
+    private String receiveCompany;
+
     @ApiModelProperty(value = "备注")
     private String remark;
 }

@@ -77,6 +77,15 @@ public class EntityUtils {
                 value.put("3", "补计划");
                 jsonObject.put("value", value);
                 return jsonObject;
+            case "outType":
+                jsonObject.put("name", "出库类型");
+                jsonObject.put("type", "select");
+                jsonObject.put("class", "readOnly");
+                //下拉菜单的值
+                value.put("0", "暂存库出库");
+                value.put("1", "正式库出库");
+                jsonObject.put("value", value);
+                return jsonObject;
             case "requisitioningUnit":
                 jsonObject.put("name", "领用单位");
                 jsonObject.put("type", "text");

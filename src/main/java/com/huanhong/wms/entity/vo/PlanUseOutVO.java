@@ -30,6 +30,11 @@ public class PlanUseOutVO {
     @ApiModelProperty(value = "计划类别-1.正常、2加急、3补计划、请选择（默认）")
     private Integer planClassification;
 
+    @Min(0)
+    @Max(1)
+    @ApiModelProperty(value = "出库类型：0-暂存库出库 1-正式库出库")
+    private Integer outType;
+
     @ApiModelProperty(value = "领用单位")
     private String requisitioningUnit;
 

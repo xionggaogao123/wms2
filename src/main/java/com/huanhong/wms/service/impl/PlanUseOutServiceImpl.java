@@ -92,6 +92,8 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
 
         query.eq(ObjectUtil.isNotNull(planUseOutVO.getOutStatus()), "out_status", planUseOutVO.getOutStatus());
 
+        query.eq(ObjectUtil.isNotNull(planUseOutVO.getOutType()),"out_type",planUseOutVO.getOutType());
+
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         /**
@@ -320,7 +322,17 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
          */
         if (ObjectUtil.isNotEmpty(planUseOutDetailsList)) {
             for (PlanUseOutDetails planUseOutDetails : planUseOutDetailsList) {
-                BigDecimal nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndWarehouseId(planUseOutDetails.getMaterialCoding(), planUseOutDetails.getWarehouseId()));
+                /**
+                 * 根据出库类型获取不同库存数量进行对比
+                 * 出库类型：0-暂存库出库 1-正式库出库
+                 */
+                BigDecimal nowNum = null;
+                if (planUseOut.getOutType()==0){
+                    nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndWarehouseIdOutTypeZero(planUseOutDetails.getMaterialCoding(), planUseOutDetails.getWarehouseId()));
+                }else {
+                    nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndWarehouseIdOutTypeOne(planUseOutDetails.getMaterialCoding(), planUseOutDetails.getWarehouseId()));
+                }
+
                 BigDecimal planNum = BigDecimal.valueOf(planUseOutDetails.getRequisitionQuantity());
                 int event = nowNum.compareTo(planNum);
                 /**
@@ -330,7 +342,18 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
                  */
                 if (event >= 0) {
                     BigDecimal tempNum = planNum;
-                    List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(planUseOutDetails.getMaterialCoding(), planUseOutDetails.getWarehouseId());
+                    /**
+                     * 根据出库类型获取不同库存list进行出入库
+                     * 出库类型：0-暂存库出库 1-正式库出库
+                     */
+                    List<InventoryInformation> inventoryInformationList;
+
+                    if (planUseOut.getOutType()==0){
+                        inventoryInformationList=inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeZero(planUseOutDetails.getMaterialCoding(),planUseOutDetails.getWarehouseId());
+                    }else {
+                        inventoryInformationList=inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeOne(planUseOutDetails.getMaterialCoding(),planUseOutDetails.getWarehouseId());
+                    }
+
                     for (InventoryInformation inventoryInformation : inventoryInformationList) {
                         //留存出库记录
                         AddOutboundRecordDTO addOutboundRecordDTO = new AddOutboundRecordDTO();

@@ -58,13 +58,29 @@ public interface IInventoryInformationService extends SuperService<InventoryInfo
     InventoryInformation getInventoryById(int id);
 
 
+
     InventoryInformation getInventoryInformation(String materialCoding, String batch, String cargoSpaceId);
+
 
     /**
      * 根据物料编码和仓库Id获取物料库存数量
      * @return
      */
     Double getNumByMaterialCodingAndWarehouseId(String materialCoding,String warehouseId);
+
+
+    /**
+     * 根据物料编码和仓库Id获取物料暂存库-库存数量
+     * @return
+     */
+    Double getNumByMaterialCodingAndWarehouseIdOutTypeZero(String materialCoding,String warehouseId);
+
+
+    /**
+     * 根据物料编码和仓库Id获取物料正式库库存数量
+     * @return
+     */
+    Double getNumByMaterialCodingAndWarehouseIdOutTypeOne(String materialCoding,String warehouseId);
 
 
     /**
@@ -81,6 +97,26 @@ public interface IInventoryInformationService extends SuperService<InventoryInfo
      * @return
      */
     List<InventoryInformation> getInventoryInformationListByMaterialCodingAndWarehouseId(String materialCoding,String warehouseId);
+
+
+    /**
+     * 根据物料编码和仓库Id获取物料暂存库-库存List
+     * @param materialCoding
+     * @param warehouseId
+     * @return
+     */
+    List<InventoryInformation> getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeZero(String materialCoding,String warehouseId);
+
+
+    /**
+     * 根据物料编码和仓库Id获取物料正式库-库存List
+     * @param materialCoding
+     * @param warehouseId
+     * @return
+     */
+    List<InventoryInformation> getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeOne(String materialCoding,String warehouseId);
+
+
 
 
     /**

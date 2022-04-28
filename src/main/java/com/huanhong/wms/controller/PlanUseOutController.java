@@ -619,7 +619,17 @@ public class PlanUseOutController extends BaseController {
             if (ObjectUtil.isNotEmpty(planUseOutDetailsList)) {
                 for (PlanUseOutDetails planUseOutDetails : planUseOutDetailsList
                 ) {
-                    BigDecimal nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndWarehouseId(planUseOutDetails.getMaterialCoding(), planUseOutDetails.getWarehouseId()));
+                    /**
+                     * 根据出库类型获取不同库存数量进行对比
+                     * 出库类型：0-暂存库出库 1-正式库出库
+                     */
+                    BigDecimal nowNum = null;
+                    if (planUseOut.getOutType()==0){
+                        nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndWarehouseIdOutTypeZero(planUseOutDetails.getMaterialCoding(), planUseOutDetails.getWarehouseId()));
+                    }else {
+                        nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndWarehouseIdOutTypeOne(planUseOutDetails.getMaterialCoding(), planUseOutDetails.getWarehouseId()));
+                    }
+
                     BigDecimal planNum = BigDecimal.valueOf(planUseOutDetails.getRequisitionQuantity());
                     int event = nowNum.compareTo(planNum);
                     /**
@@ -629,7 +639,18 @@ public class PlanUseOutController extends BaseController {
                      */
                     if (event >= 0) {
                         BigDecimal tempNum = planNum;
-                        List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(planUseOutDetails.getMaterialCoding(), planUseOutDetails.getWarehouseId());
+                        /**
+                         * 根据出库类型获取不同库存list进行出入库
+                         * 出库类型：0-暂存库出库 1-正式库出库
+                         */
+                        List<InventoryInformation> inventoryInformationList;
+                        if (planUseOut.getOutType()==0){
+                            inventoryInformationList=inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeZero(planUseOutDetails.getMaterialCoding(),planUseOutDetails.getWarehouseId());
+                        }else {
+                            inventoryInformationList=inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeOne(planUseOutDetails.getMaterialCoding(),planUseOutDetails.getWarehouseId());
+                        }
+
+
                         for (InventoryInformation inventoryInformation : inventoryInformationList) {
                             /**
                              * 1.将一条库存的数据（编码、批次、货位）中的库存数量放入出库记录的出库数量中：库存数量更新为零，出库数量新增一条数据

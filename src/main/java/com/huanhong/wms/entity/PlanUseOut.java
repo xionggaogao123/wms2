@@ -35,6 +35,10 @@ public class PlanUseOut extends SuperEntity {
     @ApiModelProperty(value = "计划类别-1.正常、2.加急、3.补计划、请选择（默认）")
     private Integer planClassification;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "出库类型：0-暂存库出库 1-正式库出库")
+    private Integer outType;
+
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "领用单位")
     private String requisitioningUnit;

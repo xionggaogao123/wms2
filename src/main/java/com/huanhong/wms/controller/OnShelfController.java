@@ -357,11 +357,13 @@ public class OnShelfController extends BaseController {
             //模糊查询的库存list
             for (InventoryInformation inventoryInformationAnother:inventoryInformationList
             ) {
-                List<String> cargoSpaceIdListPre = Arrays.asList(StringUtils.commaDelimitedListToStringArray(inventoryInformationAnother.getPriorityStorageLocation()));
-                //同类物料的推荐货位
-                for (String cargoSpaceId : cargoSpaceIdListPre
-                     ) {
-                   cargoSpaceIdList.add(cargoSpaceId);
+                if (ObjectUtil.isNotEmpty(inventoryInformationAnother)){
+                    List<String> cargoSpaceIdListPre = Arrays.asList(StringUtils.commaDelimitedListToStringArray(inventoryInformationAnother.getPriorityStorageLocation()));
+                    //同类物料的推荐货位
+                    for (String cargoSpaceId : cargoSpaceIdListPre
+                    ) {
+                        cargoSpaceIdList.add(cargoSpaceId);
+                    }
                 }
             }
             //去重

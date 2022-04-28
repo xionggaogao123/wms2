@@ -426,7 +426,7 @@ public class PlanUseOutController extends BaseController {
      * @return
      */
     @ApiOperationSupport(order = 12)
-    @ApiOperation(value = "物料编码和物料名称模糊查询信息及库存")
+    @ApiOperation(value = "物料编码和物料名称模糊查询信息及库存-区分出库类型")
     @GetMapping("/pagingFuzzyQueryByMaterialCodingOrName")
     public Result page(PdaMaterialVO pdaMaterialVO
                        ) {
@@ -440,8 +440,20 @@ public class PlanUseOutController extends BaseController {
             ) {
                 JSONObject jsonObject = new JSONObject();
                 String materialCoding = material.getMaterialCoding();
-                Double num = inventoryInformationService.getNumByMaterialCodingAndWarehouseId(materialCoding, pdaMaterialVO.getWarehouseId());
-                List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(materialCoding,pdaMaterialVO.getWarehouseId());
+                Double num;
+                List<InventoryInformation> inventoryInformationList;
+                if(ObjectUtil.isNotEmpty(pdaMaterialVO)){
+                    if (pdaMaterialVO.getOutType()==0){
+                        inventoryInformationList =  inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeZero(materialCoding,pdaMaterialVO.getWarehouseId());
+                        num = inventoryInformationService.getNumByMaterialCodingAndWarehouseIdOutTypeZero(materialCoding, pdaMaterialVO.getWarehouseId());
+                    }else {
+                        inventoryInformationList =  inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeOne(materialCoding,pdaMaterialVO.getWarehouseId());
+                        num = inventoryInformationService.getNumByMaterialCodingAndWarehouseIdOutTypeOne(materialCoding,pdaMaterialVO.getWarehouseId());
+                    }
+                }else {
+                    inventoryInformationList =  inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(materialCoding,pdaMaterialVO.getWarehouseId());
+                    num = inventoryInformationService.getNumByMaterialCodingAndWarehouseId(materialCoding, pdaMaterialVO.getWarehouseId());
+                }
                 jsonObject.put("material", material);
                 jsonObject.put("inventory", num);
                 jsonObject.put("inventoryList", inventoryInformationList);

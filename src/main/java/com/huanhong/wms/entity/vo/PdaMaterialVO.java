@@ -16,6 +16,9 @@ public class PdaMaterialVO {
     @ApiModelProperty(value = "物料名称")
     private String materialName;
 
+    @ApiModelProperty(value = "出库类型")
+    private Integer outType;
+
     @NotBlank
     @ApiModelProperty(value = "仓库ID")
     private String warehouseId;

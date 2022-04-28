@@ -176,6 +176,7 @@ public class InventoryDocumentController extends BaseController {
 
                     BeanUtil.copyProperties(inventoryInformationList.get(0), addInventoryInformationDTO);
                     addInventoryInformationDTO.setCargoSpaceId(inventoryDocumentDetails.getWarehouse() + "01AA0000");
+                    addInventoryInformationDTO.setWarehouseId(warehouseId);
                     addInventoryInformationDTO.setInventoryCredit(inventoryDocumentDetails.getArrivalQuantity());
 
                     Result resultAddIventory = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);

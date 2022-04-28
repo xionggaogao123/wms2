@@ -230,12 +230,12 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
             //更新同一库同一物料的推荐存放位置
             UpdateWrapper updateWrapper = new UpdateWrapper();
             updateWrapper.eq("material_coding", addInventoryInformationDTO.getMaterialCoding());
-            updateWrapper.like("warehouse_id", warehouseId);
+            updateWrapper.eq("warehouse_id", warehouseId);
             InventoryInformation inventoryInformationUpdate = new InventoryInformation();
             String[] strings = listPSL.toArray(new String[listPSL.size()]);
             String resultString = StringUtil.join(strings, ",");
             inventoryInformationUpdate.setPriorityStorageLocation(resultString);
-            inventoryInformationMapper.update(inventoryInformationUpdate, updateWrapper);
+            int result = inventoryInformationMapper.update(inventoryInformationUpdate, updateWrapper);
             return Result.success("新增库存成功");
         } else {
             return Result.failure(ErrorCode.SYSTEM_ERROR, "新增库存失败！");

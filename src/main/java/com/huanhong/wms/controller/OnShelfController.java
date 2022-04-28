@@ -189,6 +189,7 @@ public class OnShelfController extends BaseController {
                         UpdateInventoryInformationDTO updateInventoryInformationDTO = new UpdateInventoryInformationDTO();
                         updateInventoryInformationDTO.setId(inventoryInformationOld.getId());
                         updateInventoryInformationDTO.setInventoryCredit(Double.valueOf(0));
+                        updateInventoryInformationDTO.setIsOnshelf(1);
                         Result resultZero = inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
                         if (resultZero.isOk()){
                             //新增数据
@@ -199,6 +200,11 @@ public class OnShelfController extends BaseController {
                             addInventoryInformationDTO.setCargoSpaceId(updateOnShelfDTO.getCargoSpaceId());
                             //移动数量
                             addInventoryInformationDTO.setInventoryCredit(hindNum.doubleValue());
+                            //檢驗  入庫   上架
+                            addInventoryInformationDTO.setIsVerification(1);
+                            addInventoryInformationDTO.setIsEnter(1);
+                            addInventoryInformationDTO.setIsOnshelf(1);
+
                             Result resultAdd = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
                             if (resultAdd.isOk()) {
                                 UpdateOnShelfDTO updateOnShelfDTOAgain = new UpdateOnShelfDTO();
@@ -230,6 +236,10 @@ public class OnShelfController extends BaseController {
                             addInventoryInformationDTO.setCargoSpaceId(updateOnShelfDTO.getCargoSpaceId());
                             //移动数量
                             addInventoryInformationDTO.setInventoryCredit(hindNum.doubleValue());
+                            //檢驗  入庫   上架
+                            addInventoryInformationDTO.setIsVerification(1);
+                            addInventoryInformationDTO.setIsEnter(1);
+                            addInventoryInformationDTO.setIsOnshelf(1);
                             Result resultAdd = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
                             if (resultAdd.isOk()) {
                                 return Result.success("移动库存成功！");

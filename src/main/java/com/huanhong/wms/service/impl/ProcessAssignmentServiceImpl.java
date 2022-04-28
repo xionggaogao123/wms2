@@ -1,6 +1,8 @@
 package com.huanhong.wms.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -16,6 +18,7 @@ import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.UpPaStatus;
+import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
 import com.huanhong.wms.entity.param.ApproveParam;
 import com.huanhong.wms.entity.param.ProcessAssignmentParam;
 import com.huanhong.wms.entity.param.StartProcessParam;
@@ -60,8 +63,6 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
     private UserMapper userMapper;
     @Resource
     private IMessageService messageService;
-
-
     @Resource
     private IPlanUseOutService planUseOutService;
     @Resource
@@ -72,6 +73,15 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
 
     @Resource
     private IOutboundRecordService outboundRecordService;
+
+    @Resource
+    private IEnterWarehouseService enterWarehouseService;
+
+    @Resource
+    private IEnterWarehouseDetailsService enterWarehouseDetailsService;
+
+    @Resource
+    private IInventoryInformationService inventoryInformationService;
 
     @Override
     public Result<Integer> syncProcessAssignment() {
@@ -400,6 +410,30 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                         f = enterWarehouseMapper.updateById(tempEnterWarehouse);
                         if (f <= 0) {
                             return Result.failure("数据未更新，流程完成失败");
+                        }
+
+                        List<EnterWarehouseDetails> enterWarehouseDetailsList = enterWarehouseDetailsService.getListEnterWarehouseDetailsByDocNumberAndWarehosue(enterWarehouse.getDocumentNumber(),enterWarehouse.getWarehouse());
+                        if (ObjectUtil.isNotNull(enterWarehouseDetailsList)) {
+                            UpdateInventoryInformationDTO updateInventoryInformationDTO = new UpdateInventoryInformationDTO();
+                            for (EnterWarehouseDetails enterWarehouseDetails : enterWarehouseDetailsList
+                            ) {
+                                String materialCoding = enterWarehouseDetails.getMaterialCoding();
+                                String batch = enterWarehouseDetails.getBatch();
+                                String warehouseId = enterWarehouseDetails.getWarehouse();
+                                List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndBatchAndWarehouseId(materialCoding, batch, warehouseId);
+                                for (InventoryInformation inventoryInformation : inventoryInformationList
+                                ) {
+                                    //更新库存信息为已入库 入库时间 入库单编号
+                                    BeanUtil.copyProperties(inventoryInformation, updateInventoryInformationDTO);
+                                    //已入库
+                                    updateInventoryInformationDTO.setIsEnter(1);
+                                    //入库时间
+                                    updateInventoryInformationDTO.setInDate(DateUtil.date());
+                                    //入库单单据编号
+                                    updateInventoryInformationDTO.setDocumentNumber(enterWarehouse.getDocumentNumber());
+                                    inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
+                                }
+                            }
                         }
                         break;
                     //    调拨

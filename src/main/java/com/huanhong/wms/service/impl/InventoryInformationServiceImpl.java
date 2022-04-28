@@ -42,6 +42,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -260,7 +261,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 
     @Override
     public InventoryInformation getInventoryInformation(String materialCoding, String batch, String cargoSpaceId) {
-        QueryWrapper queryWrapper = new QueryWrapper();
+        QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper();
         queryWrapper.eq("material_coding", materialCoding);
         queryWrapper.eq("batch", batch);
         queryWrapper.eq("cargo_space_id", cargoSpaceId);
@@ -269,7 +270,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 
     @Override
     public Double getNumByMaterialCodingAndWarehouseId(String materialCoding, String warehouseId) {
-        QueryWrapper queryWrapper = new QueryWrapper();
+        QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
         queryWrapper.select("IFNULL(SUM(Inventory_credit),0) AS num");
         queryWrapper.eq("material_coding", materialCoding);
         queryWrapper.likeRight("cargo_space_id", warehouseId);
@@ -281,12 +282,11 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 
     @Override
     public Double getNumByMaterialCodingAndWarehouseIdOutTypeZero(String materialCoding, String warehouseId) {
-        QueryWrapper queryWrapper = new QueryWrapper();
+        QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
         queryWrapper.select("IFNULL(SUM(Inventory_credit),0) AS num");
         queryWrapper.eq("material_coding", materialCoding);
-        queryWrapper.likeRight("cargo_space_id", warehouseId);
-        queryWrapper.eq("is_verification",0);
-        queryWrapper.eq("is_enter",0);
+        queryWrapper.likeRight("cargo_space_id", warehouseId)
+                .and(wrapper->wrapper.eq("is_verification", 0).or().eq("is_enter", 0));
         Map map = this.getMap(queryWrapper);
         Double num = (Double) map.get("num");
         return num;
@@ -294,7 +294,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 
     @Override
     public Double getNumByMaterialCodingAndWarehouseIdOutTypeOne(String materialCoding, String warehouseId) {
-        QueryWrapper queryWrapper = new QueryWrapper();
+        QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
         queryWrapper.select("IFNULL(SUM(Inventory_credit),0) AS num");
         queryWrapper.eq("material_coding", materialCoding);
         queryWrapper.likeRight("cargo_space_id", warehouseId);
@@ -307,11 +307,11 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 
     @Override
     public Double getNumByMaterialCodingAndBatchAndWarehouseId(String materialCoding, String batch, String warehouseId) {
-        QueryWrapper queryWrapper = new QueryWrapper();
+        QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
         queryWrapper.select("IFNULL(SUM(Inventory_credit),0) AS num");
+        queryWrapper.likeRight("cargo_space_id", warehouseId);
         queryWrapper.eq("material_coding", materialCoding);
         queryWrapper.eq("batch", batch);
-        queryWrapper.likeRight("cargo_space_id", warehouseId);
         Map map = this.getMap(queryWrapper);
         Double num = (Double) map.get("num");
         return num;
@@ -319,7 +319,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 
     @Override
     public List<InventoryInformation> getInventoryInformationListByMaterialCodingAndWarehouseId(String materialCoding, String warehouseId) {
-        QueryWrapper queryWrapper = new QueryWrapper();
+        QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("material_coding", materialCoding);
         queryWrapper.ne("inventory_credit",0);
         queryWrapper.likeRight("cargo_space_id", warehouseId);

@@ -362,7 +362,7 @@ public class EnterWarehouseController extends BaseController {
                                 updateInventoryInformationDTO.setIsEnter(1);
                                 //入库时间
                                 updateInventoryInformationDTO.setInDate(DateUtil.date());
-                                //入库单百年好
+                                //入库单单据编号
                                 updateInventoryInformationDTO.setDocumentNumber(enterWarehouse.getDocumentNumber());
                                 inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
                             }

@@ -442,7 +442,7 @@ public class PlanUseOutController extends BaseController {
                 String materialCoding = material.getMaterialCoding();
                 Double num;
                 List<InventoryInformation> inventoryInformationList;
-                if(ObjectUtil.isNotEmpty(pdaMaterialVO)){
+                if(ObjectUtil.isNotEmpty(pdaMaterialVO.getOutType())){
                     if (pdaMaterialVO.getOutType()==0){
                         inventoryInformationList =  inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeZero(materialCoding,pdaMaterialVO.getWarehouseId());
                         num = inventoryInformationService.getNumByMaterialCodingAndWarehouseIdOutTypeZero(materialCoding, pdaMaterialVO.getWarehouseId());

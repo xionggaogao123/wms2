@@ -344,7 +344,7 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
         params.put("gmtStart", page.getGmtStart());
         params.put("gmtEnd", page.getGmtEnd());
         String templatePath = ossProperties.getPath() + "templates/inventorySurplusLoss.xlsx";
-        ExportExcel.exportExcel(templatePath, ossProperties.getPath() + "temp/", "库存流水账.xlsx", params, request, response);
+        ExportExcel.exportExcel(templatePath, ossProperties.getPath() + "temp/", "盘点盈亏表.xlsx", params, request, response);
 
     }
 }

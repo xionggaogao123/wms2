@@ -49,7 +49,7 @@ project:
   oss:
     url: http://127.0.0.1/oss/
     yun-url: wmsobs.obs.cn-southwest-2.myhuaweicloud.com
-    path: D:\project\visitor\oss\
+    path: /Users/thorode/Documents/
   hik-cloud:
     clientId: 42d328eeebfe44c5a4edd6a0a5238e01
     clientSecret: b79f98be0dd44408b035fc82dbf94158

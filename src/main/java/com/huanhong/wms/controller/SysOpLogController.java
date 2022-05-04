@@ -43,6 +43,7 @@ public class SysOpLogController extends BaseController {
     public Result<Page<SysOpLog>> page(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size,
                                        @RequestParam Map<String, Object> search) {
         QueryWrapper<SysOpLog> query = new QueryWrapper<>();
+        query.select("op_time","id","browser","ip","account","name");
         query.orderByDesc("id");
         if (search.containsKey("search")) {
             String text = search.get("search").toString();

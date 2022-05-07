@@ -59,4 +59,5 @@ public class AllocationPlanVO {
     @ApiModelProperty(value = "创建日期-终结")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTimeEnd;
+
 }

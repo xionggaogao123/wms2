@@ -54,6 +54,7 @@ public class AllocationEnter extends SuperEntity {
     @ApiModelProperty(value = "最后更新时间")
     private LocalDateTime lastUpdate;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "调入单位")
     private String receiveCompany;
 

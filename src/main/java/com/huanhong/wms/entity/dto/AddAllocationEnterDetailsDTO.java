@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@ApiModel(description="新增调拨入库明细表")
+@ApiModel(description="临库点验明细表")
 public class AddAllocationEnterDetailsDTO {
 
     private static final long serialVersionUID=1L;

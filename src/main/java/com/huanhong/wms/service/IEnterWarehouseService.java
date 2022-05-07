@@ -65,5 +65,6 @@ public interface IEnterWarehouseService extends SuperService<EnterWarehouse> {
      */
     EnterWarehouse getEnterWarehouseByProcessInstanceId(String processInstanceId);
 
+
     Result<Object> getMaterialPriceByParam(MaterialPriceParam param);
 }

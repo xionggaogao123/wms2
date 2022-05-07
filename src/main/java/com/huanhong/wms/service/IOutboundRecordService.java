@@ -92,10 +92,9 @@ public interface IOutboundRecordService extends SuperService<OutboundRecord> {
 
     /**
      * 根据原单据编号 物料编码货位批次检索唯一一条出库记录
-     *
      * @param docNum
      * @param cargoSpace
-     * @param MaterialCoding
+     * @param materialCoding
      * @param batch
      * @return
      */
@@ -120,6 +119,7 @@ public interface IOutboundRecordService extends SuperService<OutboundRecord> {
 
 
     Result<Object> getTheTrendOfWarehouseInboundAndOutbound(MaterialOutInParam param);
+
 
     Result<Object> getStatisticalAnalysisOfInboundAndOutboundAmount(MaterialOutInParam param);
 }

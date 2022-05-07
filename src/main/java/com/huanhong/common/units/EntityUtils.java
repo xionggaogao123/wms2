@@ -31,6 +31,10 @@ public class EntityUtils {
                 jsonObject.put(prefixKey, fieldNameArrivalVerification(prefixKey));
             } else if ("allocationPlan".equals(key)){
                 jsonObject.put(prefixKey, fieldNameAllocationPlan(prefixKey));
+            } else if ("temporaryEnter".equals(key)){
+                jsonObject.put(prefixKey,fieldNameTemporaryEnter(prefixKey));
+            } else if ("temporaryOut".equals(key)){
+                jsonObject.put(prefixKey,fieldNameTemporaryEnter(prefixKey));
             }
         }
         return jsonObject;
@@ -226,8 +230,12 @@ public class EntityUtils {
                 return jsonObject;
             case "storageType":
                 jsonObject.put("name", "入库类型");
-                jsonObject.put("type", "text");
+                jsonObject.put("type", "select");
                 jsonObject.put("class", "readOnly");
+                //下拉菜单的值
+                value.put("1", "暂估入库");
+                value.put("2", "正式入库");
+                jsonObject.put("value", value);
                 return jsonObject;
             case "contractNumber":
                 jsonObject.put("name", "采购合同编号");
@@ -951,6 +959,196 @@ public class EntityUtils {
                 jsonObject.put("name", "总金额");
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "input");
+                return jsonObject;
+            case "version":
+                jsonObject.put("name", "版本号");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "hiden");
+                return jsonObject;
+            default:
+                return null;
+        }
+    }
+
+    public JSONObject fieldNameTemporaryEnter(String key){
+        JSONObject jsonObject = new JSONObject();
+        JSONObject value = new JSONObject();
+        switch (key) {
+            case "id":
+                jsonObject.put("name", "id");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "serialVersionUID":
+                jsonObject.put("name", "id");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "hiden");
+                return jsonObject;
+            case "documentNumber":
+                jsonObject.put("name", "临时库入库单据编号");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "processInstanceId":
+                jsonObject.put("name", "流程id");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "hiden");
+                return jsonObject;
+            case "state":
+                jsonObject.put("name", "单据状态");
+                jsonObject.put("type", "select");
+                jsonObject.put("class", "readOnly");
+                //下拉菜单的值
+                value.put("1", "草拟");
+                value.put("2", "审批中");
+                value.put("3", "审批生效");
+                value.put("4", "作废");
+                jsonObject.put("value", value);
+                return jsonObject;
+            case "validPeriod":
+                jsonObject.put("name", "有效日期");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "actualQuantity":
+                jsonObject.put("name", "实收数量");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "materialCoding":
+                jsonObject.put("name", "物料编码");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "batch":
+                jsonObject.put("name", "批次");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "warehouseId":
+                jsonObject.put("name", "库房编号");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "enterTime":
+                jsonObject.put("name", "入库时间");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "remark":
+                jsonObject.put("name", "备注");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "input");
+                return jsonObject;
+            case "createTime":
+                jsonObject.put("name", "创建时间");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "lastUpdate":
+                jsonObject.put("name", "最后更新时间");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "version":
+                jsonObject.put("name", "版本号");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "hiden");
+                return jsonObject;
+            default:
+                return null;
+        }
+    }
+
+    public JSONObject fieldNameTemporaryOut(String key){
+        JSONObject jsonObject = new JSONObject();
+        JSONObject value = new JSONObject();
+        switch (key) {
+            case "id":
+                jsonObject.put("name", "id");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "serialVersionUID":
+                jsonObject.put("name", "id");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "hiden");
+                return jsonObject;
+            case "documentNumber":
+                jsonObject.put("name", "临时库出库单据编号");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "processInstanceId":
+                jsonObject.put("name", "流程id");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "hiden");
+                return jsonObject;
+            case "status":
+                jsonObject.put("name", "单据状态");
+                jsonObject.put("type", "select");
+                jsonObject.put("class", "readOnly");
+                //下拉菜单的值
+                value.put("1", "草拟");
+                value.put("2", "审批中");
+                value.put("3", "审批生效");
+                value.put("4", "作废");
+                jsonObject.put("value", value);
+                return jsonObject;
+            case "materialCoding":
+                jsonObject.put("name", "物料编码");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "materialName":
+                jsonObject.put("name", "物料名称");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "batch":
+                jsonObject.put("name", "批次");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "requisitionQuantity":
+                jsonObject.put("name", "领用数量");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "requisitioningUnit":
+                jsonObject.put("name", "领用单位");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "recipient":
+                jsonObject.put("name", "领用人");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "warehouseId":
+                jsonObject.put("name", "库房编号");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "librarian":
+                jsonObject.put("name", "库管员");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "remark":
+                jsonObject.put("name", "备注");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "input");
+                return jsonObject;
+            case "createTime":
+                jsonObject.put("name", "创建时间");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "lastUpdate":
+                jsonObject.put("name", "最后更新时间");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
                 return jsonObject;
             case "version":
                 jsonObject.put("name", "版本号");

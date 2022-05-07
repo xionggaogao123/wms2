@@ -181,7 +181,7 @@ public class OutboundRecordController extends BaseController {
                     return Result.failure("回滚库存失败！");
                 }
                 return outboundRecordService.updateOutboundRecord(updateOutboundRecordDTO);
-            } else if (event > 0) {
+            } else {
                 //更新出库记录前，先回滚库存
                 //差值--新出库数量-旧出库数量
                 Double tempNum = NumberUtil.sub(updateOutboundRecordDTO.getOutQuantity(), outboundRecordOld.getOutQuantity());
@@ -198,7 +198,6 @@ public class OutboundRecordController extends BaseController {
                     return outboundRecordService.updateOutboundRecord(updateOutboundRecordDTO);
                 }
             }
-            return Result.failure("未知错误！");
         } catch (Exception e) {
          log.error("更新失败！系统异常",e);
          return Result.failure("更新失败！系统异常");

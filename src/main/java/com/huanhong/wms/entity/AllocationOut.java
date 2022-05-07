@@ -58,6 +58,7 @@ public class AllocationOut extends SuperEntity {
     @ApiModelProperty(value = "最后更新时间")
     private LocalDateTime lastUpdate;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "调出单位")
     private String sendCompany;
 

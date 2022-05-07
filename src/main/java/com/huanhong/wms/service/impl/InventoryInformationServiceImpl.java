@@ -275,8 +275,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         queryWrapper.eq("material_coding", materialCoding);
         queryWrapper.likeRight("cargo_space_id", warehouseId);
         Map map = this.getMap(queryWrapper);
-        Double num = (Double) map.get("num");
-        return num;
+        return (Double) map.get("num");
     }
 
 

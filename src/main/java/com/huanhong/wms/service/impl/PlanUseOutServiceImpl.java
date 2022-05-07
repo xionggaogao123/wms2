@@ -283,6 +283,7 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
         if (StringUtils.isNotBlank(updatePlanUseOutDTO.getRemark())) {
             planUseOutOld.setRemark(updatePlanUseOutDTO.getRemark());
         }
+
         int update = planUseOutMapper.updateById(planUseOutOld);
         return update > 0 ? Result.success("更新成功") : Result.failure("更新失败");
     }

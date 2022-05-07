@@ -17,6 +17,8 @@ import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
+import com.huanhong.wms.entity.dto.AddTemporaryEnterWarehouseDTO;
+import com.huanhong.wms.entity.dto.AddTemporaryLibraryDTO;
 import com.huanhong.wms.entity.dto.UpPaStatus;
 import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
 import com.huanhong.wms.entity.param.ApproveParam;
@@ -82,6 +84,18 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
 
     @Resource
     private IInventoryInformationService inventoryInformationService;
+
+    @Resource
+    private TemporaryEnterWarehouseMapper temporaryEnterWarehouseMapper;
+
+    @Resource
+    private TemporaryOutWarehouseMapper temporaryOutWarehouseMapper;
+
+    @Resource
+    private IMaterialService materialService;
+
+    @Resource
+    private ITemporaryLibraryService temporaryLibraryService;
 
     @Override
     public Result<Integer> syncProcessAssignment() {
@@ -505,6 +519,41 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                         //单据状态由草拟转为审批中
                         tempArrivalVerification.setPlanStatus(3);
                         f = arrivalVerificationMapper.updateById(tempArrivalVerification);
+                        if (f <= 0) {
+                            return Result.failure("数据未更新，流程完成失败");
+                        }
+                        break;
+                    //    临库入库
+                    case "temporary_enter_warehouse":
+                        TemporaryEnterWarehouse temporaryEnterWarehouse = temporaryEnterWarehouseMapper.selectById(id);
+
+                        if (!ObjectUtil.isNotEmpty(temporaryEnterWarehouse)) {
+                            return Result.failure("临库入库单不存在或已被删除,无法完成");
+                        }
+                        TemporaryEnterWarehouse tempTemporaryEnterWarehouse = new TemporaryEnterWarehouse();
+                        tempTemporaryEnterWarehouse.setId(id);
+                        tempTemporaryEnterWarehouse.setProcessInstanceId(processInstanceId);
+                        //单据状态由草拟转为审批中
+                        tempTemporaryEnterWarehouse.setState(3);
+                        f = temporaryEnterWarehouseMapper.updateById(tempTemporaryEnterWarehouse);
+                        if (f <= 0) {
+                            return Result.failure("数据未更新，流程完成失败");
+                        }
+                        break;
+                    //    临库出库
+                    case "temporary_out_warehouse":
+                        TemporaryOutWarehouse temporaryOutWarehouse = temporaryOutWarehouseMapper.selectById(id);
+
+                        if (!ObjectUtil.isNotEmpty(temporaryOutWarehouse)) {
+                            return Result.failure("临库出库单不存在或已被删除,无法完成");
+                        }
+
+                        TemporaryOutWarehouse tempTemporaryOutWarehouse = new TemporaryOutWarehouse();
+                        tempTemporaryOutWarehouse.setId(id);
+                        tempTemporaryOutWarehouse.setProcessInstanceId(processInstanceId);
+                        //单据状态由草拟转为审批中
+                        tempTemporaryOutWarehouse.setStatus(3);
+                        f = temporaryOutWarehouseMapper.updateById(tempTemporaryOutWarehouse);
                         if (f <= 0) {
                             return Result.failure("数据未更新，流程完成失败");
                         }

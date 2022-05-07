@@ -36,8 +36,8 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
-@RestController
 @Validated
+@RestController
 @RequestMapping("/v1//plan-use-out")
 @ApiSort()
 @Api(tags = "领料出库主表")
@@ -382,6 +382,7 @@ public class PlanUseOutController extends BaseController {
             return Result.failure("系统异常");
         }
     }
+
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "processInstanceId", value = "流程Id")

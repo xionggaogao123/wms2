@@ -65,9 +65,11 @@ public class AllocationPlanDetail extends SuperEntity {
     private LocalDateTime lastUpdate;
 
 
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
     private Integer consignor;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "供应商")
     private String supplier;
 }

@@ -118,7 +118,6 @@ public interface IInventoryInformationService extends SuperService<InventoryInfo
 
 
 
-
     /**
      * 根据物料编码获取半年间（内外部）价格
      * @param materialCoding

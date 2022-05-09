@@ -96,11 +96,6 @@ public class RequirementsPlanningController extends BaseController {
                 for (AddRequiremetsPlanningDetailsDTO addRequiremetsPlanningDetailsDTO : addRequirementsPlanningDetailsDTOList) {
                     addRequiremetsPlanningDetailsDTO.setPlanNumber(docNum);
                     addRequiremetsPlanningDetailsDTO.setWarehouseId(warehouseId);
-                    HashMap hashMap = inventoryInformationService.getMaterialPrice(addRequiremetsPlanningDetailsDTO.getMaterialCoding());
-                    //预估单价=历史单价
-                    addRequiremetsPlanningDetailsDTO.setEstimatedUnitPrice((BigDecimal) hashMap.get("sales_unit_price"));
-                    //预估金额
-                    addRequiremetsPlanningDetailsDTO.setEstimatedAmount(NumberUtil.mul(addRequiremetsPlanningDetailsDTO.getEstimatedUnitPrice(),addRequiremetsPlanningDetailsDTO.getApprovedQuantity()));
                 }
                 requiremetsPlanningDetailsService.addRequiremetsPlanningDetails(addRequirementsPlanningDetailsDTOList);
             }

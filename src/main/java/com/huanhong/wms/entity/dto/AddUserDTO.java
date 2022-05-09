@@ -62,4 +62,7 @@ public class AddUserDTO {
     @ApiModelProperty(value = "角色 ids")
     private List<Integer> roleIds;
 
+    @ApiModelProperty(value = "绑定仓库")
+    private List<String> warehouseIdList;
+
 }

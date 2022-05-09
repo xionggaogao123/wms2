@@ -1,6 +1,7 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -10,6 +11,7 @@ import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.InventoryInformation;
+import com.huanhong.wms.entity.Material;
 import com.huanhong.wms.entity.PlanUseOut;
 import com.huanhong.wms.entity.PlanUseOutDetails;
 import com.huanhong.wms.entity.dto.AddInventoryInformationDTO;
@@ -19,6 +21,7 @@ import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
 import com.huanhong.wms.entity.vo.InventoryInformationVO;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.service.IInventoryInformationService;
+import com.huanhong.wms.service.IMaterialService;
 import com.huanhong.wms.service.IMovingInventoryRecordsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -51,6 +54,9 @@ public class InventoryInformationController extends BaseController {
 
     @Resource
     private IMovingInventoryRecordsService movingInventoryRecordsService;
+
+    @Resource
+    private IMaterialService materialService;
 
     /**
      * 分页查询
@@ -278,6 +284,18 @@ public class InventoryInformationController extends BaseController {
         addMovingInventoryRecordsDTO.setMoveQuantity(movingInventoryDTO.getHindInventoryCredit());
 
         return addMovingInventoryRecordsDTO;
+    }
+
+    @ApiOperationSupport(order = 8)
+    @ApiOperation(value = "获取物料价格")
+    @GetMapping("/getMaterialPrice")
+    public Result getMaterialPrice(@RequestParam String materialCoding){
+        Material material = materialService.getMeterialByMeterialCode(materialCoding);
+        if (ObjectUtil.isNull(material)){
+            return Result.failure("物料不存在！");
+        }
+        HashMap hashMap = inventoryInformationService.getMaterialPrice(materialCoding);
+        return ObjectUtil.isAllNotEmpty(hashMap)?Result.success(hashMap):Result.failure("未查询到相关信息");
     }
 
 

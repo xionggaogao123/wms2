@@ -40,7 +40,7 @@ import java.util.Map;
 @Slf4j
 @Validated
 @ApiSort()
-@Api(tags = "")
+@Api(tags = "临库出库单")
 @RestController
 @RequestMapping("/v1/temporary-out-warehouse")
 public class TemporaryOutWarehouseController extends BaseController {

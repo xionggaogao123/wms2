@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 @ApiSort()
-@Api(tags = "")
+@Api(tags = "临库清点单")
 @Slf4j
 @RestController
 @RequestMapping("/v1/temporary-library-inventory")

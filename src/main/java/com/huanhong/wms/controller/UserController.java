@@ -142,8 +142,30 @@ public class UserController extends BaseController {
             }
         }
 
+
         LoginUser loginUser = this.getLoginUser();
-        return userService.addUser(loginUser, dto);
+        Result result =  userService.addUser(loginUser, dto);
+
+        if (!result.isOk()){
+            return Result.failure("新增用户失败！");
+        }
+
+        /**
+         * 绑定仓库
+         */
+        if (ObjectUtil.isNotEmpty(dto.getWarehouseIdList())){
+            //取新传入的list
+            List<String> addWarehouseIdList = dto.getWarehouseIdList();
+            //新增仓库管理员DTO
+            AddWarehouseManagerDTO addWarehouseManagerDTO = new AddWarehouseManagerDTO();
+            for (String warehouseId :addWarehouseIdList
+            ) {
+                addWarehouseManagerDTO.setLoginName(dto.getLoginName());
+                addWarehouseManagerDTO.setWarehouseId(warehouseId);
+                warehouseManagerService.addWarehouseManager(addWarehouseManagerDTO);
+            }
+        }
+        return result;
     }
 
     @ApiOperationSupport(order = 7)

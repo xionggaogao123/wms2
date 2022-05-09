@@ -38,7 +38,7 @@ import java.util.Map;
 @ApiSort()
 @Validated
 @Slf4j
-@Api(tags = "")
+@Api(tags = "临库记录表")
 @RestController
 @RequestMapping("/v1/temporary-record")
 public class TemporaryRecordController extends BaseController {

@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 @ApiSort()
-@Api(tags = "")
+@Api(tags = "临库清点明细")
 @RestController
 @RequestMapping("/v1/temporary-library-inventory-details")
 public class TemporaryLibraryInventoryDetailsController extends BaseController {

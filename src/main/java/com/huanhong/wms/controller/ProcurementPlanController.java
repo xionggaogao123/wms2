@@ -348,7 +348,7 @@ public class ProcurementPlanController extends BaseController {
                         addProcurementPlanDetailsDTOFirst.setEstimatedUnitPrice(requiremetsPlanningDetails.getEstimatedUnitPrice());
                         //预估金额
                         addProcurementPlanDetailsDTOFirst.setEstimatedAmount(requiremetsPlanningDetails.getEstimatedAmount());
-                        //预期到货时间
+                        //仓库id
                         addProcurementPlanDetailsDTOFirst.setWarehouseId(requirementsPlanning.getWarehouseId());
                         //备注
                         addProcurementPlanDetailsDTOFirst.setRemark("系统自动生成");

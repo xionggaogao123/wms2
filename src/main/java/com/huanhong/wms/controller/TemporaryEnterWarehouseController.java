@@ -37,7 +37,7 @@ import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @ApiSort()
-@Api(tags = "")
+@Api(tags = "临库入库单")
 @RestController
 @RequestMapping("/v1/temporary-enter-warehouse")
 public class TemporaryEnterWarehouseController extends BaseController {

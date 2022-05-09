@@ -34,7 +34,7 @@ public class EntityUtils {
             } else if ("temporaryEnter".equals(key)){
                 jsonObject.put(prefixKey,fieldNameTemporaryEnter(prefixKey));
             } else if ("temporaryOut".equals(key)){
-                jsonObject.put(prefixKey,fieldNameTemporaryEnter(prefixKey));
+                jsonObject.put(prefixKey,fieldNameTemporaryOut(prefixKey));
             }
         }
         return jsonObject;
@@ -633,7 +633,7 @@ public class EntityUtils {
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "input");
                 return jsonObject;
-            case "estimatedUnitPric":
+            case "estimatedUnitPrice":
                 jsonObject.put("name", "预估单价");
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "input");
@@ -653,7 +653,7 @@ public class EntityUtils {
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "readOnly");
                 return jsonObject;
-            case "arrivalTime":
+            case "requestArrivalTime":
                 jsonObject.put("name", "要求到货时间");
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "readonly");

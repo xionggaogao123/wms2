@@ -59,7 +59,6 @@ public class EnterWarehouseDetailsServiceImpl extends SuperServiceImpl<EnterWare
 
     @Override
     public Result updateEnterWarehouseDetails(List<UpdateEnterWarehouseDetailsDTO> updateEnterWarehouseDetailsDTOList) {
-
         List<EnterWarehouseDetails> listSuccess = new ArrayList<>();
         List<EnterWarehouseDetails> listFalse = new ArrayList<>();
         JSONObject jsonObject = new JSONObject();

@@ -97,6 +97,9 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
     @Resource
     private ITemporaryLibraryService temporaryLibraryService;
 
+    @Resource
+    private MakeInventoryMapper makeInventoryMapper;
+
     @Override
     public Result<Integer> syncProcessAssignment() {
         Result taskResult = TaskQueryUtil.list();
@@ -554,6 +557,24 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                         //单据状态由草拟转为审批中
                         tempTemporaryOutWarehouse.setStatus(3);
                         f = temporaryOutWarehouseMapper.updateById(tempTemporaryOutWarehouse);
+                        if (f <= 0) {
+                            return Result.failure("数据未更新，流程完成失败");
+                        }
+                        break;
+                    //    盘点
+                    case "make_inventory":
+                        MakeInventory makeInventory = makeInventoryMapper.selectById(id);
+
+                        if (!ObjectUtil.isNotEmpty(makeInventory)) {
+                            return Result.failure("盘点单不存在或已被删除,无法完成");
+                        }
+
+                        MakeInventory tempMakeInventory = new MakeInventory();
+                        tempMakeInventory.setId(id);
+                        tempMakeInventory.setProcessInstanceId(processInstanceId);
+                        //单据状态由草拟转为审批中
+                        tempMakeInventory.setPlanStatus(3);
+                        f = makeInventoryMapper.updateById(tempMakeInventory);
                         if (f <= 0) {
                             return Result.failure("数据未更新，流程完成失败");
                         }

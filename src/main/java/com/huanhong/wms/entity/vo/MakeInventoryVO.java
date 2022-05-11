@@ -20,36 +20,17 @@ public class MakeInventoryVO {
     @ApiModelProperty(value = "子库编号")
     private String sublibraryId;
 
-    @ApiModelProperty(value = "库区编号")
-    private String warehouseAreaId;
-
-    @ApiModelProperty(value = "货位编码")
-    private String cargoSpaceId;
-
-    @ApiModelProperty(value = "物料编码")
-    private String materialCoding;
-
-    @ApiModelProperty(value = "物料名称")
-    private String materialName;
-
-    @ApiModelProperty(value = "批次")
-    private String batch;
-
-    @ApiModelProperty(value = "盘点人名字")
-    private String userName;
-
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;
 
-    @ApiModelProperty(value = "供应商")
-    private String supplier;
+    @ApiModelProperty(value = "计划状态-状态: 1草拟 2审批中 3审批生效 4作废")
+    private Integer planStatus;
+
+    @ApiModelProperty(value = "是否全盘: 0-非全盘 1-全盘")
+    private Integer allMake;
 
     @ApiModelProperty(value = "状态: 0-待盘点，1-已盘点")
     private Integer checkStatus;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
-    private Integer consignor;
 
     @ApiModelProperty(value = "创建日期-起始")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

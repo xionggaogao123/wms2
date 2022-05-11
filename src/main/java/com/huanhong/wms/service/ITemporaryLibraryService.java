@@ -75,6 +75,14 @@ public interface ITemporaryLibraryService extends SuperService<TemporaryLibrary>
 
 
     /**
+     * 获取对应仓库的所有库存
+     * @param warehouseId
+     * @return
+     */
+    List<TemporaryLibrary> getTemporaryLibraryListByWarehouseId(String warehouseId);
+
+
+    /**
      * 根据物料编码和仓库Id获取物料库存数量
      * @return
      */

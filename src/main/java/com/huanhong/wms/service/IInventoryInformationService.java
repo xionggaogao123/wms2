@@ -117,6 +117,15 @@ public interface IInventoryInformationService extends SuperService<InventoryInfo
     List<InventoryInformation> getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeOne(String materialCoding,String warehouseId);
 
 
+    /**
+     * 获取对应仓库的库存（区分正式库存和临时库存）
+     * @param warehouseId
+     * @param InventoryType 0-临时库存 1-正式库存
+     * @return
+     */
+    List<InventoryInformation> getInventoryInformationListByWarehouseIdAndInventoryType(String warehouseId,Integer InventoryType);
+
+
 
     /**
      * 根据物料编码获取半年间（内外部）价格

@@ -48,13 +48,16 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
 
     @Resource
     private MakeInventoryMapper makeInventoryMapper;
+
     @Resource
     private EnterWarehouseMapper enterWarehouseMapper;
+
     @Resource
     private OutboundRecordMapper outboundRecordMapper;
 
     @Autowired
     private OssProperties ossProperties;
+
     /**
      * 分页查询
      * @param makeInventoryPage
@@ -81,38 +84,19 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
         //盘点单单据编号
         query.like(StringUtils.isNotBlank(makeInventoryVO.getDocumentNumber()), "document_number", makeInventoryVO.getDocumentNumber());
 
+        //仓库编号
+        query.like(StringUtils.isNotBlank(makeInventoryVO.getWarehouseId()),"warehouse_id",makeInventoryVO.getWarehouseId());
+
         //子库编号
         query.like(StringUtils.isNotBlank(makeInventoryVO.getSublibraryId()), "sublibrary_id", makeInventoryVO.getSublibraryId());
-
-        //库区编号
-        query.like(StringUtils.isNotBlank(makeInventoryVO.getWarehouseAreaId()), "warehouse_area_id",makeInventoryVO.getWarehouseAreaId());
-
-        //货位编码
-        query.like(StringUtils.isNotBlank(makeInventoryVO.getCargoSpaceId()),"cargo_space_id",makeInventoryVO.getCargoSpaceId());
-
-        //物料编码
-        query.like(StringUtils.isNotBlank(makeInventoryVO.getMaterialCoding()),"material_coding",makeInventoryVO.getMaterialCoding());
-
-        //物料名称
-        query.like(StringUtils.isNotBlank(makeInventoryVO.getMaterialName()),"material_name",makeInventoryVO.getMaterialName());
-
-        //批次
-        query.like(StringUtils.isNotBlank(makeInventoryVO.getBatch()),"batch",makeInventoryVO.getBatch());
 
         //盘点状态
         query.eq(ObjectUtil.isNotNull(makeInventoryVO.getCheckStatus()),"check_status",makeInventoryVO.getCheckStatus());
 
-        //货主
-        query.like(ObjectUtil.isNotNull(makeInventoryVO.getConsignor()),"consignor",makeInventoryVO.getConsignor());
+        //是否全盘
+        query.eq(ObjectUtil.isNotNull(makeInventoryVO.getAllMake()),"allMake",makeInventoryVO.getAllMake());
 
-        //仓库编号
-        query.like(StringUtils.isNotBlank(makeInventoryVO.getWarehouseId()),"warehouse_id",makeInventoryVO.getWarehouseId());
-
-        //盘点人名字
-        query.like(StringUtils.isNotBlank(makeInventoryVO.getUserName()),"user_name",makeInventoryVO.getUserName());
-
-        //供应商
-        query.like(StringUtils.isNotBlank(makeInventoryVO.getSupplier()),"supplier",makeInventoryVO.getSupplier());
+        query.eq(ObjectUtil.isNotNull(makeInventoryVO.getPlanStatus()),"plan_status",makeInventoryVO.getPlanStatus());
 
 
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -214,70 +198,7 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
         //获取最新版本号的数据
         MakeInventory makeInventoryOld = getMakeInventoryById(updateMakeInventoryDTO.getId());
 
-        /**
-         * vesion 对比veision 如果一致则更新并加一  不一致则不更新
-         */
-
-        //子库编号
-        if (StringUtils.isNotBlank(updateMakeInventoryDTO.getSublibraryId())){
-            makeInventoryOld.setSublibraryId(updateMakeInventoryDTO.getSublibraryId());
-        }
-
-        //库区编号
-        if (StringUtils.isNotBlank(updateMakeInventoryDTO.getWarehouseAreaId())){
-            makeInventoryOld.setWarehouseAreaId(updateMakeInventoryDTO.getWarehouseAreaId());
-        }
-
-        //货位编号
-        if (StringUtils.isNotBlank(updateMakeInventoryDTO.getCargoSpaceId())){
-            makeInventoryOld.setCargoSpaceId(updateMakeInventoryDTO.getCargoSpaceId());
-        }
-
-        //物料编码
-        if (StringUtils.isNotBlank(updateMakeInventoryDTO.getMaterialCoding())){
-            makeInventoryOld.setMaterialCoding(updateMakeInventoryDTO.getMaterialCoding());
-        }
-
-        //物料名称
-        if(StringUtils.isNotBlank(updateMakeInventoryDTO.getMaterialName())){
-            makeInventoryOld.setMaterialName(updateMakeInventoryDTO.getMaterialName());
-        }
-
-        //规格型号
-        if (StringUtils.isNotBlank(updateMakeInventoryDTO.getSpecificationModel())){
-            makeInventoryOld.setSpecificationModel(updateMakeInventoryDTO.getSpecificationModel());
-        }
-
-        //计量单位
-        if (StringUtils.isNotBlank(updateMakeInventoryDTO.getMeasurementUnit())){
-            makeInventoryOld.setMeasurementUnit(updateMakeInventoryDTO.getMeasurementUnit());
-        }
-
-        //批次
-        if (StringUtils.isNotBlank(updateMakeInventoryDTO.getBatch())){
-            makeInventoryOld.setBatch(updateMakeInventoryDTO.getBatch());
-        }
-
-        //库存数量
-        if (ObjectUtil.isNotNull(updateMakeInventoryDTO.getInventoryCredit())){
-            makeInventoryOld.setInventoryCredit(updateMakeInventoryDTO.getInventoryCredit());
-        }
-
-        //实盘数量
-        if (ObjectUtil.isNotNull(updateMakeInventoryDTO.getCheckCredit())){
-            makeInventoryOld.setCheckCredit(updateMakeInventoryDTO.getCheckCredit());
-        }
-
-
-        //盘点状态
-        if (ObjectUtil.isNotNull(updateMakeInventoryDTO.getCheckStatus())){
-            makeInventoryOld.setCheckStatus(updateMakeInventoryDTO.getCheckStatus());
-        }
-
-        //备注
-        if(StringUtils.isNotBlank(updateMakeInventoryDTO.getRemark())){
-            makeInventoryOld.setRemark(updateMakeInventoryDTO.getRemark());
-        }
+        BeanUtil.copyProperties(updateMakeInventoryDTO,makeInventoryOld);
 
         int update = makeInventoryMapper.updateById(makeInventoryOld);
 

@@ -154,6 +154,7 @@ public class EnterWarehouseController extends BaseController {
         if (ObjectUtil.isNull(enterWarehouse)){
             return Result.failure("单据不存在！");
         }
+
         boolean delete = enter_warehouseService.removeById(id);
 
         //主表删除成功,删除明细
@@ -164,8 +165,10 @@ public class EnterWarehouseController extends BaseController {
             ) {
                 enterWarehouseDetailsService.removeById(enterWarehouseDetails.getId());
             }
+            return Result.success("删除成功！");
+        }else {
+            return Result.failure("删除失败！");
         }
-        return Result.success("删除成功");
     }
 
 

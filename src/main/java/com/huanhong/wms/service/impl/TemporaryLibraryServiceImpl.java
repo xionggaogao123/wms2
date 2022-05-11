@@ -221,6 +221,14 @@ public class TemporaryLibraryServiceImpl extends SuperServiceImpl<TemporaryLibra
     }
 
     @Override
+    public List<TemporaryLibrary> getTemporaryLibraryListByWarehouseId(String warehouseId) {
+        QueryWrapper<TemporaryLibrary> queryWrapper = new QueryWrapper<>();
+        queryWrapper.ne("inventory_credit",0);
+        queryWrapper.likeRight("cargo_space_id", warehouseId);
+        return temporaryLibraryMapper.selectList(queryWrapper);
+    }
+
+    @Override
     public Double getNumByMaterialCodingAndWarehouseId(String materialCoding, String warehouseId) {
         QueryWrapper<TemporaryLibrary> queryWrapper = new QueryWrapper<>();
         queryWrapper.select("IFNULL(SUM(Inventory_credit),0) AS num");

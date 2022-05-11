@@ -28,8 +28,11 @@ public class PlanUseOut extends SuperEntity {
     private String documentNumber;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "单据状态:1.草拟,2.审批中,3.审批生效,4.作废")
+    @ApiModelProperty(value = "单据状态:1.草拟,2.审批中,3.审批生效,4.作废 5.驳回")
     private Integer status;
+
+    @ApiModelProperty(value = "驳回原因")
+    private String rejectReason;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "计划类别-1.正常、2.加急、3.补计划、请选择（默认）")

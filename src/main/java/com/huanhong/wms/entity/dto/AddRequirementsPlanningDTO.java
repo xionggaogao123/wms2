@@ -40,7 +40,7 @@ public class AddRequirementsPlanningDTO {
     @Min(1)
     @Max(4)
     @NotNull
-    @ApiModelProperty(value = "状态: 1-草拟、2-审批中、3-审批生效、4-作废")
+    @ApiModelProperty(value = "状态: 1-草拟、2-审批中、3-审批生效、4-作废 5.驳回")
     private Integer  planStatus;
 
     @NotEmpty

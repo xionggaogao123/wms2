@@ -20,7 +20,7 @@ public class UpdatePlanUseOutDetailsDTO {
 
     @Min(1)
     @Max(4)
-    @ApiModelProperty(value = "状态状态:1.草拟,2.审批中,3.审批生效,4.作废")
+    @ApiModelProperty(value = "状态状态:1.草拟,2.审批中,3.审批生效,4.作废 5.驳回")
     private Integer status;
 
     @Min(1)

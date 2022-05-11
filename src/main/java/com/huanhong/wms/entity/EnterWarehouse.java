@@ -40,9 +40,11 @@ public class EnterWarehouse extends SuperEntity {
     private String rfqNumber;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "单据状态:1.草拟2.审批中3.审批生效4.作废")
+    @ApiModelProperty(value = "单据状态:1.草拟2.审批中3.审批生效4.作废 5.驳回")
     private Integer state;
 
+    @ApiModelProperty(value = "驳回原因")
+    private String rejectReason;
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "到货检验单编号")
     private String verificationDocumentNumber;

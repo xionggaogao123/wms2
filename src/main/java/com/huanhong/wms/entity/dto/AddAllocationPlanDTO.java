@@ -1,7 +1,5 @@
 package com.huanhong.wms.entity.dto;
 
-import com.baomidou.mybatisplus.annotation.FieldStrategy;
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -25,7 +23,7 @@ public class AddAllocationPlanDTO {
 
     @Min(1)
     @Max(4)
-    @ApiModelProperty(value = "计划状态-状态: 1草拟 2审批中 3审批生效 4作废")
+    @ApiModelProperty(value = "计划状态-状态: 1草拟 2审批中 3审批生效 4作废 5.驳回")
     private Integer planStatus;
 
     @NotNull

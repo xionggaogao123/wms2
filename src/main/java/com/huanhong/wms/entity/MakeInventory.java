@@ -10,7 +10,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -29,9 +28,11 @@ public class MakeInventory extends SuperEntity {
     private String processInstanceId;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "计划状态-状态: 1草拟 2审批中 3审批生效 4作废")
+    @ApiModelProperty(value = "计划状态-状态: 1草拟 2审批中 3审批生效 4作废 5.驳回")
     private Integer planStatus;
 
+    @ApiModelProperty(value = "驳回原因")
+    private String rejectReason;
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "是否全盘: 0-非全盘 1-全盘")
     private Integer allMake;

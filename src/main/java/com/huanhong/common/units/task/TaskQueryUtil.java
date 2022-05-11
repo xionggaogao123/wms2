@@ -20,7 +20,8 @@ import java.util.Map;
 @Slf4j
 public class TaskQueryUtil {
 
-    public static final String HOST = "http://wms.aiairy.com:9051/v1";
+//    public static final String HOST = "http://wms.aiairy.com:9051/v1";
+    public static final String HOST = "http://localhost:8866/v1";
     /**
      * 当前需要处理的任务
      */

@@ -44,8 +44,11 @@ public class ArrivalVerification extends SuperEntity {
     private Integer planClassification;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "状态: 1草拟 2审批中 3审批生效 4作废")
+    @ApiModelProperty(value = "状态: 1草拟 2审批中 3审批生效 4作废 5驳回")
     private Integer planStatus;
+
+    @ApiModelProperty(value = "驳回原因")
+    private String rejectReason;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "检验状态：0-未检验，1-部分检验，2-全部检验")

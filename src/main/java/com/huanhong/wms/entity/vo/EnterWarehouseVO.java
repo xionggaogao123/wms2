@@ -24,7 +24,7 @@ public class EnterWarehouseVO {
     @ApiModelProperty(value = "询价单编号")
     private String rfqNumber;
 
-    @ApiModelProperty(value = "状态:1.草拟2.审批中3.审批生效4.作废")
+    @ApiModelProperty(value = "状态:1.草拟2.审批中3.审批生效4.作废 5.驳回")
     private Integer state;
 
     @ApiModelProperty(value = "到货检验单编号")

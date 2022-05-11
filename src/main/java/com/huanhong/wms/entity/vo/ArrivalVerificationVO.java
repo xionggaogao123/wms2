@@ -30,7 +30,7 @@ public class ArrivalVerificationVO {
 
     @Min(1)
     @Max(4)
-    @ApiModelProperty(value = "状态: 1草拟 2审批中 3审批生效 4作废")
+    @ApiModelProperty(value = "状态: 1草拟 2审批中 3审批生效 4作废 5.驳回")
     private Integer planStatus;
 
     @Min(0)

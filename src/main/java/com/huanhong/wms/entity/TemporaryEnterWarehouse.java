@@ -1,7 +1,5 @@
 package com.huanhong.wms.entity;
 
-import java.time.LocalDateTime;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -10,6 +8,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.time.LocalDateTime;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -27,9 +27,11 @@ public class TemporaryEnterWarehouse extends SuperEntity {
     private String processInstanceId;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "状态:1.草拟 2.审批中 3.审批生效 4.作废")
+    @ApiModelProperty(value = "状态:1.草拟 2.审批中 3.审批生效 4.作废 5.驳回")
     private Integer state;
 
+    @ApiModelProperty(value = "驳回原因")
+    private String rejectReason;
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "有效日期")
     private LocalDateTime effectiveDate;

@@ -32,9 +32,11 @@ public class AllocationPlan extends SuperEntity {
     private Integer businessType;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "计划状态-状态: 1草拟 2审批中 3审批生效 4作废")
+    @ApiModelProperty(value = "单据状态:1.草拟,2.审批中,3.审批生效,4.作废 5.驳回")
     private Integer planStatus;
 
+    @ApiModelProperty(value = "驳回原因")
+    private String rejectReason;
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "调拨日期")
     private LocalDateTime assignmentDate;

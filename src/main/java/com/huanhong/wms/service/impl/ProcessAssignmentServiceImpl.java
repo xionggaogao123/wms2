@@ -107,160 +107,162 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
     @Override
     public Result<Integer> syncProcessAssignment() {
         Result taskResult = TaskQueryUtil.list();
-        if (taskResult.isOk()) {
-            if (taskResult.getData() != null) {
-                List<HistoryTaskVo> array = JSONObject.parseArray(taskResult.getData().toString(), HistoryTaskVo.class);
-                if (array.size() == 0) {
-                    log.error("当前没有任务");
-                } else {
-                    List<ProcessAssignment> list = new ArrayList<>();
-                    Map<String, List<String>> listMap = new HashMap<>();
-                    for (HistoryTaskVo historyTaskVo : array) {
-                        //查询是否已同步该任务
-                        int count = processAssignmentMapper.selectCount(new QueryWrapper<ProcessAssignment>().eq("task_id", historyTaskVo.getId()));
-                        if (count > 0) {
-                            continue;
-                        }
-                        String type = historyTaskVo.getProcessDefinitionKey();
-                        String processInstanceId = historyTaskVo.getProcessInstanceId();
-                        String taskId = historyTaskVo.getId();
-                        ProcessAssignment p = new ProcessAssignment();
-                        p.setProcessInstanceId(processInstanceId);
-                        p.setProcessDefinitionKey(type);
-                        p.setProcessName(historyTaskVo.getName());
-                        p.setTaskDefinitionKey(type);
-                        p.setUserAccount(historyTaskVo.getAssignee());
-                        p.setUserName("");
-                        p.setTaskDefinitionKey(historyTaskVo.getTaskDefinitionKey());
-                        p.setTaskId(taskId);
-                        p.setStartTime(historyTaskVo.getStartTime());
-                        p.setStatus(0);
-                        switch (type) {
-                            //出库
-                            case "plan_use_out":
-                                List<PlanUseOut> planUseOuts = planUseOutMapper.selectList(new QueryWrapper<PlanUseOut>().eq("process_instance_id", processInstanceId));
-                                if (planUseOuts.size() > 0) {
-                                    PlanUseOut planUseOut = planUseOuts.get(0);
-                                    p.setDocumentNumber(planUseOut.getDocumentNumber());
-                                    p.setName("出库");
-                                    p.setPlanClassification(planUseOut.getPlanClassification());
-                                    p.setObjectId(planUseOut.getId());
-                                    p.setObjectType(1);
-                                } else {
-                                    processingData(listMap, processInstanceId, taskId);
-                                    continue;
-                                }
-                                break;
-                            //    入库
-                            case "enter_warehouse":
-                                List<EnterWarehouse> enterWarehouses = enterWarehouseMapper.selectList(new QueryWrapper<EnterWarehouse>().eq("process_instance_id", processInstanceId));
-                                if (enterWarehouses.size() > 0) {
-                                    EnterWarehouse enterWarehouse = enterWarehouses.get(0);
-                                    p.setDocumentNumber(enterWarehouse.getDocumentNumber());
-                                    p.setName("入库");
-                                    p.setPlanClassification(enterWarehouse.getPlanClassification());
-                                    p.setObjectId(enterWarehouse.getId());
-                                    p.setObjectType(2);
-                                } else {
-                                    processingData(listMap, processInstanceId, taskId);
-                                    continue;
-                                }
-                                break;
-                            //    调拨
-                            case "allocation_plan":
-                                List<AllocationPlan> allocationPlans = allocationPlanMapper.selectList(new QueryWrapper<AllocationPlan>().eq("process_instance_id", processInstanceId));
-                                if (allocationPlans.size() > 0) {
-                                    AllocationPlan allocationPlan = allocationPlans.get(0);
-                                    p.setDocumentNumber(allocationPlan.getAllocationNumber());
-                                    p.setName("调拨");
-                                    p.setObjectId(allocationPlan.getId());
-                                    p.setObjectType(3);
-                                } else {
-                                    processingData(listMap, processInstanceId, taskId);
-                                    continue;
-                                }
-                                break;
-                            //    采购计划
-                            case "procurement_plan":
-                                List<ProcurementPlan> procurementPlans = procurementPlanMapper.selectList(new QueryWrapper<ProcurementPlan>().eq("process_instance_id", processInstanceId));
-                                if (procurementPlans.size() > 0) {
-                                    ProcurementPlan procurementPlan = procurementPlans.get(0);
-                                    p.setDocumentNumber(procurementPlan.getPlanNumber());
-                                    p.setName("采购计划");
-                                    p.setPlanClassification(procurementPlan.getPlanClassification());
-                                    p.setObjectId(procurementPlan.getId());
-                                    p.setObjectType(4);
-                                } else {
-                                    processingData(listMap, processInstanceId, taskId);
-                                    continue;
-                                }
-                                break;
-                            //    需求计划
-                            case "requirements_planning":
-                                List<RequirementsPlanning> requirementsPlannings = requirementsPlanningMapper.selectList(new QueryWrapper<RequirementsPlanning>().eq("process_instance_id", processInstanceId));
-                                if (requirementsPlannings.size() > 0) {
-                                    RequirementsPlanning requirementsPlanning = requirementsPlannings.get(0);
-                                    p.setDocumentNumber(requirementsPlanning.getPlanNumber());
-                                    p.setName("需求计划");
-                                    p.setPlanClassification(requirementsPlanning.getPlanClassification());
-                                    p.setObjectId(requirementsPlanning.getId());
-                                    p.setObjectType(5);
-                                } else {
-                                    processingData(listMap, processInstanceId, taskId);
-                                    continue;
-                                }
-                                break;
-                            //    到货检验
-                            case "arrival_verification":
-                                List<ArrivalVerification> arrivalVerifications = arrivalVerificationMapper.selectList(new QueryWrapper<ArrivalVerification>().eq("process_instance_id", processInstanceId));
-                                if (arrivalVerifications.size() > 0) {
-                                    ArrivalVerification arrivalVerification = arrivalVerifications.get(0);
-                                    p.setDocumentNumber(arrivalVerification.getVerificationDocumentNumber());
-                                    p.setName("到货检验");
-                                    p.setPlanClassification(arrivalVerification.getPlanClassification());
-                                    p.setObjectId(arrivalVerification.getId());
-                                    p.setObjectType(6);
-                                } else {
-                                    processingData(listMap, processInstanceId, taskId);
-                                    continue;
-                                }
-                                break;
-                            default:
-                                log.warn("暂未处理的流程：{}", type);
-                                break;
-                        }
-                        list.add(p);
-                    }
+        if (!taskResult.isOk()) {
+            log.error("请求当前任务错误");
+            return Result.failure("请求当前任务错误");
 
-                    if (list.size() > 0) {
-                        log.debug("新增数据量：" + list.size());
-                        this.saveBatch(list);
+        }
+        if (taskResult.getData() != null) {
+            return Result.failure("当前没有任务");
+        }
+        List<HistoryTaskVo> array = JSONObject.parseArray(taskResult.getData().toString(), HistoryTaskVo.class);
+        if (array.size() == 0) {
+            log.error("当前没有任务");
+            return Result.failure("当前没有任务");
+        }
+        List<ProcessAssignment> list = new ArrayList<>();
+        Map<String, List<String>> listMap = new HashMap<>();
+        for (HistoryTaskVo historyTaskVo : array) {
+            //查询是否已同步该任务
+            int count = processAssignmentMapper.selectCount(new QueryWrapper<ProcessAssignment>().eq("task_id", historyTaskVo.getId()));
+            if (count > 0) {
+                continue;
+            }
+            String type = historyTaskVo.getProcessDefinitionKey();
+            String processInstanceId = historyTaskVo.getProcessInstanceId();
+            String taskId = historyTaskVo.getId();
+            ProcessAssignment p = new ProcessAssignment();
+            p.setProcessInstanceId(processInstanceId);
+            p.setProcessDefinitionKey(type);
+            p.setProcessName(historyTaskVo.getName());
+            p.setTaskDefinitionKey(type);
+            p.setUserAccount(historyTaskVo.getAssignee());
+            p.setUserName("");
+            p.setTaskDefinitionKey(historyTaskVo.getTaskDefinitionKey());
+            p.setTaskId(taskId);
+            p.setStartTime(historyTaskVo.getStartTime());
+            p.setStatus(0);
+            switch (type) {
+                //出库
+                case "plan_use_out":
+                    List<PlanUseOut> planUseOuts = planUseOutMapper.selectList(new QueryWrapper<PlanUseOut>().eq("process_instance_id", processInstanceId));
+                    if (planUseOuts.size() > 0) {
+                        PlanUseOut planUseOut = planUseOuts.get(0);
+                        p.setDocumentNumber(planUseOut.getDocumentNumber());
+                        p.setName("出库");
+                        p.setPlanClassification(planUseOut.getPlanClassification());
+                        p.setObjectId(planUseOut.getId());
+                        p.setObjectType(1);
+                    } else {
+                        processingData(listMap, processInstanceId, taskId);
+                        continue;
                     }
-                    if (listMap.size() > 0) {
-                        for (Map.Entry<String, List<String>> entry : listMap.entrySet()) {
-                            String processInstanceId = entry.getKey();
-                            List<String> taskIds = entry.getValue();
-                            log.debug(StrUtils.format("pid: " + processInstanceId + "=======taskIds:" + JSONObject.toJSONString(taskIds)));
-                            try {
-                                TaskQueryUtil.deleteProcess(processInstanceId, "删除无关联流程");
-                            } catch (Exception e) {
-                                log.error("删除异常");
-                            }
-                            try {
-                                TaskQueryUtil.deleteTasks(taskIds);
-                            } catch (Exception e) {
-                                log.error("删除异常");
-                            }
+                    break;
+                //    入库
+                case "enter_warehouse":
+                    List<EnterWarehouse> enterWarehouses = enterWarehouseMapper.selectList(new QueryWrapper<EnterWarehouse>().eq("process_instance_id", processInstanceId));
+                    if (enterWarehouses.size() > 0) {
+                        EnterWarehouse enterWarehouse = enterWarehouses.get(0);
+                        p.setDocumentNumber(enterWarehouse.getDocumentNumber());
+                        p.setName("入库");
+                        p.setPlanClassification(enterWarehouse.getPlanClassification());
+                        p.setObjectId(enterWarehouse.getId());
+                        p.setObjectType(2);
+                    } else {
+                        processingData(listMap, processInstanceId, taskId);
+                        continue;
+                    }
+                    break;
+                //    调拨
+                case "allocation_plan":
+                    List<AllocationPlan> allocationPlans = allocationPlanMapper.selectList(new QueryWrapper<AllocationPlan>().eq("process_instance_id", processInstanceId));
+                    if (allocationPlans.size() > 0) {
+                        AllocationPlan allocationPlan = allocationPlans.get(0);
+                        p.setDocumentNumber(allocationPlan.getAllocationNumber());
+                        p.setName("调拨");
+                        p.setObjectId(allocationPlan.getId());
+                        p.setObjectType(3);
+                    } else {
+                        processingData(listMap, processInstanceId, taskId);
+                        continue;
+                    }
+                    break;
+                //    采购计划
+                case "procurement_plan":
+                    List<ProcurementPlan> procurementPlans = procurementPlanMapper.selectList(new QueryWrapper<ProcurementPlan>().eq("process_instance_id", processInstanceId));
+                    if (procurementPlans.size() > 0) {
+                        ProcurementPlan procurementPlan = procurementPlans.get(0);
+                        p.setDocumentNumber(procurementPlan.getPlanNumber());
+                        p.setName("采购计划");
+                        p.setPlanClassification(procurementPlan.getPlanClassification());
+                        p.setObjectId(procurementPlan.getId());
+                        p.setObjectType(4);
+                    } else {
+                        processingData(listMap, processInstanceId, taskId);
+                        continue;
+                    }
+                    break;
+                //    需求计划
+                case "requirements_planning":
+                    List<RequirementsPlanning> requirementsPlannings = requirementsPlanningMapper.selectList(new QueryWrapper<RequirementsPlanning>().eq("process_instance_id", processInstanceId));
+                    if (requirementsPlannings.size() > 0) {
+                        RequirementsPlanning requirementsPlanning = requirementsPlannings.get(0);
+                        p.setDocumentNumber(requirementsPlanning.getPlanNumber());
+                        p.setName("需求计划");
+                        p.setPlanClassification(requirementsPlanning.getPlanClassification());
+                        p.setObjectId(requirementsPlanning.getId());
+                        p.setObjectType(5);
+                    } else {
+                        processingData(listMap, processInstanceId, taskId);
+                        continue;
+                    }
+                    break;
+                //    到货检验
+                case "arrival_verification":
+                    List<ArrivalVerification> arrivalVerifications = arrivalVerificationMapper.selectList(new QueryWrapper<ArrivalVerification>().eq("process_instance_id", processInstanceId));
+                    if (arrivalVerifications.size() > 0) {
+                        ArrivalVerification arrivalVerification = arrivalVerifications.get(0);
+                        p.setDocumentNumber(arrivalVerification.getVerificationDocumentNumber());
+                        p.setName("到货检验");
+                        p.setPlanClassification(arrivalVerification.getPlanClassification());
+                        p.setObjectId(arrivalVerification.getId());
+                        p.setObjectType(6);
+                    } else {
+                        processingData(listMap, processInstanceId, taskId);
+                        continue;
+                    }
+                    break;
+                default:
+                    log.warn("暂未处理的流程：{}", type);
+                    break;
+            }
+            list.add(p);
+        }
 
-                        }
-                    }
+        if (list.size() > 0) {
+            log.debug("新增数据量：" + list.size());
+            this.saveBatch(list);
+        }
+        if (listMap.size() > 0) {
+            for (Map.Entry<String, List<String>> entry : listMap.entrySet()) {
+                String processInstanceId = entry.getKey();
+                List<String> taskIds = entry.getValue();
+                log.debug(StrUtils.format("pid: " + processInstanceId + "=======taskIds:" + JSONObject.toJSONString(taskIds)));
+                try {
+                    TaskQueryUtil.deleteProcess(processInstanceId, "删除无关联流程");
+                } catch (Exception e) {
+                    log.error("删除异常");
+                }
+                try {
+                    TaskQueryUtil.deleteTasks(taskIds);
+                } catch (Exception e) {
+                    log.error("删除异常");
                 }
 
             }
-        } else {
-            log.error("请求当前任务错误");
-            return null;
         }
+
+
         return null;
     }
 
@@ -543,7 +545,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                             return Result.failure("数据未更新，操作失败");
                         }
                         break;
-                         default:
+                    default:
                         log.warn("暂未处理的流程：{}", processAssignment.getProcessDefinitionKey());
                         break;
                 }
@@ -766,248 +768,248 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                 }
             }
         }
-            if (param.getAccounts() != null) {
-                if (param.getAccounts().size() > 0) {
-                    // TODO 推送抄送消息
-                    List<String> accounts = param.getAccounts();
-                    List<Message> messages = new ArrayList<>();
-                    for (String account : accounts) {
-                        User receiver = userMapper.getUserByAccount(account);
-                        if (receiver == null) {
-                            continue;
-                        }
-                        Message message = new Message();
-                        message.setStatus(0);
-                        message.setUserName(receiver.getUserName());
-                        message.setUserId(receiver.getId());
-                        message.setDocumentNumber(processAssignment.getDocumentNumber());
-                        message.setObjectId(processAssignment.getObjectId());
-                        message.setObjectType(processAssignment.getObjectType());
-                        message.setType(0);
-                        message.setHandleUserId(user.getId());
-                        message.setHandleUserName(user.getUserName());
-                        message.setPlanClassification(processAssignment.getPlanClassification());
-                        message.setProcessInstanceId(processAssignment.getProcessInstanceId());
-                        messages.add(message);
+        if (param.getAccounts() != null) {
+            if (param.getAccounts().size() > 0) {
+                // TODO 推送抄送消息
+                List<String> accounts = param.getAccounts();
+                List<Message> messages = new ArrayList<>();
+                for (String account : accounts) {
+                    User receiver = userMapper.getUserByAccount(account);
+                    if (receiver == null) {
+                        continue;
                     }
-                    if (messages.size() > 0) {
-                        boolean batchAdd = messageService.saveBatch(messages);
-                        if (!batchAdd) {
-                            return Result.failure("消息抄送失败");
-                        }
-                        //TODO 推送消息
-
+                    Message message = new Message();
+                    message.setStatus(0);
+                    message.setUserName(receiver.getUserName());
+                    message.setUserId(receiver.getId());
+                    message.setDocumentNumber(processAssignment.getDocumentNumber());
+                    message.setObjectId(processAssignment.getObjectId());
+                    message.setObjectType(processAssignment.getObjectType());
+                    message.setType(0);
+                    message.setHandleUserId(user.getId());
+                    message.setHandleUserName(user.getUserName());
+                    message.setPlanClassification(processAssignment.getPlanClassification());
+                    message.setProcessInstanceId(processAssignment.getProcessInstanceId());
+                    messages.add(message);
+                }
+                if (messages.size() > 0) {
+                    boolean batchAdd = messageService.saveBatch(messages);
+                    if (!batchAdd) {
+                        return Result.failure("消息抄送失败");
                     }
+                    //TODO 推送消息
 
                 }
+
             }
-
-            return Result.success();
-
         }
 
-        @Override
-        public Result start (StartProcessParam param){
-            Integer id = param.getId();
-            PlanUseOut planUseOut = null;
-            AllocationPlan allocationPlan = null;
-            // 出库先验证库存是否够 不够直接返回
+        return Result.success();
+
+    }
+
+    @Override
+    public Result start(StartProcessParam param) {
+        Integer id = param.getId();
+        PlanUseOut planUseOut = null;
+        AllocationPlan allocationPlan = null;
+        // 出库先验证库存是否够 不够直接返回
+        switch (param.getProcessDefinitionKey()) {
+            //出库
+            case "plan_use_out":
+                /**
+                 * 获取出库单信息
+                 */
+                planUseOut = planUseOutMapper.selectById(id);
+                if (!ObjectUtil.isNotNull(planUseOut)) {
+                    return Result.failure("出库单不存在或已被删除,无法进入流程引擎");
+                }
+                Result checkStock = planUseOutService.checkStock(planUseOut);
+                if (!checkStock.isOk()) {
+                    return checkStock;
+                }
+                break;
+            case "allocation_plan":
+                allocationPlan = allocationPlanMapper.selectById(id);
+
+                if (!ObjectUtil.isNotEmpty(allocationPlan)) {
+                    return Result.failure("调拨计划单不存在或已被删除,无法进入流程引擎");
+                }
+                Result checkStock2 = allocationPlanService.checkStock(allocationPlan);
+                if (!checkStock2.isOk()) {
+                    return checkStock2;
+                }
+                break;
+
+            default:
+                break;
+        }
+        // 前置条件判断完成 启动流程
+        Result result = TaskQueryUtil.start(param);
+        if (result.isOk()) {
+            // 流程启动成功  处理业务数据
+            String processInstanceId = Convert.toStr(result.getData());
+            int f = 0;
+            // 更新数据
             switch (param.getProcessDefinitionKey()) {
                 //出库
                 case "plan_use_out":
-                    /**
-                     * 获取出库单信息
-                     */
-                    planUseOut = planUseOutMapper.selectById(id);
-                    if (!ObjectUtil.isNotNull(planUseOut)) {
-                        return Result.failure("出库单不存在或已被删除,无法进入流程引擎");
+                    PlanUseOut tempPlanUseOut = new PlanUseOut();
+                    tempPlanUseOut.setId(id);
+                    tempPlanUseOut.setProcessInstanceId(processInstanceId);
+                    //提交审批时 将更新数量  单据状态由草拟转为审批中
+                    tempPlanUseOut.setStatus(2);
+                    f = planUseOutMapper.updateById(tempPlanUseOut);
+                    if (f <= 0) {
+                        return Result.failure("未进入流程");
                     }
-                    Result checkStock = planUseOutService.checkStock(planUseOut);
-                    if (!checkStock.isOk()) {
-                        return checkStock;
+                    //新增出库记录并减库存
+                    Result resultAnother = planUseOutService.addOutboundRecordUpdateInventory(planUseOut);
+                    if (!resultAnother.isOk()) {
+                        return resultAnother;
                     }
-                    break;
-                case "allocation_plan":
-                    allocationPlan = allocationPlanMapper.selectById(id);
-
-                    if (!ObjectUtil.isNotEmpty(allocationPlan)) {
-                        return Result.failure("调拨计划单不存在或已被删除,无法进入流程引擎");
-                    }
-                    Result checkStock2 = allocationPlanService.checkStock(allocationPlan);
-                    if (!checkStock2.isOk()) {
-                        return checkStock2;
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-            // 前置条件判断完成 启动流程
-            Result result = TaskQueryUtil.start(param);
-            if (result.isOk()) {
-                // 流程启动成功  处理业务数据
-                String processInstanceId = Convert.toStr(result.getData());
-                int f = 0;
-                // 更新数据
-                switch (param.getProcessDefinitionKey()) {
-                    //出库
-                    case "plan_use_out":
-                        PlanUseOut tempPlanUseOut = new PlanUseOut();
-                        tempPlanUseOut.setId(id);
-                        tempPlanUseOut.setProcessInstanceId(processInstanceId);
-                        //提交审批时 将更新数量  单据状态由草拟转为审批中
-                        tempPlanUseOut.setStatus(2);
-                        f = planUseOutMapper.updateById(tempPlanUseOut);
-                        if (f <= 0) {
-                            return Result.failure("未进入流程");
-                        }
-                        //新增出库记录并减库存
-                        Result resultAnother = planUseOutService.addOutboundRecordUpdateInventory(planUseOut);
-                        if (!resultAnother.isOk()) {
-                            return resultAnother;
-                        }
                     //    盘点报告
-                    case "make_inventory_report":
-                        MakeInventoryReport makeInventoryReport = makeInventoryReportMapper.selectById(id);
+                case "make_inventory_report":
+                    MakeInventoryReport makeInventoryReport = makeInventoryReportMapper.selectById(id);
 
-                        if (!ObjectUtil.isNotEmpty(makeInventoryReport)) {
-                            return Result.failure("盘点报告不存在或已被删除,无法完成");
-                        }
+                    if (!ObjectUtil.isNotEmpty(makeInventoryReport)) {
+                        return Result.failure("盘点报告不存在或已被删除,无法完成");
+                    }
 
-                        MakeInventoryReport tempMakeInventoryReport = new MakeInventoryReport();
-                        tempMakeInventoryReport.setId(id);
-                        tempMakeInventoryReport.setProcessInstanceId(processInstanceId);
-                        //单据状态由草拟转为审批中
-                        tempMakeInventoryReport.setPlanStatus(3);
-                        f = makeInventoryReportMapper.updateById(tempMakeInventoryReport);
-                        if (f <= 0) {
-                            return Result.failure("数据未更新，流程完成失败");
-                        }
-                        //盘点报告完成审批后，更新库存
-                        List<MakeInventoryReportDetails> makeInventoryReportDetailsList = makeInventoryReportDetailsService.getMakeInventoryReportDetailsByDocNumberAndWarehosueId(makeInventoryReport.getReportNumber(),makeInventoryReport.getWarehouseId());
-                        for (MakeInventoryReportDetails makeInventoryReportDetails:makeInventoryReportDetailsList
-                             ) {
-                            InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(makeInventoryReportDetails.getMaterialCoding(),makeInventoryReportDetails.getBatch(),makeInventoryReportDetails.getCargoSpaceId());
-                            UpdateInventoryInformationDTO updateInventoryInformationDTO = new UpdateInventoryInformationDTO();
-                            BeanUtil.copyProperties(inventoryInformation,updateInventoryInformationDTO);
-                            updateInventoryInformationDTO.setInventoryCredit(makeInventoryReportDetails.getCheckCredit());
-                            Result resultUpdateInventory = inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
-                            log.info("盘点报告审批完成,更新库存{}",resultUpdateInventory);
-                        }
-                        break;
-                    //    入库
-                    case "enter_warehouse":
-                        EnterWarehouse enterWarehouse = enterWarehouseMapper.selectById(id);
+                    MakeInventoryReport tempMakeInventoryReport = new MakeInventoryReport();
+                    tempMakeInventoryReport.setId(id);
+                    tempMakeInventoryReport.setProcessInstanceId(processInstanceId);
+                    //单据状态由草拟转为审批中
+                    tempMakeInventoryReport.setPlanStatus(3);
+                    f = makeInventoryReportMapper.updateById(tempMakeInventoryReport);
+                    if (f <= 0) {
+                        return Result.failure("数据未更新，流程完成失败");
+                    }
+                    //盘点报告完成审批后，更新库存
+                    List<MakeInventoryReportDetails> makeInventoryReportDetailsList = makeInventoryReportDetailsService.getMakeInventoryReportDetailsByDocNumberAndWarehosueId(makeInventoryReport.getReportNumber(), makeInventoryReport.getWarehouseId());
+                    for (MakeInventoryReportDetails makeInventoryReportDetails : makeInventoryReportDetailsList
+                    ) {
+                        InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(makeInventoryReportDetails.getMaterialCoding(), makeInventoryReportDetails.getBatch(), makeInventoryReportDetails.getCargoSpaceId());
+                        UpdateInventoryInformationDTO updateInventoryInformationDTO = new UpdateInventoryInformationDTO();
+                        BeanUtil.copyProperties(inventoryInformation, updateInventoryInformationDTO);
+                        updateInventoryInformationDTO.setInventoryCredit(makeInventoryReportDetails.getCheckCredit());
+                        Result resultUpdateInventory = inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
+                        log.info("盘点报告审批完成,更新库存{}", resultUpdateInventory);
+                    }
+                    break;
+                //    入库
+                case "enter_warehouse":
+                    EnterWarehouse enterWarehouse = enterWarehouseMapper.selectById(id);
 
-                        if (!ObjectUtil.isNotNull(enterWarehouse)) {
-                            return Result.failure("采购入库单不存在或已被删除,无法进入流程引擎");
-                        }
-                        EnterWarehouse tempEnterWarehouse = new EnterWarehouse();
-                        tempEnterWarehouse.setId(id);
-                        tempEnterWarehouse.setProcessInstanceId(processInstanceId);
-                        //单据状态由草拟转为审批中
-                        tempEnterWarehouse.setState(2);
-                        f = enterWarehouseMapper.updateById(tempEnterWarehouse);
-                        if (f <= 0) {
-                            return Result.failure("未进入流程");
-                        }
-                        break;
-                    //    调拨
-                    case "allocation_plan":
+                    if (!ObjectUtil.isNotNull(enterWarehouse)) {
+                        return Result.failure("采购入库单不存在或已被删除,无法进入流程引擎");
+                    }
+                    EnterWarehouse tempEnterWarehouse = new EnterWarehouse();
+                    tempEnterWarehouse.setId(id);
+                    tempEnterWarehouse.setProcessInstanceId(processInstanceId);
+                    //单据状态由草拟转为审批中
+                    tempEnterWarehouse.setState(2);
+                    f = enterWarehouseMapper.updateById(tempEnterWarehouse);
+                    if (f <= 0) {
+                        return Result.failure("未进入流程");
+                    }
+                    break;
+                //    调拨
+                case "allocation_plan":
 
-                        AllocationPlan tempAllocationPlan = new AllocationPlan();
-                        tempAllocationPlan.setId(id);
-                        tempAllocationPlan.setProcessInstanceId(processInstanceId);
-                        //单据状态由草拟转为审批中
-                        tempAllocationPlan.setPlanStatus(2);
-                        f = allocationPlanMapper.updateById(tempAllocationPlan);
-                        if (f <= 0) {
-                            return Result.failure("未进入流程");
-                        }
-                        //新增出库记录并减库存
-                        Result resultAnother2 = allocationPlanService.addOutboundRecordUpdateInventory(allocationPlan);
-                        if (!resultAnother2.isOk()) {
-                            return resultAnother2;
-                        }
-                        break;
-                    //    采购计划
-                    case "procurement_plan":
-                        ProcurementPlan procurementPlan = procurementPlanMapper.selectById(id);
+                    AllocationPlan tempAllocationPlan = new AllocationPlan();
+                    tempAllocationPlan.setId(id);
+                    tempAllocationPlan.setProcessInstanceId(processInstanceId);
+                    //单据状态由草拟转为审批中
+                    tempAllocationPlan.setPlanStatus(2);
+                    f = allocationPlanMapper.updateById(tempAllocationPlan);
+                    if (f <= 0) {
+                        return Result.failure("未进入流程");
+                    }
+                    //新增出库记录并减库存
+                    Result resultAnother2 = allocationPlanService.addOutboundRecordUpdateInventory(allocationPlan);
+                    if (!resultAnother2.isOk()) {
+                        return resultAnother2;
+                    }
+                    break;
+                //    采购计划
+                case "procurement_plan":
+                    ProcurementPlan procurementPlan = procurementPlanMapper.selectById(id);
 
-                        if (!ObjectUtil.isNotEmpty(procurementPlan)) {
-                            return Result.failure("采购计划单不存在或已被删除,无法进入流程引擎");
-                        }
-                        ProcurementPlan tempProcurementPlan = new ProcurementPlan();
-                        tempProcurementPlan.setId(id);
-                        tempProcurementPlan.setProcessInstanceId(processInstanceId);
-                        //单据状态由草拟转为审批中
-                        tempProcurementPlan.setStatus(2);
-                        f = procurementPlanMapper.updateById(tempProcurementPlan);
-                        if (f <= 0) {
-                            return Result.failure("未进入流程");
-                        }
-                        break;
-                    //    需求计划
-                    case "requirements_planning":
-                        RequirementsPlanning requirementsPlanning = requirementsPlanningMapper.selectById(id);
+                    if (!ObjectUtil.isNotEmpty(procurementPlan)) {
+                        return Result.failure("采购计划单不存在或已被删除,无法进入流程引擎");
+                    }
+                    ProcurementPlan tempProcurementPlan = new ProcurementPlan();
+                    tempProcurementPlan.setId(id);
+                    tempProcurementPlan.setProcessInstanceId(processInstanceId);
+                    //单据状态由草拟转为审批中
+                    tempProcurementPlan.setStatus(2);
+                    f = procurementPlanMapper.updateById(tempProcurementPlan);
+                    if (f <= 0) {
+                        return Result.failure("未进入流程");
+                    }
+                    break;
+                //    需求计划
+                case "requirements_planning":
+                    RequirementsPlanning requirementsPlanning = requirementsPlanningMapper.selectById(id);
 
-                        if (!ObjectUtil.isNotEmpty(requirementsPlanning)) {
-                            return Result.failure("需求计划单不存在或已被删除,无法进入流程引擎");
-                        }
-                        RequirementsPlanning tempRequirementsPlanning = new RequirementsPlanning();
-                        tempRequirementsPlanning.setId(id);
-                        tempRequirementsPlanning.setProcessInstanceId(processInstanceId);
-                        //单据状态由草拟转为审批中
-                        tempRequirementsPlanning.setPlanStatus(2);
-                        f = requirementsPlanningMapper.updateById(tempRequirementsPlanning);
-                        if (f <= 0) {
-                            return Result.failure("未进入流程");
-                        }
-                        break;
-                    //    到货检验
-                    case "arrival_verification":
-                        ArrivalVerification arrivalVerification = arrivalVerificationMapper.selectById(id);
+                    if (!ObjectUtil.isNotEmpty(requirementsPlanning)) {
+                        return Result.failure("需求计划单不存在或已被删除,无法进入流程引擎");
+                    }
+                    RequirementsPlanning tempRequirementsPlanning = new RequirementsPlanning();
+                    tempRequirementsPlanning.setId(id);
+                    tempRequirementsPlanning.setProcessInstanceId(processInstanceId);
+                    //单据状态由草拟转为审批中
+                    tempRequirementsPlanning.setPlanStatus(2);
+                    f = requirementsPlanningMapper.updateById(tempRequirementsPlanning);
+                    if (f <= 0) {
+                        return Result.failure("未进入流程");
+                    }
+                    break;
+                //    到货检验
+                case "arrival_verification":
+                    ArrivalVerification arrivalVerification = arrivalVerificationMapper.selectById(id);
 
-                        if (!ObjectUtil.isNotEmpty(arrivalVerification)) {
-                            return Result.failure("到货检验单不存在或已被删除,无法进入流程引擎");
-                        }
-                        ArrivalVerification tempArrivalVerification = new ArrivalVerification();
-                        tempArrivalVerification.setId(id);
-                        tempArrivalVerification.setProcessInstanceId(processInstanceId);
-                        //单据状态由草拟转为审批中
-                        tempArrivalVerification.setPlanStatus(2);
-                        f = arrivalVerificationMapper.updateById(tempArrivalVerification);
-                        if (f <= 0) {
-                            return Result.failure("未进入流程");
-                        }
-                        break;
-                    default:
-                        log.warn("暂未处理的流程：{}", param.getProcessDefinitionKey());
-                        break;
-                }
+                    if (!ObjectUtil.isNotEmpty(arrivalVerification)) {
+                        return Result.failure("到货检验单不存在或已被删除,无法进入流程引擎");
+                    }
+                    ArrivalVerification tempArrivalVerification = new ArrivalVerification();
+                    tempArrivalVerification.setId(id);
+                    tempArrivalVerification.setProcessInstanceId(processInstanceId);
+                    //单据状态由草拟转为审批中
+                    tempArrivalVerification.setPlanStatus(2);
+                    f = arrivalVerificationMapper.updateById(tempArrivalVerification);
+                    if (f <= 0) {
+                        return Result.failure("未进入流程");
+                    }
+                    break;
+                default:
+                    log.warn("暂未处理的流程：{}", param.getProcessDefinitionKey());
+                    break;
             }
-            return result;
         }
-
-        public Map<String, List<HistoryTaskVo>> groupByProcessInstanceId (List < HistoryTaskVo > historyTaskVos) {
-            return historyTaskVos.stream()
-                    .collect(Collectors.groupingBy(HistoryTaskVo::getProcessInstanceId));
-        }
-
-        public Map<String, List<HistoryTaskVo>> groupByProcessKey (List < HistoryTaskVo > historyTaskVos) {
-            return historyTaskVos.stream()
-                    .collect(Collectors.groupingBy(HistoryTaskVo::getProcessDefinitionKey));
-        }
-
-        private void processingData (Map < String, List < String >> listMap, String processInstanceId, String taskId){
-            List<String> strings;
-            if (listMap.containsKey(processInstanceId)) {
-                strings = listMap.get(processInstanceId);
-            } else {
-                strings = new ArrayList<>();
-            }
-            strings.add(taskId);
-            listMap.put(processInstanceId, strings);
-        }
-
+        return result;
     }
+
+    public Map<String, List<HistoryTaskVo>> groupByProcessInstanceId(List<HistoryTaskVo> historyTaskVos) {
+        return historyTaskVos.stream()
+                .collect(Collectors.groupingBy(HistoryTaskVo::getProcessInstanceId));
+    }
+
+    public Map<String, List<HistoryTaskVo>> groupByProcessKey(List<HistoryTaskVo> historyTaskVos) {
+        return historyTaskVos.stream()
+                .collect(Collectors.groupingBy(HistoryTaskVo::getProcessDefinitionKey));
+    }
+
+    private void processingData(Map<String, List<String>> listMap, String processInstanceId, String taskId) {
+        List<String> strings;
+        if (listMap.containsKey(processInstanceId)) {
+            strings = listMap.get(processInstanceId);
+        } else {
+            strings = new ArrayList<>();
+        }
+        strings.add(taskId);
+        listMap.put(processInstanceId, strings);
+    }
+
+}

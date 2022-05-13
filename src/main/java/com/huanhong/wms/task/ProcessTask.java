@@ -4,11 +4,11 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.TimeInterval;
 import com.huanhong.wms.service.IProcessAssignmentService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+
 @Slf4j
 @Component
 public class ProcessTask {
@@ -23,7 +23,12 @@ public class ProcessTask {
     public void syncTask() {
         TimeInterval timer = DateUtil.timer();
         log.info("***** 检查当前任务开始 *****");
-        processAssignmentService.syncProcessAssignment();
+        try {
+            processAssignmentService.syncProcessAssignment();
+        } catch (Exception e) {
+            log.error("***** 检查当前任务异常 *****", e);
+        }
+
         log.info("***** 检查当前任务结束，耗时:{}ms *****", timer.interval());
     }
 

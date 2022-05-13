@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -35,6 +36,7 @@ import java.util.Date;
 import java.util.List;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/v1//make-inventory")
 @ApiSort()
@@ -353,7 +355,7 @@ public class MakeInventoryController extends BaseController {
                 jsonResult.put("mainValue", makeInventory);
                 jsonResult.put("detailsValue", makeInventoryDetailsList);
                 jsonResult.put("mainKey","updateMakeInventoryDTO");
-                jsonResult.put("detailKey","updateMakeInventoryDetails");
+                jsonResult.put("detailKey","updateMakeInventoryDetailsDTO");
                 jsonResult.put("mainUpdate", "/wms/api/v1/make-inventory/update");
                 jsonResult.put("detailsUpdate", "/wms/api/v1/make-inventory-details/update");
                 jsonResult.put("missionCompleted", "/wms/api/v1/enter-warehouse/missionCompleted");

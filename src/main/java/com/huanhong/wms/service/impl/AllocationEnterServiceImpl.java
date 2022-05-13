@@ -33,7 +33,6 @@ import java.time.format.DateTimeFormatter;
 @Service
 public class AllocationEnterServiceImpl extends SuperServiceImpl<AllocationEnterMapper, AllocationEnter> implements IAllocationEnterService {
 
-
     @Resource
     private AllocationEnterMapper allocationEnterMapper;
 

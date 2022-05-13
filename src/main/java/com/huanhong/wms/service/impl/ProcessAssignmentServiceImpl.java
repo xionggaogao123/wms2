@@ -98,6 +98,12 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
     @Resource
     private MakeInventoryMapper makeInventoryMapper;
 
+    @Resource
+    private MakeInventoryReportMapper makeInventoryReportMapper;
+
+    @Resource
+    private IMakeInventoryReportDetailsService makeInventoryReportDetailsService;
+
     @Override
     public Result<Integer> syncProcessAssignment() {
         Result taskResult = TaskQueryUtil.list();
@@ -537,7 +543,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                             return Result.failure("数据未更新，操作失败");
                         }
                         break;
-                    default:
+                         default:
                         log.warn("暂未处理的流程：{}", processAssignment.getProcessDefinitionKey());
                         break;
                 }
@@ -859,6 +865,34 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                         Result resultAnother = planUseOutService.addOutboundRecordUpdateInventory(planUseOut);
                         if (!resultAnother.isOk()) {
                             return resultAnother;
+                        }
+                    //    盘点报告
+                    case "make_inventory_report":
+                        MakeInventoryReport makeInventoryReport = makeInventoryReportMapper.selectById(id);
+
+                        if (!ObjectUtil.isNotEmpty(makeInventoryReport)) {
+                            return Result.failure("盘点报告不存在或已被删除,无法完成");
+                        }
+
+                        MakeInventoryReport tempMakeInventoryReport = new MakeInventoryReport();
+                        tempMakeInventoryReport.setId(id);
+                        tempMakeInventoryReport.setProcessInstanceId(processInstanceId);
+                        //单据状态由草拟转为审批中
+                        tempMakeInventoryReport.setPlanStatus(3);
+                        f = makeInventoryReportMapper.updateById(tempMakeInventoryReport);
+                        if (f <= 0) {
+                            return Result.failure("数据未更新，流程完成失败");
+                        }
+                        //盘点报告完成审批后，更新库存
+                        List<MakeInventoryReportDetails> makeInventoryReportDetailsList = makeInventoryReportDetailsService.getMakeInventoryReportDetailsByDocNumberAndWarehosueId(makeInventoryReport.getReportNumber(),makeInventoryReport.getWarehouseId());
+                        for (MakeInventoryReportDetails makeInventoryReportDetails:makeInventoryReportDetailsList
+                             ) {
+                            InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(makeInventoryReportDetails.getMaterialCoding(),makeInventoryReportDetails.getBatch(),makeInventoryReportDetails.getCargoSpaceId());
+                            UpdateInventoryInformationDTO updateInventoryInformationDTO = new UpdateInventoryInformationDTO();
+                            BeanUtil.copyProperties(inventoryInformation,updateInventoryInformationDTO);
+                            updateInventoryInformationDTO.setInventoryCredit(makeInventoryReportDetails.getCheckCredit());
+                            Result resultUpdateInventory = inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
+                            log.info("盘点报告审批完成,更新库存{}",resultUpdateInventory);
                         }
                         break;
                     //    入库

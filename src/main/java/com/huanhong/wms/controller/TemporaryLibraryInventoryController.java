@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
+import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
@@ -105,6 +106,9 @@ public class TemporaryLibraryInventoryController extends BaseController {
         public Result update(@Valid @RequestBody UpdateTemporaryLibraryInventoryAndDetailsDTO updateTemporaryLibraryInventoryAndDetailsDTO) {
 
             try {
+
+                LoginUser loginUser = this.getLoginUser();
+
                 UpdateTemporaryLibraryInventoryDTO updateTemporaryLibraryInventoryDTO = updateTemporaryLibraryInventoryAndDetailsDTO.getUpdateTemporaryLibraryInventoryDTO();
                 List<UpdateTemporaryLibraryInventoryDetailsDTO> updateTemporaryLibraryInventoryDetailsDTOList = updateTemporaryLibraryInventoryAndDetailsDTO.getUpdateTemporaryLibraryInventoryDetailsDTOList();
                 /**
@@ -156,7 +160,7 @@ public class TemporaryLibraryInventoryController extends BaseController {
 
                 int count = 0;
 
-                List<InventoryDocument> listfalse = new ArrayList<>();
+                List<TemporaryLibraryInventoryDetails> listfalse = new ArrayList<>();
 
                 for (TemporaryLibraryInventoryDetails temporaryLibraryInventoryDetails : temporaryLibraryInventoryDetailsList
                 ) {
@@ -176,25 +180,24 @@ public class TemporaryLibraryInventoryController extends BaseController {
 
                     Result resultAddIventory = temporaryLibraryService.addTemporaryLibrary(addTemporaryLibraryDTO);
 
-//                    if (resultAddIventory.isOk()) {
-//                        //库存新增成功后，新增入库记录
-//                        AddWarehousingRecordDTO addWarehousingRecordDTO = new AddWarehousingRecordDTO();
-//                        addWarehousingRecordDTO.setDocumentNumber(inventoryDocument.getDocumentNumber());
-//                        addWarehousingRecordDTO.setBatch(addInventoryInformationDTO.getBatch());
-//                        addWarehousingRecordDTO.setMaterialCoding(addInventoryInformationDTO.getMaterialCoding());
-//                        addWarehousingRecordDTO.setCargoSpaceId(addInventoryInformationDTO.getCargoSpaceId());
-//                        addWarehousingRecordDTO.setWarehouseId(inventoryDocument.getWarehouse());
-//                        addWarehousingRecordDTO.setEnterType(1);
-//                        addWarehousingRecordDTO.setEnterQuantity(addInventoryInformationDTO.getInventoryCredit());
-//                        warehousingRecordService.addWarehousingRecord(addWarehousingRecordDTO);
-//                        count++;
-//                    } else {
-//                        listfalse.add(inventoryDocument);
-//                    }
-//                }
-//                return count == inventoryDocumentDetailsList.size() ? Result.success("库存新增成功！") : Result.success(listfalse, "若干点验单新增库存失败！");
+                    if (resultAddIventory.isOk()) {
+                        //库存新增成功后，新增入库记录
+                        AddTemporaryRecordDTO addTemporaryRecordDTO = new AddTemporaryRecordDTO();
+                        addTemporaryRecordDTO.setDocumentNumber(docNum);
+                        addTemporaryRecordDTO.setRecordType(1);
+                        addTemporaryRecordDTO.setWarehouseId(warehouseId);
+                        addTemporaryRecordDTO.setMaterialCoding(material.getMaterialCoding());
+                        addTemporaryRecordDTO.setMaterialName(material.getMaterialName());
+                        addTemporaryRecordDTO.setBatch(addTemporaryLibraryDTO.getBatch());
+                        addTemporaryRecordDTO.setCargoSpaceId(addTemporaryLibraryDTO.getCargoSpaceId());
+                        addTemporaryRecordDTO.setEnterQuantity(addTemporaryLibraryDTO.getInventoryCredit());
+                        addTemporaryRecordDTO.setWarehouseManager(loginUser.getLoginName());
+                        count++;
+                    } else {
+                        listfalse.add(temporaryLibraryInventoryDetails);
+                    }
                 }
-                    return null;
+                return count == temporaryLibraryInventoryDetailsList.size() ? Result.success("库存新增成功！") : Result.success(listfalse, "若干点验单新增库存失败！");
                 } catch(Exception e){
                     log.error("更新点验单失败", e);
                     return Result.failure("系统异常：更新点验单失败!");

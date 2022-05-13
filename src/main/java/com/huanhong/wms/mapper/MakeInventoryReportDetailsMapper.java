@@ -1,0 +1,16 @@
+package com.huanhong.wms.mapper;
+
+import com.huanhong.wms.entity.MakeInventoryReportDetails;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+/**
+ * <p>
+ *  Mapper 接口
+ * </p>
+ *
+ * @author liudeyi
+ * @since 2022-05-12
+ */
+public interface MakeInventoryReportDetailsMapper extends BaseMapper<MakeInventoryReportDetails> {
+
+}

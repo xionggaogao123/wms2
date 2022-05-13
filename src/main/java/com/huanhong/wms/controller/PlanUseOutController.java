@@ -171,6 +171,7 @@ public class PlanUseOutController extends BaseController {
                 return Result.failure("更新失败");
             }
         } catch (Exception e) {
+            log.error("系统异常：更新领料出库主表及明细失败！",e);
             return Result.failure("系统异常，更新失败");
         }
     }

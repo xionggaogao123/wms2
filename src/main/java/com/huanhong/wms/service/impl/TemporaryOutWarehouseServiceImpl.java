@@ -279,7 +279,7 @@ public class TemporaryOutWarehouseServiceImpl extends SuperServiceImpl<Temporary
                                         addTemporaryRecordDTO.setMaterialName(temporaryLibrary.getMaterialName());
                                         addTemporaryRecordDTO.setMeasurementUnit(temporaryLibrary.getMeasurementUnit());
                                         addTemporaryRecordDTO.setWarehouseManager(loginUser.getLoginName());
-                                        addTemporaryRecordDTO.setRemark("系统生成！");
+                                        addTemporaryRecordDTO.setRemark("系统自动生成！");
                                         addTemporaryRecordDTOList.add(addTemporaryRecordDTO);
                                     } else {
                                         log.error("更新库存失败");

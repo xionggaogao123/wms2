@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -94,4 +95,9 @@ public class ArrivalVerification extends SuperEntity {
     private Integer isImported;
     @ApiModelProperty(value = "被导入到的入库单号")
     private String documentNumberImported;
+    @ApiModelProperty(value = "检验人id 逗号间隔 例 1,2")
+    private String checkerIds;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检验人")
+    private List<User> checkerUsers;
 }

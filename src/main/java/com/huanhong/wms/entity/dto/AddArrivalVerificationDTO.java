@@ -1,7 +1,5 @@
 package com.huanhong.wms.entity.dto;
 
-import com.baomidou.mybatisplus.annotation.FieldStrategy;
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -65,5 +63,6 @@ public class AddArrivalVerificationDTO {
 
     @ApiModelProperty(value = "备注")
     private String remark;
-
+    @ApiModelProperty(value = "检验人id 逗号间隔 例 1,2")
+    private String checkerIds;
 }

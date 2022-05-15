@@ -45,7 +45,6 @@ public class AddArrivalVerificationDetailsDTO {
     @ApiModelProperty(value = "到货数量")
     private Double arrivalQuantity;
 
-    @NotNull
     @Min(0)
     @ApiModelProperty(value = "合格数量")
     private Double qualifiedQuantity;

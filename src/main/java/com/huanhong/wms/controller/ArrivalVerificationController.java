@@ -4,9 +4,11 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
@@ -119,7 +121,7 @@ public class ArrivalVerificationController extends BaseController {
             }
             return result;
         } catch (Exception e) {
-            log.error("到货检验计划失败");
+            log.error("到货检验计划失败",e);
             return Result.failure("系统异常，到货检验计划失败！");
         }
     }
@@ -204,6 +206,11 @@ public class ArrivalVerificationController extends BaseController {
         if (ObjectUtil.isEmpty(arrivalVerification)) {
             return Result.failure("未找到对应信息！");
         }
+        if(StrUtil.isNotBlank(arrivalVerification.getCheckerIds())){
+            List<User> checkUsers  = userService.list(Wrappers.<User>lambdaQuery().select(User::getId,User::getUserName)
+                    .in(User::getId, arrivalVerification.getCheckerIds().split(",")));
+            arrivalVerification.setCheckerUsers(checkUsers);
+        }
         List<ArrivalVerificationDetails> arrivalVerificationDetailsList = arrivalVerificationDetailsService.getArrivalVerificationDetailsByDocNumAndWarehouseId(arrivalVerification.getVerificationDocumentNumber(),arrivalVerification.getWarehouseId());
         jsonObject.put("doc", arrivalVerification);
         jsonObject.put("details", arrivalVerificationDetailsList);
@@ -218,6 +225,11 @@ public class ArrivalVerificationController extends BaseController {
         ArrivalVerification arrivalVerification = arrivalVerificationService.getArrivalVerificationById(id);
         if (ObjectUtil.isEmpty(arrivalVerification)) {
             return Result.failure("未找到对应信息！");
+        }
+        if(StrUtil.isNotBlank(arrivalVerification.getCheckerIds())){
+            List<User> checkUsers  = userService.list(Wrappers.<User>lambdaQuery().select(User::getId,User::getUserName)
+                    .in(User::getId, arrivalVerification.getCheckerIds().split(",")));
+            arrivalVerification.setCheckerUsers(checkUsers);
         }
         JSONArray jsonArray = new JSONArray();
         List<ArrivalVerificationDetails> arrivalVerificationDetailsList = arrivalVerificationDetailsService.getArrivalVerificationDetailsByDocNumAndWarehouseId(arrivalVerification.getVerificationDocumentNumber(),arrivalVerification.getWarehouseId());

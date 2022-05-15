@@ -49,6 +49,15 @@ public class DeptController extends BaseController {
         query.select("*")
 //                .eq("company_id", loginUser.getCompanyId())
                 .orderByAsc("sort");
+        if (loginUser.getCompanyId() != 1) {
+            /*
+            比如这个人是雅店的，就只能列出雅店的组织架构
+            雅店是一个矿，也是一家公司，雅店他们的权限就是看到雅店煤矿下面的组织架构
+            泰丰盛合是总公司，他们的人在系统里面能看到所有的组织架构，所以你看图上泰丰盛合是在组织架构的顶端
+             */
+            query.and(wrapper->wrapper.eq("company_id", loginUser.getCompanyId())
+                    .or().eq("id",loginUser.getCompanyId()));
+        }
 //        String redisKey = RedisKey.DEPT_TREE;
 //        List<Dept> data = (List<Dept>) redisTemplate.opsForValue().get(redisKey);
 //        if (CollectionUtil.isEmpty(data)) {
@@ -93,9 +102,9 @@ public class DeptController extends BaseController {
 //        }
 
         //true 为停用  false 为启用
-        if (deptService.isStopUsing(dto.getId())){
+        if (deptService.isStopUsing(dto.getId())) {
             //部门停用中 且此次更新未改为启用 则不允许更新
-            if (dto.getState()!=1){
+            if (dto.getState() != 1) {
                 return Result.failure("部门停用中禁止更新");
             }
         }
@@ -120,7 +129,7 @@ public class DeptController extends BaseController {
 //        if (loginUser.getPermissionLevel()) {
 //            return Result.noAuthority();
 //        }
-        if (userService.getUserByDept(id)){
+        if (userService.getUserByDept(id)) {
             return Result.failure("部门下有人员存在，无法删除");
         }
         return deptService.deleteDept(loginUser, id);

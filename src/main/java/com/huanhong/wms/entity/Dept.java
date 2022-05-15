@@ -89,10 +89,19 @@ public class Dept extends SuperBsEntity {
     // 获取根节点
     private List<Dept> getRootNode(List<Dept> list) {
         List<Dept> rootDeptLists = new ArrayList<>();
+        int root=Integer.MAX_VALUE;
+        Dept rootDept = null;
         for (Dept dept : list) {
+            if(dept.getParentId()<root){
+                root = dept.getParentId();
+                rootDept = dept;
+            }
             if (dept.getParentId() == 0) {
                 rootDeptLists.add(dept);
             }
+        }
+        if(null !=rootDept&&!rootDeptLists.contains(rootDept)){
+            rootDeptLists.add(rootDept);
         }
         return rootDeptLists;
     }

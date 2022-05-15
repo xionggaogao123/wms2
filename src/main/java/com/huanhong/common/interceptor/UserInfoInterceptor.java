@@ -29,15 +29,15 @@ public class UserInfoInterceptor implements HandlerInterceptor {
         try {
             user = (LoginUser) request.getAttribute("loginUser");
         } catch (Exception e) {
-            log.info("***************************用户未登录， ThreadLocal无信息***************************");
+            log.error("***************************用户未登录， ThreadLocal无信息***************************",e);
             return true;
         }
         if (null != user) {
-            log.info("***************************用户已登录，用户信息放入ThreadLocal***************************");
+            log.debug("***************************用户已登录，用户信息放入ThreadLocal***************************");
             CurrentUserUtil.addCurrentUser(user);
             return true;
         }
-        log.info("***************************用户未登录， ThreadLocal无信息***************************");
+        log.debug("***************************用户未登录， ThreadLocal无信息***************************");
         return true;
     }
 
@@ -52,7 +52,7 @@ public class UserInfoInterceptor implements HandlerInterceptor {
      */
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        log.info("***************************接口调用结束， 从ThreadLocal删除用户信息***************************");
+        log.debug("***************************接口调用结束， 从ThreadLocal删除用户信息***************************");
         CurrentUserUtil.remove();
     }
 }

@@ -1,6 +1,7 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
@@ -16,8 +17,6 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.ArrivalVerificationVO;
-import com.huanhong.wms.entity.vo.OnShelfVO;
-import com.huanhong.wms.entity.vo.PlanUseOutVO;
 import com.huanhong.wms.mapper.ArrivalVerificationMapper;
 import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
@@ -31,7 +30,7 @@ import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 @ApiSort()
 @Api(tags = "到货检验主表")
@@ -108,6 +107,13 @@ public class ArrivalVerificationController extends BaseController {
                 for (AddArrivalVerificationDetailsDTO addArrivalVerificationDetailsDTO : addArrivalVerificationDetailsDTOList) {
                     addArrivalVerificationDetailsDTO.setDocumentNumber(docNum);
                     addArrivalVerificationDetailsDTO.setWarehouseId(warehoueId);
+                    Material material = materialService.getById(addArrivalVerificationDetailsDTO.getMaterialId());
+                    if(null == material){
+                        continue;
+                    }
+                    addArrivalVerificationDetailsDTO.setMaterialId(addArrivalVerificationDetailsDTO.getMaterialId());
+                    addArrivalVerificationDetailsDTO.setMaterialName(material.getMaterialName());
+                    addArrivalVerificationDetailsDTO.setMaterialCoding(material.getMaterialCoding());
                 }
                 arrivalVerificationDetailsService.addArrivalVerificationDetails(addArrivalVerificationDetailsDTOList);
             }
@@ -177,10 +183,13 @@ public class ArrivalVerificationController extends BaseController {
         if (delete){
             String docNum = arrivalVerification.getVerificationDocumentNumber();
             List<ArrivalVerificationDetails> arrivalVerificationDetailsList = arrivalVerificationDetailsService.getArrivalVerificationDetailsByDocNumAndWarehouseId(arrivalVerification.getVerificationDocumentNumber(), arrivalVerification.getWarehouseId());
-            for (ArrivalVerificationDetails arrivalVerificationDetails:arrivalVerificationDetailsList
-            ) {
+            for (ArrivalVerificationDetails arrivalVerificationDetails:arrivalVerificationDetailsList) {
                 arrivalVerificationDetailsService.removeById(arrivalVerificationDetails.getId());
             }
+            // 恢复清点单可导入
+            String originalDocumentNumber = arrivalVerification.getOriginalDocumentNumber();
+            String[] originalDocumentNumbers = Convert.toStrArray(originalDocumentNumber);
+            inventoryDocumentService.updateIsImportedByDocumentNumbers(0,"",originalDocumentNumbers);
         }
         return Result.success("删除成功");
     }
@@ -376,20 +385,15 @@ public class ArrivalVerificationController extends BaseController {
     @PutMapping("/consolidatedArrivalVerification")
     public Result consolidatedArrivalVerification(@Valid @RequestBody List<InventoryDocument> inventoryDocumentList){
         try {
-
-
             /**
              * 筛查接收的清点单list中是否有不属于同一询价单的
              */
             String rfqNum = inventoryDocumentList.get(0).getRfqNumber();
-            for (InventoryDocument inventoryDocument:inventoryDocumentList
-                 ) {
+            for (InventoryDocument inventoryDocument:inventoryDocumentList) {
                 if (!inventoryDocument.getRfqNumber().equals(rfqNum)){
                     return Result.failure("询价单编号不一致,不能合并！");
                 }
             }
-
-
             LoginUser loginUser = this.getLoginUser();
             User user = userService.getById(loginUser.getId());
             List<String> listOriginalDocumentNumber =  new ArrayList<>();
@@ -397,14 +401,12 @@ public class ArrivalVerificationController extends BaseController {
             List<AddArrivalVerificationDetailsDTO> addArrivalVerificationDetailsDTOList = new ArrayList<>();
             //获取清点单
             int i = 0;
-            for (InventoryDocument inventoryDocument:inventoryDocumentList
-                 ) {
+            for (InventoryDocument inventoryDocument:inventoryDocumentList) {
                 //将清点单编号放入检验单
                 listOriginalDocumentNumber.add(inventoryDocument.getDocumentNumber());
                 //获取到货检验明细表
                 List<InventoryDocumentDetails> inventoryDocumentDetailsList = inventoryDocumentDetailsService.getInventoryDocumentDetailsListByDocNumberAndWarehosue(inventoryDocument.getDocumentNumber(),inventoryDocument.getWarehouse());
-                for (InventoryDocumentDetails inventoryDocumentDetails:inventoryDocumentDetailsList
-                     ) {
+                for (InventoryDocumentDetails inventoryDocumentDetails:inventoryDocumentDetailsList) {
                     int flag = 0;
                     String materialCoding = inventoryDocumentDetails.getMaterialCoding();
                     String batch = inventoryDocumentDetails.getBatch();
@@ -500,6 +502,15 @@ public class ArrivalVerificationController extends BaseController {
                 ArrivalVerification arrivalVerification = (ArrivalVerification) result.getData();
                 String docNum = arrivalVerification.getVerificationDocumentNumber();
                 String warehouseId = arrivalVerification.getWarehouseId();
+                // 批量更新清点单已导入
+                List<InventoryDocument> list = inventoryDocumentList.stream().map(r->{
+                    InventoryDocument temp = new InventoryDocument();
+                    temp.setIsImported(1);
+                    temp.setId(r.getId());
+                    temp.setDocumentNumberImported(docNum);
+                    return temp;
+                }).collect(Collectors.toList());
+                inventoryDocumentService.saveOrUpdateBatch(list);
                 List<ArrivalVerificationDetails> arrivalVerificationDetailsList = arrivalVerificationDetailsService.getArrivalVerificationDetailsByDocNumAndWarehouseId(docNum,warehouseId);
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("main",arrivalVerification);

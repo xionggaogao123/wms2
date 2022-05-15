@@ -1,6 +1,7 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONArray;
@@ -456,10 +457,26 @@ public class PlanUseOutController extends BaseController {
                     inventoryInformationList =  inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(materialCoding,pdaMaterialVO.getWarehouseId());
                     num = inventoryInformationService.getNumByMaterialCodingAndWarehouseId(materialCoding, pdaMaterialVO.getWarehouseId());
                 }
-                jsonObject.put("material", material);
-                jsonObject.put("inventory", num);
-                jsonObject.put("inventoryList", inventoryInformationList);
-                jsonArray.add(jsonObject);
+                if(CollectionUtil.isNotEmpty(inventoryInformationList)){
+                    BigDecimal maxPrice = new BigDecimal("0");
+                    Double safeQuantity = 0.0;
+                    for (InventoryInformation i : inventoryInformationList) {
+                        if (maxPrice.compareTo(i.getSalesUnitPrice()) < 0) {
+                            maxPrice = i.getSalesUnitPrice();
+                        }
+                        if (safeQuantity < i.getSafeQuantity()) {
+                            safeQuantity = i.getSafeQuantity();
+                        }
+                    }
+                    material.setMaxPrice(maxPrice);
+                    material.setSafeQuantity(safeQuantity);
+                    jsonObject.put("material", material);
+                    jsonObject.put("inventory", num);
+                    jsonObject.put("inventoryList", inventoryInformationList);
+
+                    jsonArray.add(jsonObject);
+                }
+
             }
             return Result.success(jsonArray);
         } catch (Exception e) {

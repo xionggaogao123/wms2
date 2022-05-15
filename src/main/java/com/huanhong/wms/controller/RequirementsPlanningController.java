@@ -1,6 +1,5 @@
 package com.huanhong.wms.controller;
 
-import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -9,8 +8,6 @@ import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.common.units.EntityUtils;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.ProcurementPlan;
-import com.huanhong.wms.entity.ProcurementPlanDetails;
 import com.huanhong.wms.entity.RequirementsPlanning;
 import com.huanhong.wms.entity.RequiremetsPlanningDetails;
 import com.huanhong.wms.entity.dto.*;
@@ -24,14 +21,11 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.jacoco.agent.rt.internal_43f5073.core.internal.flow.IFrame;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
@@ -101,7 +95,7 @@ public class RequirementsPlanningController extends BaseController {
             }
             return result;
         } catch (Exception e) {
-            log.error("新增需求计划失败");
+            log.error("新增需求计划失败",e);
             return Result.failure("系统异常，新增需求计划失败！");
         }
     }

@@ -4,11 +4,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.ArrivalVerification;
-import com.huanhong.wms.entity.PlanUseOut;
 import com.huanhong.wms.entity.dto.AddArrivalVerificationDTO;
 import com.huanhong.wms.entity.dto.UpdateArrivalVerificationDTO;
 import com.huanhong.wms.entity.vo.ArrivalVerificationVO;
-import com.huanhong.wms.entity.vo.PlanUseOutVO;
 
 /**
  * <p>
@@ -77,4 +75,5 @@ public interface IArrivalVerificationService extends SuperService<ArrivalVerific
      */
     ArrivalVerification getArrivalVerificationByProcessInstanceId(String processInstanceId);
 
+    Result<Integer> updateIsImportedByDocumentNumbers(Integer isImported, String documentNumberImported, String[] verificationDocumentNumber);
 }

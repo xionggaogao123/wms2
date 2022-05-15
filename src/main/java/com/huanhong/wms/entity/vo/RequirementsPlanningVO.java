@@ -38,7 +38,7 @@ public class RequirementsPlanningVO {
     @Min(1)
     @Max(4)
     @ApiModelProperty(value = "状态: 1-草拟、2-审批中、3-审批生效、4-作废 5.驳回")
-    private Integer  planStatus;
+    private Integer planStatus;
 
     @ApiModelProperty(value = "物料用途")
     private String materialUse;
@@ -50,5 +50,8 @@ public class RequirementsPlanningVO {
     @ApiModelProperty(value = "创建日期-结束")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createDateEnd;
+
+    @ApiModelProperty(value = "是否被导入 0.否 1.是")
+    private Integer isImported;
 
 }

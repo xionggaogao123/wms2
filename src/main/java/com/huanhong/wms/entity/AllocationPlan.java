@@ -76,4 +76,6 @@ public class AllocationPlan extends SuperEntity {
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "调入负责人")
     private String receiveUser;
+    @ApiModelProperty(value = "计划类别-1-正常、2-加急、3-补计划、请选择（默认）")
+    private Integer planClassification;
 }

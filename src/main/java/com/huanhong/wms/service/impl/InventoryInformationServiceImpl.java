@@ -5,7 +5,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -37,12 +36,10 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -330,7 +327,6 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("material_coding", materialCoding);
         queryWrapper.ne("inventory_credit",0);
-        queryWrapper.likeRight("cargo_space_id", warehouseId);
         queryWrapper.likeRight("cargo_space_id", warehouseId)
                 .and(wrapper->wrapper.eq("is_verification", 0).or().eq("is_enter", 0));
         return inventoryInformationMapper.selectList(queryWrapper);

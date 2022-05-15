@@ -1,15 +1,14 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
-import com.huanhong.common.units.DataUtil;
 import com.huanhong.common.units.EntityUtils;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.LoginUser;
@@ -23,8 +22,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import lombok.Data;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -114,10 +111,16 @@ public class EnterWarehouseController extends BaseController {
             String warehouseId = enterWarehouse.getWarehouse();
             List<AddEnterWarehouseDetailsDTO> addEnterWarehouseDetailsDTOList = addEnterWarehouseAndDetails.getAddEnterWarehouseDetailsDTOList();
             if (ObjectUtil.isNotNull(addEnterWarehouseDetailsDTOList)) {
-                for (AddEnterWarehouseDetailsDTO details : addEnterWarehouseDetailsDTOList
-                ) {
+                for (AddEnterWarehouseDetailsDTO details : addEnterWarehouseDetailsDTOList) {
                     details.setOriginalDocumentNumber(docNum);
                     details.setWarehouse(warehouseId);
+                    Material material = materialService.getById(details.getMaterialId());
+                    if(null == material){
+                        continue;
+                    }
+                    details.setMaterialId(details.getMaterialId());
+                    details.setMaterialName(material.getMaterialName());
+                    details.setMaterialCoding(material.getMaterialCoding());
                 }
                 enterWarehouseDetailsService.addEnterWarehouseDetails(addEnterWarehouseDetailsDTOList);
             }
@@ -161,10 +164,13 @@ public class EnterWarehouseController extends BaseController {
         if (delete){
             String docNum = enterWarehouse.getDocumentNumber();
             List<EnterWarehouseDetails> enterWarehouseDetailsList = enterWarehouseDetailsService.getListEnterWarehouseDetailsByDocNumberAndWarehosue(enterWarehouse.getDocumentNumber(),enterWarehouse.getWarehouse());
-            for (EnterWarehouseDetails enterWarehouseDetails:enterWarehouseDetailsList
-            ) {
+            for (EnterWarehouseDetails enterWarehouseDetails:enterWarehouseDetailsList) {
                 enterWarehouseDetailsService.removeById(enterWarehouseDetails.getId());
             }
+            // 恢复到货检验单可导入
+            String originalDocumentNumber = enterWarehouse.getVerificationDocumentNumber();
+            String[] originalDocumentNumbers = Convert.toStrArray(originalDocumentNumber);
+            arrivalVerificationService.updateIsImportedByDocumentNumbers(0,"",originalDocumentNumbers);
             return Result.success("删除成功！");
         }else {
             return Result.failure("删除失败！");
@@ -423,8 +429,7 @@ public class EnterWarehouseController extends BaseController {
             List<ArrivalVerificationDetails> arrivalVerificationDetailsList = arrivalVerificationDetailsService.getArrivalVerificationDetailsByDocNumAndWarehouseId(arrivalVerification.getVerificationDocumentNumber(),arrivalVerification.getWarehouseId());
             List<AddEnterWarehouseDetailsDTO> addEnterWarehouseDetailsDTOList = new ArrayList<>();
             AddEnterWarehouseDetailsDTO addEnterWarehouseDetailsDTO = new AddEnterWarehouseDetailsDTO();
-            for (ArrivalVerificationDetails arrivalVerificationDetails:arrivalVerificationDetailsList
-            ) {
+            for (ArrivalVerificationDetails arrivalVerificationDetails:arrivalVerificationDetailsList) {
                 //物料编码
                 addEnterWarehouseDetailsDTO.setMaterialCoding(arrivalVerificationDetails.getMaterialCoding());
                 //批次
@@ -457,6 +462,12 @@ public class EnterWarehouseController extends BaseController {
                 EnterWarehouse enterWarehouse = (EnterWarehouse) result.getData();
                 String docNum = enterWarehouse.getDocumentNumber();
                 String warehouseId = enterWarehouse.getWarehouse();
+                // 更新到货检验单已导入
+                ArrivalVerification temp = new ArrivalVerification();
+                temp.setIsImported(1);
+                temp.setId(arrivalVerification.getId());
+                temp.setDocumentNumberImported(docNum);
+                arrivalVerificationService.updateById(temp);
                 List<EnterWarehouseDetails> enterWarehouseDetailsList = enterWarehouseDetailsService.getListEnterWarehouseDetailsByDocNumberAndWarehosue(docNum,warehouseId);
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("main",enterWarehouse);

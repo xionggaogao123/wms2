@@ -1,5 +1,6 @@
 package com.huanhong.wms.controller;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
@@ -26,8 +27,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -134,22 +135,21 @@ public class ProcurementPlanController extends BaseController {
     public Result delete(@PathVariable Integer id) {
 
         ProcurementPlan procurementPlan = procurementPlanService.getProcurementPlanById(id);
-
         if (ObjectUtil.isNull(procurementPlan)){
             return Result.failure("单据不存在！");
         }
         boolean delete = procurementPlanService.removeById(id);
-
         //主表删除成功,删除明细
         if (delete){
             String docNum = procurementPlan.getPlanNumber();
-
             List<ProcurementPlanDetails> procurementPlanDetailsList= procurementPlanDetailsService.getProcurementPlanDetailsByDocNumAndWarehouseId(docNum,procurementPlan.getWarehouseId());
-
-            for (ProcurementPlanDetails procurementPlanDetails:procurementPlanDetailsList
-            ) {
+            for (ProcurementPlanDetails procurementPlanDetails:procurementPlanDetailsList) {
                 procurementPlanDetailsService.removeById(procurementPlanDetails.getId());
             }
+            // 恢复采购计划可导入
+            String originalDocumentNumber = procurementPlan.getOriginalDocumentNumber();
+            String[] originalDocumentNumbers = Convert.toStrArray(originalDocumentNumber);
+            requirementsPlanningService.updateIsImportedByPlanNumbers(0,"",originalDocumentNumbers);
         }
         return Result.success("删除成功");
     }
@@ -326,13 +326,11 @@ public class ProcurementPlanController extends BaseController {
             List<AddProcurementPlanDetailsDTO> addProcurementPlanDetailsDTOList = new ArrayList<>();
             //获取需求计划表
             int i = 0;
-            for (RequirementsPlanning requirementsPlanning:requirementsPlanningList
-                 ) {
+            for (RequirementsPlanning requirementsPlanning:requirementsPlanningList) {
                 listOriginalDocumentNumber.add(requirementsPlanning.getPlanNumber());
                 //获取需求计划明细表
                 List<RequiremetsPlanningDetails> requiremetsPlanningDetailsList = requiremetsPlanningDetailsService.getRequiremetsPlanningDetailsByDocNumAndWarehouseId(requirementsPlanning.getPlanNumber(), requirementsPlanning.getWarehouseId());
-                for (RequiremetsPlanningDetails requiremetsPlanningDetails:requiremetsPlanningDetailsList
-                     ) {
+                for (RequiremetsPlanningDetails requiremetsPlanningDetails:requiremetsPlanningDetailsList) {
                     int flag = 0;
                     String materialCoding = requiremetsPlanningDetails.getMaterialCoding();
                     if (i==0){
@@ -418,6 +416,15 @@ public class ProcurementPlanController extends BaseController {
                 ProcurementPlan procurementPlan = (ProcurementPlan) result.getData();
                 String docNum = procurementPlan.getPlanNumber();
                 String warehouseId = procurementPlan.getWarehouseId();
+                // 批量更新需求计划已导入
+                List<RequirementsPlanning> requirementsPlannings = requirementsPlanningList.stream().map(r->{
+                    RequirementsPlanning requirementsPlanning = new RequirementsPlanning();
+                    requirementsPlanning.setIsImported(1);
+                    requirementsPlanning.setId(r.getId());
+                    requirementsPlanning.setDocumentNumberImported(docNum);
+                    return requirementsPlanning;
+                }).collect(Collectors.toList());
+                requirementsPlanningService.saveOrUpdateBatch(requirementsPlannings);
                 List<ProcurementPlanDetails> procurementPlanDetailsList = procurementPlanDetailsService.getProcurementPlanDetailsByDocNumAndWarehouseId(docNum,warehouseId);
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("main",procurementPlan);

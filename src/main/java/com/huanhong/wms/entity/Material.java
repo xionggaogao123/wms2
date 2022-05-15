@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -105,4 +106,11 @@ public class Material extends SuperEntity {
     @ApiModelProperty(value = "停用")
     private Integer stopUsing;
 
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "预估金额")
+    private BigDecimal maxPrice;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "安全库存")
+    private Double safeQuantity;
 }

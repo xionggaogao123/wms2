@@ -65,4 +65,9 @@ public class AddRequiremetsPlanningDetailsDTO {
     @ApiModelProperty(value = "备注")
     private String remark;
 
+    @ApiModelProperty(value = "物料名称")
+    private String materialName;
+
+    @ApiModelProperty(value = "物料ID")
+    private String materialId;
 }

@@ -5,13 +5,13 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.ArrivalVerification;
-import com.huanhong.wms.entity.PlanUseOut;
 import com.huanhong.wms.entity.dto.AddArrivalVerificationDTO;
 import com.huanhong.wms.entity.dto.UpdateArrivalVerificationDTO;
 import com.huanhong.wms.entity.vo.ArrivalVerificationVO;
@@ -85,6 +85,7 @@ public class ArrivalVerificationServiceImpl extends SuperServiceImpl<ArrivalVeri
                     .apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + createDateEnd + "')");
 
         }
+        query.eq(ObjectUtil.isNotNull(arrivalVerificationVO.getIsImported()), "is_imported", arrivalVerificationVO.getIsImported());
         return baseMapper.selectPage(arrivalVerificationPage, query);
     }
 
@@ -198,5 +199,15 @@ public class ArrivalVerificationServiceImpl extends SuperServiceImpl<ArrivalVeri
         queryWrapper.eq("process_instance_id",processInstanceId);
         ArrivalVerification arrivalVerification = arrivalVerificationMapper.selectOne(queryWrapper);
         return arrivalVerification;
+    }
+
+    @Override
+    public Result<Integer> updateIsImportedByDocumentNumbers(Integer isImported, String documentNumberImported, String[] verificationDocumentNumber) {
+        ArrivalVerification arrivalVerification = new ArrivalVerification();
+        arrivalVerification.setIsImported(isImported);
+        arrivalVerification.setDocumentNumberImported(documentNumberImported);
+        int i = arrivalVerificationMapper.update(arrivalVerification, Wrappers.<ArrivalVerification>lambdaUpdate()
+                .in(ArrivalVerification::getVerificationDocumentNumber,verificationDocumentNumber));
+        return Result.success(i);
     }
 }

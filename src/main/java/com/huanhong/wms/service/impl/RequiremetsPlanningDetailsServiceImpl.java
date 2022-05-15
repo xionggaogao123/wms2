@@ -4,9 +4,11 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.entity.Material;
 import com.huanhong.wms.entity.RequiremetsPlanningDetails;
 import com.huanhong.wms.entity.dto.AddRequiremetsPlanningDetailsDTO;
 import com.huanhong.wms.entity.dto.UpdateRequiremetsPlanningDetailsDTO;
+import com.huanhong.wms.mapper.MaterialMapper;
 import com.huanhong.wms.mapper.RequiremetsPlanningDetailsMapper;
 import com.huanhong.wms.service.IRequiremetsPlanningDetailsService;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,8 @@ public class RequiremetsPlanningDetailsServiceImpl extends SuperServiceImpl<Requ
 
     @Resource
     private RequiremetsPlanningDetailsMapper requiremetsPlanningDetailsMapper;
+    @Resource
+    private MaterialMapper materialMapper;
 
 //    @Override
 //    public Page<RequiremetsPlanningDetails> pageFuzzyQuery(Page<RequiremetsPlanningDetails> requiremetsPlanningDetailsPage, RequiremetsPlanningDetailsVO requiremetsPlanningDetailsVO) {
@@ -55,9 +59,16 @@ public class RequiremetsPlanningDetailsServiceImpl extends SuperServiceImpl<Requ
         List<AddRequiremetsPlanningDetailsDTO> listFalse = new ArrayList<>();
         RequiremetsPlanningDetails requiremetsPlanningDetails = new RequiremetsPlanningDetails();
         HashMap map = new HashMap();
-        for (AddRequiremetsPlanningDetailsDTO addRequiremetsPlanningDetailsDTO : addRequiremetsPlanningDetailsDTOList
-        ) {
+        for (AddRequiremetsPlanningDetailsDTO addRequiremetsPlanningDetailsDTO : addRequiremetsPlanningDetailsDTOList) {
             BeanUtil.copyProperties(addRequiremetsPlanningDetailsDTO, requiremetsPlanningDetails);
+            Material material = materialMapper.selectById(addRequiremetsPlanningDetailsDTO.getMaterialId());
+            if(null == material){
+                listFalse.add(addRequiremetsPlanningDetailsDTO);
+                continue;
+            }
+            requiremetsPlanningDetails.setMaterialId(addRequiremetsPlanningDetailsDTO.getMaterialId());
+            requiremetsPlanningDetails.setMaterialName(material.getMaterialName());
+            requiremetsPlanningDetails.setMaterialCoding(material.getMaterialCoding());
             int add = requiremetsPlanningDetailsMapper.insert(requiremetsPlanningDetails);
             if (add > 0) {
                 listSuccess.add(addRequiremetsPlanningDetailsDTO);

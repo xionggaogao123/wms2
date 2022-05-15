@@ -71,4 +71,8 @@ public class RequirementsPlanning extends SuperEntity {
     @ApiModelProperty(value = "最后更新时间")
     private LocalDateTime lastUpdate;
 
+    @ApiModelProperty(value = "是否被导入 0.否 1.是")
+    private Integer isImported;
+    @ApiModelProperty(value = "被导入到的采购计划单号")
+    private String documentNumberImported;
 }

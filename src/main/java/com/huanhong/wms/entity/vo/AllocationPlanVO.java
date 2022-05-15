@@ -1,7 +1,5 @@
 package com.huanhong.wms.entity.vo;
 
-import com.baomidou.mybatisplus.annotation.FieldStrategy;
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -60,4 +58,8 @@ public class AllocationPlanVO {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTimeEnd;
 
+    @Min(1)
+    @Max(3)
+    @ApiModelProperty(value = "计划类别-1-正常、2-加急、3-补计划、请选择（默认）")
+    private Integer planClassification;
 }

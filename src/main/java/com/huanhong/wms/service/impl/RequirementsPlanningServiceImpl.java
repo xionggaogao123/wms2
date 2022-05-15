@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.SuperServiceImpl;
@@ -93,6 +94,7 @@ public class RequirementsPlanningServiceImpl extends SuperServiceImpl<Requiremen
                     .apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + createDateEnd + "')");
 
         }
+        query.eq(ObjectUtil.isNotNull(requirementsPlanningVO.getIsImported()), "is_imported", requirementsPlanningVO.getIsImported());
         return baseMapper.selectPage(requirementsPlanningPage, query);
 
     }
@@ -194,5 +196,15 @@ public class RequirementsPlanningServiceImpl extends SuperServiceImpl<Requiremen
         List<Map<String, Object>> useList = planUseOutMapper.getMaterialUseList(param);
         map.put("use", useList);
         return Result.success(map);
+    }
+
+    @Override
+    public Result<Integer> updateIsImportedByPlanNumbers(Integer isImported, String documentNumberImported, String[] planNumbers) {
+
+        RequirementsPlanning requirementsPlanning = new RequirementsPlanning();
+        requirementsPlanning.setIsImported(isImported);
+        requirementsPlanning.setDocumentNumberImported(documentNumberImported);
+        Integer i = requirementsPlanningMapper.update(requirementsPlanning, Wrappers.<RequirementsPlanning>lambdaUpdate().in(RequirementsPlanning::getPlanNumber,planNumbers));
+        return Result.success(i);
     }
 }

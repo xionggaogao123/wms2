@@ -61,4 +61,8 @@ public class InventoryDocumentDetails extends SuperEntity {
     @ApiModelProperty(value = "最后更新时间")
     private LocalDateTime lastUpdate;
 
+    @ApiModelProperty(value = "物料ID")
+    private String materialId;
+    @ApiModelProperty(value = "物料名称")
+    private String materialName;
 }

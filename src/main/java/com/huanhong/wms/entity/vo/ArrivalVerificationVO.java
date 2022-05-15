@@ -61,4 +61,6 @@ public class ArrivalVerificationVO {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTimeEnd;
 
+    @ApiModelProperty(value = "是否被导入 0.否 1.是")
+    private Integer isImported;
 }

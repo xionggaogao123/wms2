@@ -66,4 +66,6 @@ public interface IRequirementsPlanningService extends SuperService<RequirementsP
     RequirementsPlanning getRequirementsPlanningByProcessInstanceId(String processInstanceId);
 
     Result<Object> getDeptMaterialNeedAndUseByParam(DeptMaterialParam param);
+
+    Result<Integer> updateIsImportedByPlanNumbers(Integer isImported, String documentNumberImported, String[] planNumbers);
 }

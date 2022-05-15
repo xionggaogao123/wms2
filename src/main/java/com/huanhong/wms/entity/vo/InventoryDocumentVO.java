@@ -37,4 +37,7 @@ public class InventoryDocumentVO {
     @ApiModelProperty(value = "仓库")
     private String warehouse;
 
+
+    @ApiModelProperty(value = "是否被导入 0.否 1.是")
+    private Integer isImported;
 }

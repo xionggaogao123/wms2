@@ -5,13 +5,13 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.InventoryDocument;
-import com.huanhong.wms.entity.InventoryDocumentDetails;
 import com.huanhong.wms.entity.dto.AddInventoryDocumentDTO;
 import com.huanhong.wms.entity.dto.UpdateInventoryDocumentDTO;
 import com.huanhong.wms.entity.vo.InventoryDocumentVO;
@@ -87,7 +87,7 @@ public class InventoryDocumentServiceImpl extends SuperServiceImpl<InventoryDocu
                     .apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + createDateEnd + "')");
 
         }
-
+        query.eq(ObjectUtil.isNotNull(inventoryDocumentVO.getIsImported()), "is_imported", inventoryDocumentVO.getIsImported());
         return inventoryDocumentMapper.selectPage(inventoryDocumentPage, query);
     }
 
@@ -219,6 +219,15 @@ public class InventoryDocumentServiceImpl extends SuperServiceImpl<InventoryDocu
         queryWrapper.eq("warehouse", warehouseId);
         InventoryDocument inventoryDocument = inventoryDocumentMapper.selectOne(queryWrapper);
         return inventoryDocument;
+    }
+
+    @Override
+    public Result<Integer> updateIsImportedByDocumentNumbers(Integer isImported, String documentNumberImported, String[] documentNumbers) {
+        InventoryDocument inventoryDocument = new InventoryDocument();
+        inventoryDocument.setIsImported(isImported);
+        inventoryDocument.setDocumentNumberImported(documentNumberImported);
+        Integer i = inventoryDocumentMapper.update(inventoryDocument, Wrappers.<InventoryDocument>lambdaUpdate().in(InventoryDocument::getDocumentNumber,documentNumbers));
+        return Result.success(i);
     }
 
 }

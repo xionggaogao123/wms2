@@ -49,6 +49,7 @@ public class MakeInventoryDetailsServiceImpl extends SuperServiceImpl<MakeInvent
             }
         }
         jsonObject.put("success", listSuccess);
+
         jsonObject.put("false", listFalse);
         return Result.success(jsonObject);
     }

@@ -189,10 +189,11 @@ public class MakeInventoryController extends BaseController {
              * 如果当前时间晚于盘点开始时间则不能更新
              */
             //如果想比较日期则写成"yyyy-MM-dd"就可以了
-            SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            //SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
             //将字符串形式的时间转化为Date类型的时间
-            Date planTime = sdf.parse(updateMakeInventoryAndDetailsDTO.getUpdateMakeInventoryDTO().getStartTime().toString());
-            Date nowTime = sdf.parse(DateUtil.now());
+            Date planTime = DateUtil.parseDate(updateMakeInventoryAndDetailsDTO.getUpdateMakeInventoryDTO().getStartTime().toString());
+            Date nowTime = DateUtil.parseDate(DateUtil.now());
+
             if(nowTime.getTime()-planTime.getTime()>0){
                 return Result.failure("盘点已开始,无法更新单据！");
             }
@@ -202,9 +203,11 @@ public class MakeInventoryController extends BaseController {
             List<UpdateMakeInventoryDetailsDTO> updateMakeInventoryDetailsDTOList = updateMakeInventoryAndDetailsDTO.getUpdateMakeInventoryDetailsDTOList();
 
             Result result = makeInventoryService.updateMakeInventory(updateMakeInventoryDTO);
+
             if (!result.isOk()) {
                 return Result.failure("更新盘点单失败！");
             }
+
             return makeInventoryDetailsService.updateMakeInventoryDetails(updateMakeInventoryDetailsDTOList);
 
         } catch (Exception e) {

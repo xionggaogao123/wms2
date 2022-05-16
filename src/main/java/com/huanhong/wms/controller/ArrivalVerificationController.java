@@ -258,6 +258,11 @@ public class ArrivalVerificationController extends BaseController {
         if (ObjectUtil.isEmpty(arrivalVerification)) {
             return Result.failure("未找到对应信息！");
         }
+        if(StrUtil.isNotBlank(arrivalVerification.getCheckerIds())){
+            List<User> checkUsers  = userService.list(Wrappers.<User>lambdaQuery().select(User::getId,User::getUserName)
+                    .in(User::getId, arrivalVerification.getCheckerIds().split(",")));
+            arrivalVerification.setCheckerUsers(checkUsers);
+        }
         List<ArrivalVerificationDetails> arrivalVerificationDetailsList = arrivalVerificationDetailsService.getArrivalVerificationDetailsByDocNumAndWarehouseId(docNum,warehouseId);
         jsonObject.put("doc", arrivalVerification);
         jsonObject.put("details", arrivalVerificationDetailsList);
@@ -281,6 +286,11 @@ public class ArrivalVerificationController extends BaseController {
         try {
             ArrivalVerification arrivalVerification = arrivalVerificationService.getArrivalVerificationById(id);
             if (ObjectUtil.isNotEmpty(arrivalVerification)) {
+                if(StrUtil.isNotBlank(arrivalVerification.getCheckerIds())){
+                    List<User> checkUsers  = userService.list(Wrappers.<User>lambdaQuery().select(User::getId,User::getUserName)
+                            .in(User::getId, arrivalVerification.getCheckerIds().split(",")));
+                    arrivalVerification.setCheckerUsers(checkUsers);
+                }
                 List<ArrivalVerificationDetails> arrivalVerificationDetailsList = arrivalVerificationDetailsService.getArrivalVerificationDetailsByDocNumAndWarehouseId(arrivalVerification.getVerificationDocumentNumber(),arrivalVerification.getWarehouseId());
                 /**
                  * 当查询到主表事进行数据封装

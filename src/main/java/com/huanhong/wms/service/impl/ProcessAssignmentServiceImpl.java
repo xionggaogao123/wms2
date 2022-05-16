@@ -112,7 +112,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
             return Result.failure("请求当前任务错误");
 
         }
-        if (taskResult.getData() != null) {
+        if (taskResult.getData() == null) {
             return Result.failure("当前没有任务");
         }
         List<HistoryTaskVo> array = JSONObject.parseArray(taskResult.getData().toString(), HistoryTaskVo.class);

@@ -2,6 +2,7 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -161,6 +162,9 @@ public class InventoryDocumentController extends BaseController {
             List<InventoryDocument> listfalse = new ArrayList<>();
 
             //判断询价单信息中填的是否是调拨出库单
+            if(StrUtil.isBlank(inventoryDocument.getRfqNumber())||inventoryDocument.getRfqNumber().length()<5){
+                return Result.failure("询价单编号不合法");
+            }
             String headKey = inventoryDocument.getRfqNumber().substring(0, 4);
             if ("DBCK".equals(headKey)){
                 for (InventoryDocumentDetails inventoryDocumentDetails : inventoryDocumentDetailsList

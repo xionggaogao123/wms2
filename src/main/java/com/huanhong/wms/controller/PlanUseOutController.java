@@ -317,7 +317,7 @@ public class PlanUseOutController extends BaseController {
                 jsonResult.put("detailsValue", planUseOutList);
                 jsonResult.put("mainKey","updatePlanUseOutDTO");
                 jsonResult.put("detailKey","updatePlanUseOutDetailsDTOList");
-                jsonResult.put("mainUpdate", "/wms/api/v1/plan-use-out/update");
+                jsonResult.put("mainUpdate", "/wms/api/v1/plan-use-out/updatePlanUseOutAndDetails");
                 jsonResult.put("detailsUpdate", "/wms/api/v1/plan-use-out-details/update");
                 jsonResult.put("missionCompleted", "/wms/api/v1/plan-use-out/missionCompleted");
                 return Result.success(jsonResult);

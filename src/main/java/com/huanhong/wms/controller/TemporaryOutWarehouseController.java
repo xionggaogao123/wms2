@@ -175,9 +175,9 @@ public class TemporaryOutWarehouseController extends BaseController {
                     jsonResult.put("detailsValue", null);
                     jsonResult.put("mainKey","updateTemporaryOutWarehouseDTO");
                     jsonResult.put("detailKey",null);
-                    jsonResult.put("mainUpdate", "/wms/api/v1/enter-warehouse/update");
+                    jsonResult.put("mainUpdate", "/wms/api/v1/temporary-out-warehouse/update");
                     jsonResult.put("detailsUpdate", null);
-                    jsonResult.put("missionCompleted", "/wms/api/v1/enter-warehouse/missionCompleted");
+                    jsonResult.put("missionCompleted", "/wms/api/v1/temporary-out-warehouse/missionCompleted");
                     return Result.success(jsonResult);
                 } else {
                     return Result.failure("未查询到相关信息");

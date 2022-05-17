@@ -100,4 +100,7 @@ public class ArrivalVerification extends SuperEntity {
     @TableField(exist = false)
     @ApiModelProperty(value = "检验人")
     private List<User> checkerUsers;
+
+    @ApiModelProperty(value = "已检验的检验人名")
+    private String doneCheckerNames;
 }

@@ -65,4 +65,7 @@ public class AddArrivalVerificationDTO {
     private String remark;
     @ApiModelProperty(value = "检验人id 逗号间隔 例 1,2")
     private String checkerIds;
+
+    @ApiModelProperty(value = "已检验的检验人名")
+    private String doneCheckerNames;
 }

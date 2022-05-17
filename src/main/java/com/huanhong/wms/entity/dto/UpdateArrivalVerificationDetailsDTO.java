@@ -48,4 +48,8 @@ public class UpdateArrivalVerificationDetailsDTO {
     @ApiModelProperty(value = "备注")
     private String remark;
 
+    @ApiModelProperty(value = "检验人id")
+    private String checkerId;
+    @ApiModelProperty(value = "检验人名")
+    private String checkerName;
 }

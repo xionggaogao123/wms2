@@ -61,4 +61,9 @@ public class AddArrivalVerificationDetailsDTO {
     private String materialId;
     @ApiModelProperty(value = "物料名称")
     private String materialName;
+
+    @ApiModelProperty(value = "检验人id")
+    private String checkerId;
+    @ApiModelProperty(value = "检验人名")
+    private String checkerName;
 }

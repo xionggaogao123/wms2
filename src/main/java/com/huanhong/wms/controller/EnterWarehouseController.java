@@ -102,29 +102,8 @@ public class EnterWarehouseController extends BaseController {
 //            if(ObjectUtil.isNull(warehouse)){
 //                return Result.failure("仓库不存在");
 //            }
-            Result result = enter_warehouseService.addEnterWarehouse(addEnterWarehouseAndDetails.getAddEnterWarehouseDTO());
-            if (!result.isOk()) {
-                return Result.failure("新增入库单失败");
-            }
-            EnterWarehouse enterWarehouse = (EnterWarehouse) result.getData();
-            String docNum = enterWarehouse.getDocumentNumber();
-            String warehouseId = enterWarehouse.getWarehouse();
-            List<AddEnterWarehouseDetailsDTO> addEnterWarehouseDetailsDTOList = addEnterWarehouseAndDetails.getAddEnterWarehouseDetailsDTOList();
-            if (ObjectUtil.isNotNull(addEnterWarehouseDetailsDTOList)) {
-                for (AddEnterWarehouseDetailsDTO details : addEnterWarehouseDetailsDTOList) {
-                    details.setOriginalDocumentNumber(docNum);
-                    details.setWarehouse(warehouseId);
-                    Material material = materialService.getById(details.getMaterialId());
-                    if(null == material){
-                        continue;
-                    }
-                    details.setMaterialId(details.getMaterialId());
-                    details.setMaterialName(material.getMaterialName());
-                    details.setMaterialCoding(material.getMaterialCoding());
-                }
-                enterWarehouseDetailsService.addEnterWarehouseDetails(addEnterWarehouseDetailsDTOList);
-            }
-            return result;
+            return enter_warehouseService.add(addEnterWarehouseAndDetails);
+
         } catch (Exception e) {
             log.error("添加入库单出错，异常", e);
             return Result.failure("系统异常：入库单添加失败。");
@@ -397,85 +376,8 @@ public class EnterWarehouseController extends BaseController {
     public Result arrivalVerificationToEnterWarehouse(@RequestBody ArrivalVerification arrivalVerification){
 
         try {
-            LoginUser loginUser = this.getLoginUser();
-            User user = userService.getById(loginUser.getId());
-            /**
-             * 拼装主表
-             */
-            AddEnterWarehouseDTO addEnterWarehouseDTO = new AddEnterWarehouseDTO();
-            //入库类型-1. 暂估入库（默认）2.正式入库
-            addEnterWarehouseDTO.setStorageType(1);
-            //询价单编号
-            addEnterWarehouseDTO.setRfqNumber(arrivalVerification.getRfqNumber());
-            //状态:1.草拟2.审批中3.审批生效4.作废
-            addEnterWarehouseDTO.setState(1);
-            //到货检验单编号
-            addEnterWarehouseDTO.setVerificationDocumentNumber(arrivalVerification.getVerificationDocumentNumber());
-            //计划类别-1.正常、2.加急、3.补计划、请选择（默认）
-            addEnterWarehouseDTO.setPlanClassification(1);
-            //到货日期
-            addEnterWarehouseDTO.setDeliveryDate(arrivalVerification.getDeliveryDate());
-            //经办人
-            addEnterWarehouseDTO.setManager(user.getId().toString());
-            //仓库
-            addEnterWarehouseDTO.setWarehouse(arrivalVerification.getWarehouseId());
-            //备注
-            addEnterWarehouseDTO.setRemark("系统自动生成");
-
-            /**
-             * 拼装明细
-             */
-            //获取到货检验明细
-            List<ArrivalVerificationDetails> arrivalVerificationDetailsList = arrivalVerificationDetailsService.getArrivalVerificationDetailsByDocNumAndWarehouseId(arrivalVerification.getVerificationDocumentNumber(),arrivalVerification.getWarehouseId());
-            List<AddEnterWarehouseDetailsDTO> addEnterWarehouseDetailsDTOList = new ArrayList<>();
-            AddEnterWarehouseDetailsDTO addEnterWarehouseDetailsDTO = new AddEnterWarehouseDetailsDTO();
-            for (ArrivalVerificationDetails arrivalVerificationDetails:arrivalVerificationDetailsList) {
-                //物料编码
-                addEnterWarehouseDetailsDTO.setMaterialCoding(arrivalVerificationDetails.getMaterialCoding());
-                //批次
-                addEnterWarehouseDetailsDTO.setBatch(arrivalVerificationDetails.getBatch());
-                //应收数量=合格数量
-                addEnterWarehouseDetailsDTO.setQuantityReceivable(arrivalVerificationDetails.getQualifiedQuantity());
-                //实收数量=合格数量
-                addEnterWarehouseDetailsDTO.setActualQuantity(arrivalVerificationDetails.getQualifiedQuantity());
-                //不含税单价
-                addEnterWarehouseDetailsDTO.setUnitPriceWithoutTax(BigDecimal.valueOf(0));
-                //不含税金额
-                addEnterWarehouseDetailsDTO.setExcludingTaxAmount(BigDecimal.valueOf(0));
-                //含税单价
-                addEnterWarehouseDetailsDTO.setUnitPriceIncludingTax(BigDecimal.valueOf(0));
-                //含税金额
-                addEnterWarehouseDetailsDTO.setTaxIncludedAmount(BigDecimal.valueOf(0));
-                //仓库
-                addEnterWarehouseDetailsDTO.setWarehouse(arrivalVerificationDetails.getWarehouseId());
-                //备注
-                addEnterWarehouseDetailsDTO.setRemark("系统自动生成");
-
-                addEnterWarehouseDetailsDTOList.add(addEnterWarehouseDetailsDTO);
-            }
-
-            AddEnterWarehouseAndDetails addEnterWarehouseAndDetails = new AddEnterWarehouseAndDetails();
-            addEnterWarehouseAndDetails.setAddEnterWarehouseDTO(addEnterWarehouseDTO);
-            addEnterWarehouseAndDetails.setAddEnterWarehouseDetailsDTOList(addEnterWarehouseDetailsDTOList);
-            Result result = add(addEnterWarehouseAndDetails);
-            if (result.isOk()){
-                EnterWarehouse enterWarehouse = (EnterWarehouse) result.getData();
-                String docNum = enterWarehouse.getDocumentNumber();
-                String warehouseId = enterWarehouse.getWarehouse();
-                // 更新到货检验单已导入
-                ArrivalVerification temp = new ArrivalVerification();
-                temp.setIsImported(1);
-                temp.setId(arrivalVerification.getId());
-                temp.setDocumentNumberImported(docNum);
-                arrivalVerificationService.updateById(temp);
-                List<EnterWarehouseDetails> enterWarehouseDetailsList = enterWarehouseDetailsService.getListEnterWarehouseDetailsByDocNumberAndWarehosue(docNum,warehouseId);
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("main",enterWarehouse);
-                jsonObject.put("details",enterWarehouseDetailsList);
-                return Result.success(jsonObject);
-            }else {
-                return Result.failure("生成采购入库单失败！");
-            }
+            Integer userId = this.getLoginUserId();
+            return enter_warehouseService.arrivalVerificationToEnterWarehouse(userId,arrivalVerification);
         }catch (Exception e){
             log.error("系统异常,生成采购入库单失败",e);
             return Result.failure("系统异常,生成采购入库单失败！");

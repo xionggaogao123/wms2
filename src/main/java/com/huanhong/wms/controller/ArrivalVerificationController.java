@@ -145,15 +145,13 @@ public class ArrivalVerificationController extends BaseController {
              */
             UpdateInventoryInformationDTO updateInventoryInformationDTO = new UpdateInventoryInformationDTO();
             if (arrivalVerification.getVerificationStatus()==2){
-                for (UpdateArrivalVerificationDetailsDTO updateArrivalVerificationDetailsDTO : updateArrivalVerificationDetailsDTOList
-                     ) {
+                for (UpdateArrivalVerificationDetailsDTO updateArrivalVerificationDetailsDTO : updateArrivalVerificationDetailsDTOList) {
                     String materialCoding = updateArrivalVerificationDetailsDTO.getMaterialCoding();
                     String batch = updateArrivalVerificationDetailsDTO.getBatch();
                     String warehouseId = updateArrivalVerificationDTO.getWarehouseId();
                     List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndBatchAndWarehouseId(materialCoding,batch,warehouseId);
                     if (ObjectUtil.isNotNull(inventoryInformationList)){
-                        for (InventoryInformation inventoryInformation:inventoryInformationList
-                             ) {
+                        for (InventoryInformation inventoryInformation:inventoryInformationList) {
                             //更新库存信息为已检验
                             BeanUtil.copyProperties(inventoryInformation,updateInventoryInformationDTO);
                             updateInventoryInformationDTO.setIsVerification(1);

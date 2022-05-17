@@ -3,7 +3,9 @@ package com.huanhong.wms.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.entity.ArrivalVerification;
 import com.huanhong.wms.entity.EnterWarehouse;
+import com.huanhong.wms.entity.dto.AddEnterWarehouseAndDetails;
 import com.huanhong.wms.entity.dto.AddEnterWarehouseDTO;
 import com.huanhong.wms.entity.dto.UpdateEnterWarehouseDTO;
 import com.huanhong.wms.entity.param.MaterialPriceParam;
@@ -67,4 +69,8 @@ public interface IEnterWarehouseService extends SuperService<EnterWarehouse> {
 
 
     Result<Object> getMaterialPriceByParam(MaterialPriceParam param);
+
+    Result add(AddEnterWarehouseAndDetails addEnterWarehouseAndDetails);
+
+    Result arrivalVerificationToEnterWarehouse(Integer userId, ArrivalVerification arrivalVerification);
 }

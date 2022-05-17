@@ -707,6 +707,9 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                             if (f <= 0) {
                                 return Result.failure("数据未更新，流程完成失败");
                             }
+                            // 到货检验审批生效后生成采购入库草拟表单
+                            //TODO 经办人暂时用最后一个节点的审批人
+                            enterWarehouseService.arrivalVerificationToEnterWarehouse(user.getId(),arrivalVerification);
                             break;
                         //    临库入库
                         case "temporary_enter_warehouse":

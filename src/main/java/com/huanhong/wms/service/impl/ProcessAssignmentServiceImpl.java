@@ -868,6 +868,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                     if (!resultAnother.isOk()) {
                         return resultAnother;
                     }
+                    break;
                     //    盘点报告
                 case "make_inventory_report":
                     MakeInventoryReport makeInventoryReport = makeInventoryReportMapper.selectById(id);

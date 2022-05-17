@@ -63,7 +63,7 @@ public class AddArrivalVerificationDetailsDTO {
     private String materialName;
 
     @ApiModelProperty(value = "检验人id")
-    private String checkerId;
+    private Integer checkerId;
     @ApiModelProperty(value = "检验人名")
     private String checkerName;
 }

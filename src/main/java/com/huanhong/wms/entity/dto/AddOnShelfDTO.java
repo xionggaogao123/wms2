@@ -1,6 +1,5 @@
 package com.huanhong.wms.entity.dto;
 
-import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -57,4 +56,7 @@ public class AddOnShelfDTO {
 
     @ApiModelProperty(value = "备注")
     private String remark;
+
+    @ApiModelProperty(value = "清点单号")
+    private String inventoryNo;
 }

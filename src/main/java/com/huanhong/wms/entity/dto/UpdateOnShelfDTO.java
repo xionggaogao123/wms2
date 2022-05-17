@@ -58,4 +58,7 @@ public class UpdateOnShelfDTO {
 
     @ApiModelProperty(value = "备注")
     private String remark;
+
+    @ApiModelProperty(value = "清点单号")
+    private String inventoryNo;
 }

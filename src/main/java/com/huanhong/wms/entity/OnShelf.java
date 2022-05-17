@@ -71,5 +71,6 @@ public class OnShelf extends SuperEntity {
     @ApiModelProperty(value = "最后更新时间")
     private LocalDateTime lastUpdate;
 
-
+    @ApiModelProperty(value = "清点单号")
+    private String inventoryNo;
 }

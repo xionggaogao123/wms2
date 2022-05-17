@@ -33,7 +33,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/v1//inventory-document")
+@RequestMapping("/v1/inventory-document")
 @ApiSort()
 @Validated
 @Api(tags = "清点单管理")
@@ -62,6 +62,8 @@ public class InventoryDocumentController extends BaseController {
 
     @Resource
     private IAllocationOutService allocationOutService;
+    @Resource
+    private IOnShelfService onShelfService;
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -140,11 +142,23 @@ public class InventoryDocumentController extends BaseController {
                 int completeNum = inventoryDocumentDetailsService.getCompleteNum(docNum, warehouseId, 1);
                 completeNum += updateNum;
                 int allNum = inventoryDocumentDetailsService.getInventoryDocumentDetailsListByDocNumberAndWarehosue(docNum, warehouseId).size();
-                if (allNum != completeNum) {
+                if (allNum > completeNum) {
                     return Result.failure("有明细未完成点验,主表无法完成！");
                 }
             }
 
+            //判断询价单信息中填的是否是调拨出库单
+            if(StrUtil.isBlank(inventoryDocument.getRfqNumber())||inventoryDocument.getRfqNumber().length()<5){
+                return Result.failure("询价单编号不合法");
+            }
+            String headKey = inventoryDocument.getRfqNumber().substring(0, 4);
+            if ("DBCK".equals(headKey)){
+                //查询出库单信息
+                AllocationOut allocationOut = allocationOutService.getAllocationOutByDocNumber(inventoryDocument.getRfqNumber());
+                if (ObjectUtil.isEmpty(allocationOut)){
+                    return Result.failure("未找到调拨出库单信息！");
+                }
+            }
             Result result = inventoryDocumentService.updateInventoryDocument(updateInventoryDocumentDTO);
             if (!result.isOk()) {
                 return Result.failure("更新点验单失败！");
@@ -161,19 +175,10 @@ public class InventoryDocumentController extends BaseController {
             int count = 0;
             List<InventoryDocument> listfalse = new ArrayList<>();
 
-            //判断询价单信息中填的是否是调拨出库单
-            if(StrUtil.isBlank(inventoryDocument.getRfqNumber())||inventoryDocument.getRfqNumber().length()<5){
-                return Result.failure("询价单编号不合法");
-            }
-            String headKey = inventoryDocument.getRfqNumber().substring(0, 4);
+
             if ("DBCK".equals(headKey)){
-                for (InventoryDocumentDetails inventoryDocumentDetails : inventoryDocumentDetailsList
-                ) {
+                for (InventoryDocumentDetails inventoryDocumentDetails : inventoryDocumentDetailsList) {
                     //查询出库单信息
-                    AllocationOut allocationOut = allocationOutService.getAllocationOutByDocNumber(inventoryDocument.getRfqNumber());
-                    if (ObjectUtil.isEmpty(allocationOut)){
-                        return Result.failure("未找到调拨出库单信息！");
-                    }
 
                     //根据出库记录新增库存
                     List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndBatchAndWarehouseId(inventoryDocumentDetails.getMaterialCoding(), inventoryDocumentDetails.getBatch(), inventoryDocument.getWarehouse());
@@ -240,6 +245,21 @@ public class InventoryDocumentController extends BaseController {
                         listfalse.add(inventoryDocument);
                     }
                 }
+            }
+            if (null != updateInventoryDocumentDTO.getComplete() && updateInventoryDocumentDTO.getComplete() == 1) {
+                // 清单完成生成上架单
+                inventoryDocumentDetailsList.forEach(idd->{
+                    AddOnShelfDTO addOnShelfDTO = new AddOnShelfDTO();
+                    addOnShelfDTO.setInventoryNo(idd.getDocumentNumber());
+                    addOnShelfDTO.setInventoryCredit(idd.getArrivalQuantity());
+                    addOnShelfDTO.setBatch(idd.getBatch());
+                    addOnShelfDTO.setMaterialCoding(idd.getMaterialCoding());
+//                    addOnShelfDTO.setCargoSpaceId();
+                    addOnShelfDTO.setWaitingQuantity(idd.getArrivalQuantity());
+                    addOnShelfDTO.setWarehouse(idd.getWarehouse());
+//                    addOnShelfDTO.setWarehouseAreaId();
+                    onShelfService.addOnShelf(addOnShelfDTO);
+                });
             }
             return count == inventoryDocumentDetailsList.size() ? Result.success("库存新增成功！") : Result.success(listfalse, "若干点验单新增库存失败！");
         } catch (Exception e) {

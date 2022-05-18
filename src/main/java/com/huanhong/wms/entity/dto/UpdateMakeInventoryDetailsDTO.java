@@ -6,6 +6,7 @@ import lombok.Data;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
@@ -82,9 +83,6 @@ public class UpdateMakeInventoryDetailsDTO {
     @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
     private Integer consignor;
 
-    @ApiModelProperty(value = "检验人id")
-    private String checkerId;
-    @ApiModelProperty(value = "检验人名")
-    private String checkerName;
+
 
 }

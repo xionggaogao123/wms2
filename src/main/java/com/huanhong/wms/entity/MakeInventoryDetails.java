@@ -51,9 +51,6 @@ public class MakeInventoryDetails extends SuperEntity {
     @ApiModelProperty(value = "批次")
     private String batch;
 
-    @ApiModelProperty(value = "库存类型：0-正式库存 1-暂存库存 2-临时库存")
-    private Integer inventoryType;
-
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "库存数量")
     private Double inventoryCredit;
@@ -61,6 +58,10 @@ public class MakeInventoryDetails extends SuperEntity {
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "实盘数量")
     private Double checkCredit;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "稽核数量")
+    private Double auditCredit;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "规格型号")
@@ -93,10 +94,6 @@ public class MakeInventoryDetails extends SuperEntity {
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "供应商")
     private String supplier;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
-    private Integer consignor;
 
     @ApiModelProperty(value = "版本-乐观锁")
     private Integer version;

@@ -1237,6 +1237,16 @@ public class EntityUtils {
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "readOnly");
                 return jsonObject;
+            case "userId":
+                jsonObject.put("name", "盘点人");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "auditId":
+                jsonObject.put("name", "稽核人");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
             case "remark":
                 jsonObject.put("name", "备注");
                 jsonObject.put("type", "text");
@@ -1282,9 +1292,20 @@ public class EntityUtils {
                 jsonObject.put("type", "select");
                 jsonObject.put("class", "readOnly");
                 //下拉菜单的值
-                value.put("0", "正式库存");
-                value.put("1", "暂存库存");
-                value.put("2","临时库存");
+                value.put("0", "全部");
+                value.put("1", "正式库存");
+                value.put("2","暂存库存");
+                value.put("3","临时库存");
+                jsonObject.put("value", value);
+                return jsonObject;
+            case "materialType":
+                jsonObject.put("name", "物料类型");
+                jsonObject.put("type", "select");
+                jsonObject.put("class", "readOnly");
+                //下拉菜单的值
+                value.put("0", "全部物料");
+                value.put("1", "指定物料");
+                value.put("2","随机物料");
                 jsonObject.put("value", value);
                 return jsonObject;
             case "inventoryCredit":
@@ -1294,6 +1315,11 @@ public class EntityUtils {
                 return jsonObject;
             case "checkCredit":
                 jsonObject.put("name", "实盘数量");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "auditCredit":
+                jsonObject.put("name", "稽核数量");
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "readOnly");
                 return jsonObject;
@@ -1333,11 +1359,8 @@ public class EntityUtils {
                 jsonObject.put("class", "readOnly");
                 //下拉菜单的值
                 value.put("0", "泰丰盛和");
-                value.put("1", "润中");
-                value.put("2", "雅店");
-                value.put("3", "蒋家河");
-                value.put("4", "下沟");
-                value.put("5", "精煤");
+                value.put("1", "矿上自有");
+                value.put("2", "全部");
                 jsonObject.put("value", value);
                 return jsonObject;
             case "version":
@@ -1389,6 +1412,7 @@ public class EntityUtils {
                 value.put("2", "审批中");
                 value.put("3", "审批生效");
                 value.put("4", "作废");
+                value.put("5","驳回");
                 jsonObject.put("value", value);
                 return jsonObject;
             case "checkStatus":

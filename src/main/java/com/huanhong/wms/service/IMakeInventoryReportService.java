@@ -24,9 +24,8 @@ public interface IMakeInventoryReportService extends SuperService<MakeInventoryR
 
     /**
      * 分页查询
-     *
      * @param makeInventoryReportPage
-     * @param makeInventoryVO
+     * @param makeInventoryReportVO
      * @return
      */
     Page<MakeInventoryReport> pageFuzzyQuery(Page<MakeInventoryReport> makeInventoryReportPage, MakeInventoryReportVO makeInventoryReportVO);

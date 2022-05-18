@@ -13,6 +13,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @ApiModel("新增盘点单DTO")
@@ -23,9 +24,26 @@ public class AddMakeInventoryDTO {
     @ApiModelProperty(value = "盘点单单据编号")
     private String documentNumber;
 
-
+    @Min(1)
+    @Max(4)
     @ApiModelProperty(value = "计划状态-状态: 1草拟 2审批中 3审批生效 4作废")
     private Integer planStatus;
+
+    @Min(0)
+    @Max(2)
+    @ApiModelProperty(value = "物料类型: 0-全部物料、1-指定物料、2-随机物料")
+    private Integer materialType;
+
+    @Min(0)
+    @Max(3)
+    @ApiModelProperty(value = "库存类型：0-暂存库存 1-正式库存 2-临时库存 3-全部 ")
+    private Integer inventoryType;
+
+
+    @Min(0)
+    @Max(2)
+    @ApiModelProperty(value = "货主: 0-泰丰盛和  1-矿上自有 2-全部")
+    private Integer consignor;
 
     @Min(0)
     @Max(1)
@@ -36,6 +54,12 @@ public class AddMakeInventoryDTO {
     @Max(1)
     @ApiModelProperty(value = "状态: 0-待盘点,1-已盘点")
     private Integer checkStatus;
+
+    @ApiModelProperty(value = "盘点人")
+    private List<Integer> userId;
+
+    @ApiModelProperty(value = "稽核人")
+    private String auditId;
 
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;

@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
@@ -258,7 +259,11 @@ public class MakeInventoryReportController extends BaseController {
                                     @RequestParam String processInstanceId) {
 
             try {
+
                 MakeInventoryReport makeInventoryReport = makeInventoryReportService.getMakeInventoryReportById(id);
+                if (makeInventoryReport.getCheckStatus()!=1){
+                    return Result.failure("发起审批失败，盘点计划未完成！");
+                }
                 /**
                  * 正常情况不需要原对单据进行非空验证，
                  * 此处预留其他判断条件的位置

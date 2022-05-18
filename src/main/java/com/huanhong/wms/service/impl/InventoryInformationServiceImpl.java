@@ -344,6 +344,14 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     }
 
     @Override
+    public List<InventoryInformation> getInventoryInformationListByWarehouseId(String warehouseId) {
+        QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
+        queryWrapper.ne("inventory_credit",0);
+        queryWrapper.eq("warehouse_id",warehouseId);
+        return inventoryInformationMapper.selectList(queryWrapper);
+    }
+
+    @Override
     public List<InventoryInformation> getInventoryInformationListByWarehouseIdAndInventoryType(String warehouseId, Integer InventoryType) {
         QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
         queryWrapper.ne("inventory_credit",0);
@@ -354,6 +362,40 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         }
         queryWrapper.eq("is_verification",1);
         queryWrapper.eq("is_enter",1);
+        return inventoryInformationMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<InventoryInformation> getInventoryInformationListByWarehouseIdAndConsignor(String warehouseId, Integer consignor) {
+        QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
+        queryWrapper.ne("inventory_credit",0);
+        queryWrapper.eq("warehouse_id",warehouseId);
+        queryWrapper.likeRight("cargo_space_id", warehouseId);
+        if (consignor==0){
+            queryWrapper.eq("consignor",consignor);
+        }else {
+            queryWrapper.ne("consignor",0);
+        }
+        return inventoryInformationMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<InventoryInformation> getInventoryInformationListByWarehouseIdAndInventoryTypeAndConsignor(String warehouseId, Integer InventoryType, Integer consignor) {
+        QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
+        queryWrapper.ne("inventory_credit",0);
+        queryWrapper.eq("warehouse_id",warehouseId);
+        queryWrapper.likeRight("cargo_space_id", warehouseId);
+        if (InventoryType==0){
+            queryWrapper.and(wrapper->wrapper.eq("is_verification", 0).or().eq("is_enter", 0));
+        }else {
+            queryWrapper.eq("is_verification",1);
+            queryWrapper.eq("is_enter",1);
+        }
+        if (consignor==0){
+            queryWrapper.eq("consignor",consignor);
+        }else {
+            queryWrapper.ne("consignor",0);
+        }
         return inventoryInformationMapper.selectList(queryWrapper);
     }
 

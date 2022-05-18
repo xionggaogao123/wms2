@@ -396,6 +396,7 @@ public class ProcurementPlanController extends BaseController {
                     }
                 i++;
             }
+
             //将参数赋给采购计划DTO
             addProcurementPlanDTO.setOriginalDocumentNumber(JSON.toJSONString(listOriginalDocumentNumber));
             addProcurementPlanDTO.setMaterialUse(requirementsPlanningList.get(0).getMaterialUse());
@@ -416,6 +417,7 @@ public class ProcurementPlanController extends BaseController {
                 ProcurementPlan procurementPlan = (ProcurementPlan) result.getData();
                 String docNum = procurementPlan.getPlanNumber();
                 String warehouseId = procurementPlan.getWarehouseId();
+
                 // 批量更新需求计划已导入
                 List<RequirementsPlanning> requirementsPlannings = requirementsPlanningList.stream().map(r->{
                     RequirementsPlanning requirementsPlanning = new RequirementsPlanning();
@@ -424,6 +426,7 @@ public class ProcurementPlanController extends BaseController {
                     requirementsPlanning.setDocumentNumberImported(docNum);
                     return requirementsPlanning;
                 }).collect(Collectors.toList());
+
                 requirementsPlanningService.saveOrUpdateBatch(requirementsPlannings);
                 List<ProcurementPlanDetails> procurementPlanDetailsList = procurementPlanDetailsService.getProcurementPlanDetailsByDocNumAndWarehouseId(docNum,warehouseId);
                 JSONObject jsonObject = new JSONObject();

@@ -8,6 +8,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -43,6 +44,18 @@ public class UpdateMakeInventoryReportDetailsDTO {
 
     @ApiModelProperty(value = "子库编号")
     private String sublibraryId;
+
+    @ApiModelProperty(value = "盈亏金额")
+    private BigDecimal finalAmounts;
+
+    @ApiModelProperty(value = "差异原因")
+    private String reason;
+
+    @ApiModelProperty(value = "实盘数量")
+    private Double checkCredit;
+
+    @ApiModelProperty(value = "盈亏数量")
+    private Double finalCredit;
 
     @ApiModelProperty(value = "盘点开始时间")
     private LocalDateTime startTime;

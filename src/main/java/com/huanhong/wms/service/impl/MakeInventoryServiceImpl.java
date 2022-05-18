@@ -24,6 +24,7 @@ import com.huanhong.wms.mapper.MakeInventoryMapper;
 import com.huanhong.wms.mapper.OutboundRecordMapper;
 import com.huanhong.wms.properties.OssProperties;
 import com.huanhong.wms.service.IMakeInventoryService;
+import org.apache.poi.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,9 +32,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>
@@ -96,7 +95,21 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
         //是否全盘
         query.eq(ObjectUtil.isNotNull(makeInventoryVO.getAllMake()),"allMake",makeInventoryVO.getAllMake());
 
+
         query.eq(ObjectUtil.isNotNull(makeInventoryVO.getPlanStatus()),"plan_status",makeInventoryVO.getPlanStatus());
+
+
+        query.eq(ObjectUtil.isNotNull(makeInventoryVO.getMaterialType()),"material_type",makeInventoryVO.getMaterialType());
+
+
+        query.eq(ObjectUtil.isNotNull(makeInventoryVO.getInventoryType()),"inventory_type",makeInventoryVO.getInventoryType());
+
+
+        query.eq(ObjectUtil.isNotNull(makeInventoryVO.getConsignor()),"consignor",makeInventoryVO.getConsignor());
+
+
+        query.eq(StringUtils.isNotBlank(makeInventoryVO.getAuditId()),"audit_id",makeInventoryVO.getAuditId());
+
 
 
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -168,6 +181,10 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
             } else {
                 orderNo = code_pfix + "00001";
             }
+
+            /**
+             *处理盘点人ID
+             */
 
             /**
              * 新增单据

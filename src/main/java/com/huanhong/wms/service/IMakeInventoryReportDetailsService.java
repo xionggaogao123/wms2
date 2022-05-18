@@ -55,5 +55,22 @@ public interface IMakeInventoryReportDetailsService extends SuperService<MakeInv
     MakeInventoryReportDetails getMakeInventoryReportDetailsById(int id);
 
 
+    /**
+     * 根据物料编码、批次、货位编码获取盘点单明细
+     * @param materialCoding
+     * @param batch
+     * @param cargoSpaceId
+     * @return
+     */
+    MakeInventoryReportDetails getMakeInventoryReportDetailsByMaterialCodingAndBatchAndCargoSpaceId(String materialCoding,String batch,String cargoSpaceId);
+
+    /**
+     * 通过单据编号和仓库号获取未完成盘点单明细数量
+     * @param docNum
+     * @param warehouseId
+     * @return
+     */
+    Integer getMakeInventoryReportDetailsByDocNumAndWarehouseIdNotComplete(String docNum, String warehouseId);
+
 
 }

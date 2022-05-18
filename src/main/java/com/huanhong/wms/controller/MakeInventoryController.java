@@ -2,6 +2,8 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.math.MathUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -15,6 +17,7 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.MakeInventoryVO;
+import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.mapper.MakeInventoryMapper;
 import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
@@ -28,12 +31,10 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.beans.beancontext.BeanContext;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Validated
@@ -60,6 +61,17 @@ public class MakeInventoryController extends BaseController {
 
     @Resource
     private ITemporaryLibraryService temporaryLibraryService;
+
+    @Resource
+    private InventoryInformationMapper inventoryInformationMapper;
+
+
+    @Resource
+    private IMakeInventoryReportService makeInventoryReportService;
+
+    @Resource
+    private IMakeInventoryReportDetailsService makeInventoryReportDetailsService;
+
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "current", value = "当前页码"),
@@ -90,6 +102,8 @@ public class MakeInventoryController extends BaseController {
     @PostMapping("/add")
     public Result add(@Valid @RequestBody AddMakeInventoryAndDetailsDTO addMakeInventoryAndDetailsDTO) {
         try {
+
+            List<AddMakeInventoryDetailsDTO> addMakeInventoryDetailsDTOList = new ArrayList<>();
             /**
              * 先新增主表
              */
@@ -105,74 +119,648 @@ public class MakeInventoryController extends BaseController {
 
             String warehouseId = makeInventory.getWarehouseId();
 
+            Integer consignor = makeInventory.getConsignor();
+
             /**
              * 判断是否为全盘
              */
             //非全盘的明细使用用户提交的明细
-            if (makeInventory.getAllMake()==0){
+            if (makeInventory.getAllMake()==0) {
 
-                List<AddMakeInventoryDetailsDTO> addMakeInventoryDetailsDTOList = addMakeInventoryAndDetailsDTO.getAddMakeInventoryDetailsDTOList();
+                /**
+                 * 选择非全盘时，根据货主进行不同的明细生成
+                 * 货主 0-泰丰盛和  1-矿上自有  2-全部
+                 */
+                /**
+                 * 泰丰盛和
+                 */
+                if (makeInventory.getConsignor() == 0) {
+                    //    @ApiModelProperty(value = "库存类型：0-暂存库存 1-正式库存 2-临时库存 3-全部 ")
+                    /**
+                     * 暂存
+                     */
+                    if (makeInventory.getInventoryType() == 0) {
+                        //物料类型: 0-全部物料、1-指定物料、2-随机物料
+                        //全部物料
+                        if (makeInventory.getMaterialType() == 0) {
+                            //正式库存list
+                            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByWarehouseIdAndInventoryTypeAndConsignor(warehouseId, 0, consignor);
 
-                if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList)) {
-                    for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList
-                    ) {
-                        addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
-                        addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                            for (InventoryInformation inventoryInformation : inventoryInformationList
+                            ) {
+                                AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
+                                Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
+                                addMakeInventoryDetailsDTO.setWarehouseAreaId(inventoryInformation.getCargoSpaceId().substring(0, 7));
+                                addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
+                            }
+                            makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                            return result;
+                            //指定物料
+                        } else if (makeInventory.getMaterialType() == 1) {
+                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList)) {
+                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList
+                                ) {
+                                    addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                    addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                }
+                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                                return result;
+                            }
+                        } else {
+                            /**
+                             * 先查询对应库存类型的全部库存
+                             * 在从中抽出百分之三十返回给用户
+                             */
+                            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByWarehouseIdAndInventoryTypeAndConsignor(warehouseId, 0, consignor);
+
+                            // 总记录数
+                            int count = inventoryInformationList.size();
+
+                            // 随机数起始位置
+                            int randomCount = (int) (Math.random() * count);
+
+                            int num = inventoryInformationList.size() / 3;
+
+                            // 保证能展示10个数据
+                            if (randomCount > count - num) {
+                                randomCount = count - num;
+                            }
+
+                            QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
+
+                            queryWrapper.orderByDesc("id");
+                            queryWrapper.ne("inventory_credit", 0);
+                            queryWrapper.eq("warehouse_id", warehouseId);
+                            queryWrapper.likeRight("cargo_space_id", warehouseId);
+                            queryWrapper.and(wrapper->wrapper.eq("is_verification", 0).or().eq("is_enter", 0));
+                            queryWrapper.eq("consignor", consignor);
+                            queryWrapper.last("limit " + String.valueOf(randomCount) + ", 10");
+                            List<InventoryInformation> inventoryInformations = inventoryInformationMapper.selectList(queryWrapper);
+                            for (InventoryInformation inventoryInformation : inventoryInformations
+                            ) {
+                                AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
+                                Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
+                                addMakeInventoryDetailsDTO.setWarehouseAreaId(inventoryInformation.getCargoSpaceId().substring(0, 7));
+                                addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
+                            }
+                            makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                            return result;
+                        }
                     }
-                    makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                    /**
+                     * 正式库存
+                     */
+                    else if (makeInventory.getInventoryType() == 1) {
+                        //物料类型: 0-全部物料、1-指定物料、2-随机物料
+                        //全部物料
+                        if (makeInventory.getMaterialType() == 0) {
+                            //正式库存list
+                            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByWarehouseIdAndInventoryTypeAndConsignor(warehouseId, 1, consignor);
+
+                            for (InventoryInformation inventoryInformation : inventoryInformationList
+                            ) {
+                                AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
+                                Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
+                                addMakeInventoryDetailsDTO.setWarehouseAreaId(inventoryInformation.getCargoSpaceId().substring(0, 7));
+                                addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
+                            }
+                            makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                            return result;
+                            //指定物料
+                        } else if (makeInventory.getMaterialType() == 1) {
+                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList)) {
+                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList
+                                ) {
+                                    addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                    addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                }
+                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                                return result;
+                            }
+                        }
+                        //随机物料
+                        else {
+                            /**
+                             * 先查询对应库存类型的全部库存
+                             * 在从中抽出百分之三十返回给用户
+                             */
+                            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByWarehouseIdAndInventoryTypeAndConsignor(warehouseId, 1, consignor);
+
+                            // 总记录数
+                            int count = inventoryInformationList.size();
+
+                            // 随机数起始位置
+                            int randomCount = (int) (Math.random() * count);
+
+                            int num = inventoryInformationList.size() / 3;
+
+                            // 保证能展示10个数据
+                            if (randomCount > count - num) {
+                                randomCount = count - num;
+                            }
+
+                            QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
+
+                            queryWrapper.orderByDesc("id");
+                            queryWrapper.ne("inventory_credit", 0);
+                            queryWrapper.eq("warehouse_id", warehouseId);
+                            queryWrapper.likeRight("cargo_space_id", warehouseId);
+                            queryWrapper.eq("is_verification",1);
+                            queryWrapper.eq("is_enter",1);
+                            queryWrapper.eq("consignor", consignor);
+                            queryWrapper.last("limit " + String.valueOf(randomCount) + ", 10");
+                            List<InventoryInformation> inventoryInformations = inventoryInformationMapper.selectList(queryWrapper);
+                            for (InventoryInformation inventoryInformation : inventoryInformations
+                            ) {
+                                AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
+                                Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
+                                addMakeInventoryDetailsDTO.setWarehouseAreaId(inventoryInformation.getCargoSpaceId().substring(0, 7));
+                                addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
+                            }
+                            makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                            return result;
+                        }
+
+                    }
+                    /**
+                     * 临时库存
+                     */
+                    else if (makeInventory.getInventoryType()==2){
+                    List<TemporaryLibrary> temporaryLibraryList = temporaryLibraryService.getTemporaryLibraryListByWarehouseId(warehouseId);
+                        /**
+                         * 临时库
+                         */
+                        for (TemporaryLibrary temporaryLibrary : temporaryLibraryList
+                        ) {
+                            AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
+                            Material material = materialService.getMeterialByMeterialCode(temporaryLibrary.getMaterialCoding());
+                            BeanUtil.copyProperties(temporaryLibrary, addMakeInventoryAndDetailsDTO);
+                            BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                            addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                            addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                            addMakeInventoryDetailsDTO.setSublibraryId(temporaryLibrary.getCargoSpaceId().substring(0, 6));
+                            addMakeInventoryDetailsDTO.setWarehouseAreaId(temporaryLibrary.getCargoSpaceId().substring(0, 7));
+                            addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
+                        }
+
+                        makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                        return result;
+                    }
                 }
+
+                /**
+                 * 矿上自有
+                 */
+                else if (makeInventory.getConsignor()==1){
+                    //    @ApiModelProperty(value = "库存类型：0-暂存库存 1-正式库存 2-临时库存 3-全部 ")
+                    /**
+                     * 暂存
+                     */
+                    if (makeInventory.getInventoryType() == 0) {
+                        //物料类型: 0-全部物料、1-指定物料、2-随机物料
+                        //全部物料
+                        if (makeInventory.getMaterialType() == 0) {
+                            //正式库存list
+                            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByWarehouseIdAndInventoryTypeAndConsignor(warehouseId, 0, consignor);
+
+                            for (InventoryInformation inventoryInformation : inventoryInformationList
+                            ) {
+                                AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
+                                Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
+                                addMakeInventoryDetailsDTO.setWarehouseAreaId(inventoryInformation.getCargoSpaceId().substring(0, 7));
+                                addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
+                            }
+                            makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                            return result;
+                            //指定物料
+                        } else if (makeInventory.getMaterialType() == 1) {
+                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList)) {
+                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList
+                                ) {
+                                    addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                    addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                }
+                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                                return result;
+                            }
+                        } else {
+                            /**
+                             * 先查询对应库存类型的全部库存
+                             * 在从中抽出百分之三十返回给用户
+                             */
+                            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByWarehouseIdAndInventoryTypeAndConsignor(warehouseId, 0, consignor);
+
+                            // 总记录数
+                            int count = inventoryInformationList.size();
+
+                            // 随机数起始位置
+                            int randomCount = (int) (Math.random() * count);
+
+                            int num = inventoryInformationList.size() / 3;
+
+                            // 保证能展示10个数据
+                            if (randomCount > count - num) {
+                                randomCount = count - num;
+                            }
+
+                            QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
+
+                            queryWrapper.orderByDesc("id");
+                            queryWrapper.ne("inventory_credit", 0);
+                            queryWrapper.eq("warehouse_id", warehouseId);
+                            queryWrapper.likeRight("cargo_space_id", warehouseId);
+                            queryWrapper.and(wrapper->wrapper.eq("is_verification", 0).or().eq("is_enter", 0));
+                            queryWrapper.ne("consignor", 0);
+                            queryWrapper.last("limit " + String.valueOf(randomCount) + ", 10");
+                            List<InventoryInformation> inventoryInformations = inventoryInformationMapper.selectList(queryWrapper);
+                            for (InventoryInformation inventoryInformation : inventoryInformations
+                            ) {
+                                AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
+                                Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
+                                addMakeInventoryDetailsDTO.setWarehouseAreaId(inventoryInformation.getCargoSpaceId().substring(0, 7));
+                                addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
+                            }
+                            makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                            return result;
+                        }
+                    }
+                    /**
+                     * 正式库存
+                     */
+                    else if (makeInventory.getInventoryType() == 1) {
+                        //物料类型: 0-全部物料、1-指定物料、2-随机物料
+                        //全部物料
+                        if (makeInventory.getMaterialType() == 0) {
+                            //正式库存list
+                            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByWarehouseIdAndInventoryTypeAndConsignor(warehouseId, 1, consignor);
+
+                            for (InventoryInformation inventoryInformation : inventoryInformationList
+                            ) {
+                                AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
+                                Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
+                                addMakeInventoryDetailsDTO.setWarehouseAreaId(inventoryInformation.getCargoSpaceId().substring(0, 7));
+                                addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
+                            }
+                            makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                            return result;
+                            //指定物料
+                        } else if (makeInventory.getMaterialType() == 1) {
+                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList)) {
+                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList
+                                ) {
+                                    addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                    addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                }
+                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                                return result;
+                            }
+                        }
+                        //随机物料
+                        else {
+                            /**
+                             * 先查询对应库存类型的全部库存
+                             * 在从中抽出百分之三十返回给用户
+                             */
+                            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByWarehouseIdAndInventoryTypeAndConsignor(warehouseId, 1, consignor);
+
+                            // 总记录数
+                            int count = inventoryInformationList.size();
+
+                            // 随机数起始位置
+                            int randomCount = (int) (Math.random() * count);
+
+                            int num = inventoryInformationList.size() / 3;
+
+                            // 保证能展示10个数据
+                            if (randomCount > count - num) {
+                                randomCount = count - num;
+                            }
+
+                            QueryWrapper<InventoryInformation> wrapper = new QueryWrapper<>();
+
+                            wrapper.orderByDesc("id");
+                            wrapper.ne("inventory_credit", 0);
+                            wrapper.eq("warehouse_id", warehouseId);
+                            wrapper.likeRight("cargo_space_id", warehouseId);
+                            wrapper.eq("is_verification", 1);
+                            wrapper.eq("is_enter", 1);
+                            wrapper.ne("consignor", 0);
+                            wrapper.last("limit " + String.valueOf(randomCount) + ", 10");
+                            List<InventoryInformation> inventoryInformations = inventoryInformationMapper.selectList(wrapper);
+                            for (InventoryInformation inventoryInformation : inventoryInformations
+                            ) {
+                                AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
+                                Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
+                                addMakeInventoryDetailsDTO.setWarehouseAreaId(inventoryInformation.getCargoSpaceId().substring(0, 7));
+                                addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
+                            }
+                            makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                            return result;
+                        }
+
+                    }
+                    /**
+                     * 临时库存
+                     */
+                    else if (makeInventory.getInventoryType()==2){
+                        List<TemporaryLibrary> temporaryLibraryList = temporaryLibraryService.getTemporaryLibraryListByWarehouseId(warehouseId);
+                        /**
+                         * 临时库
+                         */
+                        for (TemporaryLibrary temporaryLibrary : temporaryLibraryList
+                        ) {
+                            AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
+                            Material material = materialService.getMeterialByMeterialCode(temporaryLibrary.getMaterialCoding());
+                            BeanUtil.copyProperties(temporaryLibrary, addMakeInventoryAndDetailsDTO);
+                            BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                            addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                            addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                            addMakeInventoryDetailsDTO.setSublibraryId(temporaryLibrary.getCargoSpaceId().substring(0, 6));
+                            addMakeInventoryDetailsDTO.setWarehouseAreaId(temporaryLibrary.getCargoSpaceId().substring(0, 7));
+                            addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
+                        }
+
+                        makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                        return result;
+                    }
+                }
+
+                /**
+                 * 全部
+                 */
+                else {
+                    //    @ApiModelProperty(value = "库存类型：0-暂存库存 1-正式库存 2-临时库存 3-全部 ")
+                    /**
+                     * 暂存
+                     */
+                    if (makeInventory.getInventoryType() == 0) {
+                        //物料类型: 0-全部物料、1-指定物料、2-随机物料
+                        //全部物料
+                        if (makeInventory.getMaterialType() == 0) {
+
+                            //临时库存list
+                            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByWarehouseIdAndInventoryType(warehouseId,0);
+
+                            for (InventoryInformation inventoryInformation : inventoryInformationList
+                            ) {
+                                AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
+                                Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
+                                addMakeInventoryDetailsDTO.setWarehouseAreaId(inventoryInformation.getCargoSpaceId().substring(0, 7));
+                                addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
+                            }
+                            makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                            return result;
+                            //指定物料
+                        } else if (makeInventory.getMaterialType() == 1) {
+                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList)) {
+                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList
+                                ) {
+                                    addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                    addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                }
+                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                                return result;
+                            }
+                        } else {
+                            /**
+                             * 先查询对应库存类型的全部库存
+                             * 在从中抽出百分之三十返回给用户
+                             */
+                            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByWarehouseIdAndInventoryType(warehouseId,0);
+                            // 总记录数
+                            int count = inventoryInformationList.size();
+
+                            // 随机数起始位置
+                            int randomCount = (int) (Math.random() * count);
+
+                            int num = inventoryInformationList.size() / 3;
+
+                            // 保证能展示10个数据
+                            if (randomCount > count - num) {
+                                randomCount = count - num;
+                            }
+
+                            QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
+
+                            queryWrapper.orderByDesc("id");
+                            queryWrapper.ne("inventory_credit", 0);
+                            queryWrapper.eq("warehouse_id", warehouseId);
+                            queryWrapper.likeRight("cargo_space_id", warehouseId);
+                            queryWrapper.and(wrapper->wrapper.eq("is_verification", 0).or().eq("is_enter", 0));
+                            queryWrapper.last("limit " + String.valueOf(randomCount) + ", 10");
+                            List<InventoryInformation> inventoryInformations = inventoryInformationMapper.selectList(queryWrapper);
+                            for (InventoryInformation inventoryInformation : inventoryInformations
+                            ) {
+                                AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
+                                Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
+                                addMakeInventoryDetailsDTO.setWarehouseAreaId(inventoryInformation.getCargoSpaceId().substring(0, 7));
+                                addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
+                            }
+                            makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                            return result;
+                        }
+                    }
+                    /**
+                     * 正式库存
+                     */
+                    else if (makeInventory.getInventoryType() == 1) {
+                        //物料类型: 0-全部物料、1-指定物料、2-随机物料
+                        //全部物料
+                        if (makeInventory.getMaterialType() == 0) {
+                            //正式库存list
+                            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByWarehouseIdAndInventoryType(warehouseId,1);
+
+                            for (InventoryInformation inventoryInformation : inventoryInformationList
+                            ) {
+                                AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
+                                Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
+                                addMakeInventoryDetailsDTO.setWarehouseAreaId(inventoryInformation.getCargoSpaceId().substring(0, 7));
+                                addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
+                            }
+                            makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                            return result;
+                            //指定物料
+                        } else if (makeInventory.getMaterialType() == 1) {
+                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList)) {
+                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList
+                                ) {
+                                    addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                    addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                }
+                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                                return result;
+                            }
+                        }
+                        //随机物料
+                        else {
+                            /**
+                             * 先查询对应库存类型的全部库存
+                             * 在从中抽出百分之三十返回给用户
+                             */
+                            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByWarehouseIdAndInventoryType(warehouseId,1);
+
+                            // 总记录数
+                            int count = inventoryInformationList.size();
+
+                            // 随机数起始位置
+                            int randomCount = (int) (Math.random() * count);
+
+                            int num = inventoryInformationList.size() / 3;
+
+                            // 保证能展示10个数据
+                            if (randomCount > count - num) {
+                                randomCount = count - num;
+                            }
+
+                            QueryWrapper<InventoryInformation> wrapper = new QueryWrapper<>();
+
+                            wrapper.orderByDesc("id");
+                            wrapper.ne("inventory_credit", 0);
+                            wrapper.eq("warehouse_id", warehouseId);
+                            wrapper.likeRight("cargo_space_id", warehouseId);
+                            wrapper.eq("is_verification", 1);
+                            wrapper.eq("is_enter", 1);
+                            wrapper.ne("consignor", 0);
+                            wrapper.last("limit " + String.valueOf(randomCount) + ", 10");
+                            List<InventoryInformation> inventoryInformations = inventoryInformationMapper.selectList(wrapper);
+                            for (InventoryInformation inventoryInformation : inventoryInformations
+                            ) {
+                                AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
+                                Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                                addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                                addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
+                                addMakeInventoryDetailsDTO.setWarehouseAreaId(inventoryInformation.getCargoSpaceId().substring(0, 7));
+                                addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
+                            }
+                            makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                            return result;
+                        }
+
+                    }
+                    /**
+                     * 临时库存
+                     */
+                    else if (makeInventory.getInventoryType()==2){
+                        List<TemporaryLibrary> temporaryLibraryList = temporaryLibraryService.getTemporaryLibraryListByWarehouseId(warehouseId);
+                        /**
+                         * 临时库
+                         */
+                        for (TemporaryLibrary temporaryLibrary : temporaryLibraryList
+                        ) {
+                            AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
+                            Material material = materialService.getMeterialByMeterialCode(temporaryLibrary.getMaterialCoding());
+                            BeanUtil.copyProperties(temporaryLibrary, addMakeInventoryAndDetailsDTO);
+                            BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                            addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                            addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                            addMakeInventoryDetailsDTO.setSublibraryId(temporaryLibrary.getCargoSpaceId().substring(0, 6));
+                            addMakeInventoryDetailsDTO.setWarehouseAreaId(temporaryLibrary.getCargoSpaceId().substring(0, 7));
+                            addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
+                        }
+
+                        makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                        return result;
+                    }
+                }
+            }
+
+
+                List<InventoryInformation> inventoryInformationListAll = inventoryInformationService.getInventoryInformationListByWarehouseId(warehouseId);
+
+                List<TemporaryLibrary> temporaryLibraryList = temporaryLibraryService.getTemporaryLibraryListByWarehouseId(warehouseId);
+                /**
+                 * 普通库（暂存∪正式）
+                 */
+                for (InventoryInformation inventoryInformation : inventoryInformationListAll
+                ) {
+                    AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
+                    Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
+                    BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
+                    BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                    addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                    addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                    addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
+                    addMakeInventoryDetailsDTO.setWarehouseAreaId(inventoryInformation.getCargoSpaceId().substring(0, 7));
+                    addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
+                }
+
+                /**
+                 * 临时库
+                 */
+                for (TemporaryLibrary temporaryLibrary : temporaryLibraryList
+                ) {
+                    AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
+                    Material material = materialService.getMeterialByMeterialCode(temporaryLibrary.getMaterialCoding());
+                    BeanUtil.copyProperties(temporaryLibrary, addMakeInventoryAndDetailsDTO);
+                    BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                    addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
+                    addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
+                    addMakeInventoryDetailsDTO.setSublibraryId(temporaryLibrary.getCargoSpaceId().substring(0, 6));
+                    addMakeInventoryDetailsDTO.setWarehouseAreaId(temporaryLibrary.getCargoSpaceId().substring(0, 7));
+                    addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
+                }
+
+                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
                 return result;
-            }
 
-            //若为全盘,查询 0-暂存库存 1-正式库存  2-临时库存  作为全盘明细的依据
-            List<InventoryInformation> inventoryInformationListZero = inventoryInformationService.getInventoryInformationListByWarehouseIdAndInventoryType(warehouseId,0);
-            List<InventoryInformation> inventoryInformationListOne = inventoryInformationService.getInventoryInformationListByWarehouseIdAndInventoryType(warehouseId,1);
-            List<TemporaryLibrary> temporaryLibraryList = temporaryLibraryService.getTemporaryLibraryListByWarehouseId(warehouseId);
-            List<AddMakeInventoryDetailsDTO> addMakeInventoryDetailsDTOList = new ArrayList<>();
-
-            for (InventoryInformation inventoryInformation : inventoryInformationListZero
-                 ) {
-                AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
-                Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
-                BeanUtil.copyProperties(inventoryInformation,addMakeInventoryAndDetailsDTO);
-                BeanUtil.copyProperties(material,addMakeInventoryAndDetailsDTO);
-                addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
-                addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
-                addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0,6));
-                addMakeInventoryDetailsDTO.setWarehouseAreaId(inventoryInformation.getCargoSpaceId().substring(0,7));
-                addMakeInventoryDetailsDTO.setInventoryType(0);
-                addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
-            }
-
-            for (InventoryInformation inventoryInformation : inventoryInformationListOne
-            ) {
-                AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
-                Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
-                BeanUtil.copyProperties(inventoryInformation,addMakeInventoryAndDetailsDTO);
-                BeanUtil.copyProperties(material,addMakeInventoryAndDetailsDTO);
-                addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
-                addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
-                addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0,6));
-                addMakeInventoryDetailsDTO.setWarehouseAreaId(inventoryInformation.getCargoSpaceId().substring(0,7));
-                addMakeInventoryDetailsDTO.setInventoryType(1);
-                addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
-            }
-
-            for (TemporaryLibrary temporaryLibrary : temporaryLibraryList
-                 ) {
-                AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
-                Material material = materialService.getMeterialByMeterialCode(temporaryLibrary.getMaterialCoding());
-                BeanUtil.copyProperties(temporaryLibrary,addMakeInventoryAndDetailsDTO);
-                BeanUtil.copyProperties(material,addMakeInventoryAndDetailsDTO);
-                addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
-                addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
-                addMakeInventoryDetailsDTO.setSublibraryId(temporaryLibrary.getCargoSpaceId().substring(0,6));
-                addMakeInventoryDetailsDTO.setWarehouseAreaId(temporaryLibrary.getCargoSpaceId().substring(0,7));
-                addMakeInventoryDetailsDTO.setInventoryType(2);
-                addMakeInventoryDetailsDTOList.add(addMakeInventoryDetailsDTO);
-            }
-            makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
-            return result;
         } catch (Exception e) {
             log.error("添加入库单出错，异常", e);
             return Result.failure("系统异常：入库单添加失败。");
@@ -192,6 +780,7 @@ public class MakeInventoryController extends BaseController {
             //SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
             //将字符串形式的时间转化为Date类型的时间
             Date planTime = DateUtil.parseDate(updateMakeInventoryAndDetailsDTO.getUpdateMakeInventoryDTO().getStartTime().toString());
+
             Date nowTime = DateUtil.parseDate(DateUtil.now());
 
             if(nowTime.getTime()-planTime.getTime()>0){
@@ -208,8 +797,97 @@ public class MakeInventoryController extends BaseController {
                 return Result.failure("更新盘点单失败！");
             }
 
-            return makeInventoryDetailsService.updateMakeInventoryDetails(updateMakeInventoryDetailsDTOList);
+            //更新明细
+            Result resultDetails = makeInventoryDetailsService.updateMakeInventoryDetails(updateMakeInventoryDetailsDTOList);
 
+            log.info("更新盘点明细{}",resultDetails);
+
+
+
+
+            //明细更新完成后,查询所有明细是否已完成
+            MakeInventory makeInventory = makeInventoryService.getMakeInventoryById(updateMakeInventoryDTO.getId());
+
+            int count = makeInventoryDetailsService.getMakeInventoryDetailsByDocNumAndWarehouseIdNotComplete(makeInventory.getDocumentNumber(),makeInventory.getWarehouseId());
+
+            //如果未完成的明细数量为零，则更新主表状态为已完成
+            if (count==0){
+                updateMakeInventoryDTO.setConsignor(1);
+                result = makeInventoryService.updateMakeInventory(updateMakeInventoryDTO);
+            }
+
+
+            /**
+             * 盘点单更新明细后，更新盘点报告中的对应明细
+             */
+            //物料编码 批次 货位编码
+            HashMap resultMap = (HashMap)resultDetails.getData();
+            List<UpdateMakeInventoryDetailsDTO> listSuccess = (List<UpdateMakeInventoryDetailsDTO>) resultMap.get("success");
+
+
+            List<UpdateMakeInventoryReportDetailsDTO> updateMakeInventoryReportDetailsDTOList = new ArrayList<>();
+            MakeInventoryReportDetails makeInventoryReportDetails = new MakeInventoryReportDetails();
+
+            for (UpdateMakeInventoryDetailsDTO updateMakeInventoryDetailsDTO:listSuccess
+            ) {
+                UpdateMakeInventoryReportDetailsDTO updateMakeInventoryReportDetailsDTO = new UpdateMakeInventoryReportDetailsDTO();
+                String materialCoding = updateMakeInventoryDetailsDTO.getMaterialCoding();
+                String batch = updateMakeInventoryDetailsDTO.getBatch();
+                String cargoSpaceId = updateMakeInventoryDetailsDTO.getCargoSpaceId();
+                makeInventoryReportDetails  = makeInventoryReportDetailsService.getMakeInventoryReportDetailsByMaterialCodingAndBatchAndCargoSpaceId(materialCoding,batch,cargoSpaceId);
+                if (ObjectUtil.isNotEmpty(makeInventoryReportDetails)){
+                    BeanUtil.copyProperties(makeInventoryReportDetails,updateMakeInventoryReportDetailsDTO);
+                    //实盘数量
+                    updateMakeInventoryReportDetailsDTO.setCheckCredit(updateMakeInventoryDetailsDTO.getCheckCredit());
+                    //盈亏数量
+                    updateMakeInventoryReportDetailsDTO.setFinalCredit(NumberUtil.sub(updateMakeInventoryDetailsDTO.getInventoryCredit(),updateMakeInventoryDetailsDTO.getCheckCredit()));
+                    //盈亏金额
+                    if (updateMakeInventoryDTO.getConsignor()==0){
+                        updateMakeInventoryReportDetailsDTO.setFinalAmounts(NumberUtil.mul(updateMakeInventoryDetailsDTO.getUnitPrice(),updateMakeInventoryReportDetailsDTO.getFinalAmounts()));
+                    }else {
+                        updateMakeInventoryReportDetailsDTO.setFinalAmounts(NumberUtil.mul(updateMakeInventoryDetailsDTO.getSalesUnitPrice(),updateMakeInventoryReportDetailsDTO.getFinalAmounts()));
+                    }
+                    //差异原因
+                    updateMakeInventoryReportDetailsDTO.setReason(updateMakeInventoryDetailsDTO.getReason());
+                    //盘点状态
+                    /**
+                     * 盈亏数量大于0则亏，等于0一致，小于零则盈
+                     */
+                    int event = updateMakeInventoryReportDetailsDTO.getFinalAmounts().compareTo(BigDecimal.valueOf(0));
+
+                    //"盘点状态: 0-待盘点，1-一致 ，2-盘盈 ，3-盘亏"
+                    if (event==0){
+                        updateMakeInventoryReportDetailsDTO.setCheckStatusDetails(1);
+                    }else if (event>0){
+                        updateMakeInventoryReportDetailsDTO.setCheckStatusDetails(3);
+                    }else {
+                        updateMakeInventoryReportDetailsDTO.setCheckStatusDetails(2);
+                    }
+
+                    updateMakeInventoryReportDetailsDTOList.add(updateMakeInventoryReportDetailsDTO);
+                }
+            }
+
+            //更新盘点报告list
+            Result resultUpdateReport = makeInventoryReportDetailsService.updateInventoryDocumentDetailsList(updateMakeInventoryReportDetailsDTOList);
+
+            log.info("更新盘点报告明细{}",resultUpdateReport);
+
+            int countReport = makeInventoryReportDetailsService.getMakeInventoryReportDetailsByDocNumAndWarehouseIdNotComplete(makeInventoryReportDetails.getReportNumber(),makeInventoryReportDetails.getWarehouseId());
+
+            /**
+             *
+             */
+            if (countReport==0){
+                UpdateMakeInventoryReportDTO updateMakeInventoryReportDTO = new UpdateMakeInventoryReportDTO();
+                MakeInventoryReport makeInventoryReport = makeInventoryReportService.getMakeInventoryReportByDocNumAndWarehouse(makeInventoryReportDetails.getReportNumber(),makeInventoryReportDetails.getWarehouseId());
+                updateMakeInventoryReportDTO.setId(makeInventoryReport.getId());
+                updateMakeInventoryReportDTO.setCheckStatus(1);
+                Result resultReport = makeInventoryReportService.updateMakeInventoryReport(updateMakeInventoryReportDTO);
+                log.info("更新盘点报告主表{}",resultReport);
+            }
+
+            return result;
         } catch (Exception e) {
             log.error("更新盘点单失败!");
             return Result.failure("系统异常：更新盘点单失败!");
@@ -259,6 +937,7 @@ public class MakeInventoryController extends BaseController {
         jsonObject.put("details",makeInventoryDetailsList);
         return Result.success(jsonObject);
     }
+
 
     @ApiOperationSupport(order = 6)
     @ApiOperation(value = "根据单据编号和子库编号获取盘点单及明细数据")

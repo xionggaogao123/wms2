@@ -85,4 +85,23 @@ public class MakeInventoryReportDetailsServiceImpl extends SuperServiceImpl<Make
     public MakeInventoryReportDetails getMakeInventoryReportDetailsById(int id) {
         return makeInventoryReportDetailsMapper.selectById(id);
     }
+
+    @Override
+    public MakeInventoryReportDetails getMakeInventoryReportDetailsByMaterialCodingAndBatchAndCargoSpaceId(String materialCoding, String batch, String cargoSpaceId) {
+        QueryWrapper<MakeInventoryReportDetails> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("material_coding", materialCoding);
+        queryWrapper.eq("batch",batch);
+        queryWrapper.eq("cargo_space_id",cargoSpaceId);
+        return makeInventoryReportDetailsMapper.selectOne(queryWrapper);
+    }
+
+    @Override
+    public Integer getMakeInventoryReportDetailsByDocNumAndWarehouseIdNotComplete(String docNum, String warehouseId) {
+        QueryWrapper<MakeInventoryReportDetails> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("document_number", docNum);
+        queryWrapper.eq("warehouse_id", warehouseId);
+        //状态: 0-待盘点，1-已盘点
+        queryWrapper.eq("check_status",0);
+        return makeInventoryReportDetailsMapper.selectCount(queryWrapper);
+    }
 }

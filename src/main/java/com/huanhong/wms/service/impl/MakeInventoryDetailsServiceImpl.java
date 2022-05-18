@@ -71,6 +71,9 @@ public class MakeInventoryDetailsServiceImpl extends SuperServiceImpl<MakeInvent
         }
         jsonObject.put("success", listSuccess);
         jsonObject.put("false", listFalse);
+
+
+
         return Result.success(jsonObject);
     }
 
@@ -85,5 +88,16 @@ public class MakeInventoryDetailsServiceImpl extends SuperServiceImpl<MakeInvent
         queryWrapper.eq("document_number", docNum);
         queryWrapper.eq("warehouse_id", warehouseId);
         return makeInventoryDetailsMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public Integer getMakeInventoryDetailsByDocNumAndWarehouseIdNotComplete(String docNum, String warehouseId) {
+        QueryWrapper<MakeInventoryDetails> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("document_number", docNum);
+        queryWrapper.eq("warehouse_id", warehouseId);
+        //状态: 0-待盘点，1-已盘点
+        queryWrapper.eq("check_status",0);
+        return makeInventoryDetailsMapper.selectCount(queryWrapper);
+
     }
 }

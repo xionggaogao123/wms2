@@ -118,12 +118,41 @@ public interface IInventoryInformationService extends SuperService<InventoryInfo
 
 
     /**
+     * 获取对应仓库的库存
+     * @param warehouseId
+     * @return
+     */
+    List<InventoryInformation> getInventoryInformationListByWarehouseId(String warehouseId);
+
+
+
+    /**
      * 获取对应仓库的库存（区分正式库存和临时库存）
      * @param warehouseId
      * @param InventoryType 0-临时库存 1-正式库存
      * @return
      */
     List<InventoryInformation> getInventoryInformationListByWarehouseIdAndInventoryType(String warehouseId,Integer InventoryType);
+
+
+    /**
+     * 根据货主和仓库ID查询库存
+     * @param warehouseId
+     * @param InventoryType
+     * @param consignor
+     * @return
+     */
+    List<InventoryInformation> getInventoryInformationListByWarehouseIdAndConsignor(String warehouseId,Integer consignor);
+
+
+    /**
+     * 根据货主库存类型和仓库ID查询库存
+     * @param warehouseId
+     * @param InventoryType 0-临时库存 1-正式库存
+     * @param consignor 0-泰丰盛和 1 其他
+     * @return
+     */
+    List<InventoryInformation> getInventoryInformationListByWarehouseIdAndInventoryTypeAndConsignor(String warehouseId,Integer InventoryType,Integer consignor);
 
 
 

@@ -51,18 +51,15 @@ public class AddMakeInventoryDetailsDTO {
     @ApiModelProperty(value = "批次")
     private String batch;
 
-    @Min(0)
-    @Max(2)
-    @NotNull
-    @ApiModelProperty(value = "库存类型：0-暂存库存 1-正式库存 2-临时库存")
-    private Integer inventoryType;
-
     @NotNull
     @ApiModelProperty(value = "库存数量")
     private Double inventoryCredit;
 
     @ApiModelProperty(value = "实盘数量")
     private Double checkCredit;
+
+    @ApiModelProperty(value = "稽核数量")
+    private Double auditCredit;
 
     @ApiModelProperty(value = "规格型号")
     private String specificationModel;
@@ -89,10 +86,5 @@ public class AddMakeInventoryDetailsDTO {
 
     @ApiModelProperty(value = "供应商")
     private String supplier;
-
-    @Min(0)
-    @Max(5)
-    @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
-    private Integer consignor;
 
 }

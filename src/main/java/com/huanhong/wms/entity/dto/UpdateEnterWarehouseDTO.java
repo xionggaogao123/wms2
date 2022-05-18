@@ -62,4 +62,6 @@ public class UpdateEnterWarehouseDTO {
 
     @ApiModelProperty(value = "备注")
     private String remark;
+
+    private Integer userId;
 }

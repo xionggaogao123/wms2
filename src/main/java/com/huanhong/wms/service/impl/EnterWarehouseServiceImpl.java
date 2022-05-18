@@ -3,6 +3,7 @@ package com.huanhong.wms.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -227,6 +228,12 @@ public class EnterWarehouseServiceImpl extends SuperServiceImpl<EnterWarehouseMa
     @Override
     public Result updateEnterWarehouse(UpdateEnterWarehouseDTO updateEnterWarehouseDTO) {
         EnterWarehouse enterWarehouseOld = getEnterWarehouseById(updateEnterWarehouseDTO.getId());
+        if(enterWarehouseOld.getCreateTime().equals(enterWarehouseOld.getLastUpdate())){
+            // 首次更新重置经办人
+            if(StrUtil.isBlank(updateEnterWarehouseDTO.getManager())){
+                updateEnterWarehouseDTO.setManager(updateEnterWarehouseDTO.getUserId().toString());
+            }
+        }
         /**
          * vesion 对比veision 如果一致则更新并加一  不一致则不更新
          */

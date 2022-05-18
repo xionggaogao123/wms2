@@ -11,10 +11,15 @@ import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.common.units.EntityUtils;
 import com.huanhong.wms.BaseController;
-import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.*;
-import com.huanhong.wms.entity.dto.*;
+import com.huanhong.wms.entity.ArrivalVerification;
+import com.huanhong.wms.entity.EnterWarehouse;
+import com.huanhong.wms.entity.EnterWarehouseDetails;
+import com.huanhong.wms.entity.InventoryInformation;
+import com.huanhong.wms.entity.dto.AddEnterWarehouseAndDetails;
+import com.huanhong.wms.entity.dto.UpdateEnterWarehouseAndDetailsDTO;
+import com.huanhong.wms.entity.dto.UpdateEnterWarehouseDTO;
+import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
 import com.huanhong.wms.entity.vo.EnterWarehouseVO;
 import com.huanhong.wms.mapper.EnterWarehouseMapper;
 import com.huanhong.wms.service.*;
@@ -28,8 +33,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,6 +118,8 @@ public class EnterWarehouseController extends BaseController {
     @PutMapping("/update")
     public Result update(@Valid @RequestBody UpdateEnterWarehouseAndDetailsDTO updateEnterWarehouseAndDetailsDTO) {
         try {
+            Integer userId = this.getLoginUserId();
+            updateEnterWarehouseAndDetailsDTO.getUpdateEnterWarehouseDTO().setUserId(userId);
             Result resultUpdateEnterWarehouse = enter_warehouseService.updateEnterWarehouse(updateEnterWarehouseAndDetailsDTO.getUpdateEnterWarehouseDTO());
             if (resultUpdateEnterWarehouse.isOk()) {
                 return enterWarehouseDetailsService.updateEnterWarehouseDetails(updateEnterWarehouseAndDetailsDTO.getUpdateEnterWarehouseDetailsDTOList());

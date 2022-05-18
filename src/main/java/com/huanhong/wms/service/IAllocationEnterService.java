@@ -5,10 +5,8 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.AllocationEnter;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.entity.AllocationOut;
-import com.huanhong.wms.entity.dto.AddAllocationEnterDTO;
-import com.huanhong.wms.entity.dto.AddAllocationOutDTO;
-import com.huanhong.wms.entity.dto.UpdateAllocationEnterDTO;
-import com.huanhong.wms.entity.dto.UpdateAllocationOutDTO;
+import com.huanhong.wms.entity.AllocationPlan;
+import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.AllocationEnterVO;
 import com.huanhong.wms.entity.vo.AllocationOutVO;
 
@@ -66,4 +64,9 @@ public interface IAllocationEnterService extends SuperService<AllocationEnter> {
      * @return
      */
     AllocationEnter getAllocationEnterByProcessInstanceId(String processInstanceId);
+
+    Result add(AddAllocationEnterAndDetailsDTO addAllocationEnterAndDetailsDTO);
+
+    Result allocationPlanToAllocationEnter(AllocationPlan allocationPlan);
+
 }

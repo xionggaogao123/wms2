@@ -1,18 +1,14 @@
 package com.huanhong.wms.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huanhong.wms.SuperService;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.AllocationOut;
-import com.huanhong.wms.SuperService;
 import com.huanhong.wms.entity.AllocationPlan;
-import com.huanhong.wms.entity.PlanUseOut;
 import com.huanhong.wms.entity.dto.AddAllocationOutDTO;
-import com.huanhong.wms.entity.dto.AddAllocationPlanDTO;
+import com.huanhong.wms.entity.dto.AddAllocationOutDTOAndDetails;
 import com.huanhong.wms.entity.dto.UpdateAllocationOutDTO;
-import com.huanhong.wms.entity.dto.UpdateAllocationPlanDTO;
 import com.huanhong.wms.entity.vo.AllocationOutVO;
-import com.huanhong.wms.entity.vo.AllocationPlanVO;
-import com.huanhong.wms.entity.vo.PlanUseOutVO;
 
 /**
  * <p>
@@ -80,5 +76,7 @@ public interface IAllocationOutService extends SuperService<AllocationOut> {
     AllocationOut getAllocationOutByProcessInstanceId(String processInstanceId);
 
 
+    Result add(AddAllocationOutDTOAndDetails addAllocationOutDTOAndDetails);
 
+    Result allocationPlanToAllocationOut(AllocationPlan allocationPlan);
 }

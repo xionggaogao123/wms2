@@ -1,6 +1,7 @@
 package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -17,6 +18,7 @@ import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
+import com.huanhong.wms.entity.dto.AddAllocationOutDetailsDTO;
 import com.huanhong.wms.entity.dto.UpPaStatus;
 import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
 import com.huanhong.wms.entity.param.ApproveParam;
@@ -103,6 +105,10 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
 
     @Resource
     private IMakeInventoryReportDetailsService makeInventoryReportDetailsService;
+    @Resource
+    private IAllocationOutService allocationOutService;
+    @Resource
+    private IAllocationEnterService allocationEnterService;
 
     @Override
     public Result<Integer> syncProcessAssignment() {
@@ -655,6 +661,12 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                             if (f <= 0) {
                                 return Result.failure("数据未更新，流程完成失败");
                             }
+                            //调拨计划审批生效后生成调拨入库调拨出库
+                            // 调拨出库
+                          allocationOutService.allocationPlanToAllocationOut(allocationPlan);
+
+                            // 调拨入库
+                            allocationEnterService.allocationPlanToAllocationEnter(allocationPlan);
 
                             break;
                         //    采购计划

@@ -7,7 +7,6 @@ import lombok.Data;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Data
@@ -15,7 +14,8 @@ import java.time.LocalDateTime;
 public class AddArrivalVerificationDTO {
 
 
-    @NotBlank
+//    @NotBlank 放到子表
+    @Deprecated
     @ApiModelProperty(value = "清点单编号")
     private String originalDocumentNumber;
 
@@ -24,7 +24,8 @@ public class AddArrivalVerificationDTO {
     private String contractNumber;
 
 
-    @NotBlank
+//    @NotBlank 放到子表
+    @Deprecated
     @ApiModelProperty(value = "询价单编号")
     private String rfqNumber;
 
@@ -43,11 +44,13 @@ public class AddArrivalVerificationDTO {
     @ApiModelProperty(value = "检验状态：0-未检验，1-部分检验，2-全部检验")
     private Integer verificationStatus;
 
-    @NotNull
+//    @NotNull 放到子表
+    @Deprecated
     @ApiModelProperty(value = "到货日期")
     private LocalDateTime deliveryDate;
 
-    @NotBlank
+//    @NotBlank 放到子表
+    @Deprecated
     @ApiModelProperty(value = "理货人")
     private String inspector;
 

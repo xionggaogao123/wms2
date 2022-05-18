@@ -444,7 +444,7 @@ public class ArrivalVerificationController extends BaseController {
                         //到货数量
                         addArrivalVerificationDetailsDTOFirst.setArrivalQuantity(inventoryDocumentDetails.getArrivalQuantity());
                         //合格数量
-                        addArrivalVerificationDetailsDTOFirst.setQualifiedQuantity(inventoryDocumentDetails.getArrivalQuantity());
+//                        addArrivalVerificationDetailsDTOFirst.setQualifiedQuantity(inventoryDocumentDetails.getArrivalQuantity());
                         //备注
                         addArrivalVerificationDetailsDTOFirst.setRemark("系统自动生成");
 
@@ -459,7 +459,7 @@ public class ArrivalVerificationController extends BaseController {
                                 //变更到货数量
                                 addArrivalVerificationDetailsDTO.setArrivalQuantity(NumberUtil.add(addArrivalVerificationDetailsDTO.getArrivalQuantity(),inventoryDocumentDetails.getArrivalQuantity()));
                                 //变更合格数量=新到货数量
-                                addArrivalVerificationDetailsDTO.setQualifiedQuantity(addArrivalVerificationDetailsDTO.getArrivalQuantity());
+//                                addArrivalVerificationDetailsDTO.setQualifiedQuantity(addArrivalVerificationDetailsDTO.getArrivalQuantity());
                                 //备注
                                 addArrivalVerificationDetailsDTO.setRemark("系统自动生成");
                                 //执行更新操作后代表当前需求计划明细已经并入采购计划明细中,flag++;
@@ -483,7 +483,7 @@ public class ArrivalVerificationController extends BaseController {
                             //到货数量
                             addArrivalVerificationDetailsDTONew.setArrivalQuantity(inventoryDocumentDetails.getArrivalQuantity());
                             //合格数量
-                            addArrivalVerificationDetailsDTONew.setQualifiedQuantity(inventoryDocumentDetails.getArrivalQuantity());
+//                            addArrivalVerificationDetailsDTONew.setQualifiedQuantity(inventoryDocumentDetails.getArrivalQuantity());
                             //备注
                             addArrivalVerificationDetailsDTONew.setRemark("系统自动生成");
 

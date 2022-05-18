@@ -2,18 +2,18 @@ package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
+import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.AllocationEnterVO;
 import com.huanhong.wms.service.IAllocationEnterDetailsService;
+import com.huanhong.wms.service.IAllocationEnterService;
 import com.huanhong.wms.service.IAllocationOutDetailsService;
 import com.huanhong.wms.service.IAllocationOutService;
 import io.swagger.annotations.Api;
@@ -22,22 +22,17 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.RestController;
-import com.huanhong.wms.BaseController;
-import com.huanhong.wms.mapper.AllocationEnterMapper;
-import com.huanhong.wms.service.IAllocationEnterService;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @ApiSort()
 @Api(tags = "调拨入库")
 @Slf4j
 @RestController
-@RequestMapping("/v1//allocation-enter")
+@RequestMapping("/v1/allocation-enter")
 public class AllocationEnterController extends BaseController {
 
     @Resource
@@ -80,18 +75,8 @@ public class AllocationEnterController extends BaseController {
     @PostMapping("/add")
     public Result add(@Valid @RequestBody AddAllocationEnterAndDetailsDTO addAllocationEnterAndDetailsDTO) {
         try {
-            AddAllocationEnterDTO addAllocationEnterDTO = addAllocationEnterAndDetailsDTO.getAddAllocationEnterDTO();
-            List<AddAllocationEnterDetailsDTO> addAllocationEnterDetailsDTOList = addAllocationEnterAndDetailsDTO.getAddAllocationEnterDetailsDTOList();
-            Result result = allocationEnterService.addAllocationEnterDTO(addAllocationEnterDTO);
-            if (!result.isOk()) {
-                return Result.failure("新增调拨入库失败！");
-            }
-            AllocationEnter allocationEnter = (AllocationEnter) result.getData();
-            String docNum = allocationEnter.getAllocationEnterNumber();
-            for (AddAllocationEnterDetailsDTO addAllocationEnterDetailsDTO : addAllocationEnterDetailsDTOList) {
-                addAllocationEnterDetailsDTO.setAllocationEnterNumber(docNum);
-            }
-            return allocationEnterDetailsService.addAllocationEnterDetails(addAllocationEnterDetailsDTOList);
+            return allocationEnterService.add(addAllocationEnterAndDetailsDTO);
+
         } catch (Exception e) {
             log.error("新增调拨出库失败");
             return Result.failure("系统异常，新增调拨入库失败！");
@@ -217,6 +202,16 @@ public class AllocationEnterController extends BaseController {
         }
         addAllocationEnterAndDetailsDTO.setAddAllocationEnterDetailsDTOList(addAllocationEnterDetailsDTOList);
         return add(addAllocationEnterAndDetailsDTO);
+    }
+
+
+    @ApiOperationSupport(order = 8)
+    @ApiOperation(value = "根据调拨计划单生成调拨入库单")
+    @PutMapping("/allocationPlanToAllocationEnter")
+    public Result allocationPlanToAllocationEnter(@Valid @RequestBody AllocationPlan allocationPlan){
+
+        return allocationEnterService.allocationPlanToAllocationEnter(allocationPlan);
+
     }
 }
 

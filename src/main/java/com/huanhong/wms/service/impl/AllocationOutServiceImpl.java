@@ -5,23 +5,32 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.common.units.StrUtils;
+import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.AllocationOut;
 import com.huanhong.wms.entity.AllocationPlan;
-import com.huanhong.wms.entity.PlanUseOut;
+import com.huanhong.wms.entity.AllocationPlanDetail;
+import com.huanhong.wms.entity.User;
 import com.huanhong.wms.entity.dto.AddAllocationOutDTO;
+import com.huanhong.wms.entity.dto.AddAllocationOutDTOAndDetails;
+import com.huanhong.wms.entity.dto.AddAllocationOutDetailsDTO;
 import com.huanhong.wms.entity.dto.UpdateAllocationOutDTO;
 import com.huanhong.wms.entity.vo.AllocationOutVO;
 import com.huanhong.wms.mapper.AllocationOutMapper;
+import com.huanhong.wms.mapper.UserMapper;
+import com.huanhong.wms.service.IAllocationOutDetailsService;
 import com.huanhong.wms.service.IAllocationOutService;
-import com.huanhong.wms.SuperServiceImpl;
+import com.huanhong.wms.service.IAllocationPlanDetailService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>
@@ -37,6 +46,12 @@ public class AllocationOutServiceImpl extends SuperServiceImpl<AllocationOutMapp
 
     @Resource
     private AllocationOutMapper allocationOutMapper;
+    @Resource
+    private IAllocationOutDetailsService allocationOutDetailsService;
+    @Resource
+    private IAllocationPlanDetailService allocationPlanDetailService;
+    @Resource
+    private UserMapper userMapper;
 
     @Override
     public Page<AllocationOut> pageFuzzyQuery(Page<AllocationOut> allocationOutPage, AllocationOutVO allocationOutVO) {
@@ -185,5 +200,67 @@ public class AllocationOutServiceImpl extends SuperServiceImpl<AllocationOutMapp
         QueryWrapper<AllocationOut> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("process_instance_id",processInstanceId);
         return allocationOutMapper.selectOne(queryWrapper);
+    }
+
+    @Override
+    public Result add(AddAllocationOutDTOAndDetails addAllocationOutDTOAndDetails) {
+        AddAllocationOutDTO addAllocationOutDTO = addAllocationOutDTOAndDetails.getAddAllocationOutDTO();
+        List<AddAllocationOutDetailsDTO> addAllocationOutDetailsDTOList = addAllocationOutDTOAndDetails.getAddAllocationOutDetailsDTOS();
+        Result result = addAllocationOutDTO(addAllocationOutDTO);
+        if (!result.isOk()) {
+            return Result.failure("新增调拨出库失败！");
+        }
+        AllocationOut allocationOut = (AllocationOut) result.getData();
+        for (AddAllocationOutDetailsDTO addAllocationOutDetailsDTO : addAllocationOutDetailsDTOList) {
+            addAllocationOutDetailsDTO.setAllocationOutNumber(allocationOut.getAllocationOutNumber());
+        }
+        return allocationOutDetailsService.addAllocationOutDetails(addAllocationOutDetailsDTOList);
+    }
+
+    @Override
+    public Result allocationPlanToAllocationOut(AllocationPlan allocationPlan) {
+
+        if (ObjectUtil.isNull(allocationPlan)){
+            return Result.failure("单据不存在！");
+        }
+        AddAllocationOutDTOAndDetails addAllocationOutDTOAndDetails = new AddAllocationOutDTOAndDetails();
+
+        List<AddAllocationOutDetailsDTO> addAllocationOutDetailsDTOList = new ArrayList<>();
+        /**
+         * 处理主表
+         */
+        AddAllocationOutDTO addAllocationOutDTO = new AddAllocationOutDTO();
+
+        BeanUtil.copyProperties(allocationPlan,addAllocationOutDTO);
+
+        //库管员
+        addAllocationOutDTO.setLibrarian(allocationPlan.getSendUser());
+        //检验人
+        addAllocationOutDTO.setVerification(allocationPlan.getSendUser());
+        //调入仓库
+        addAllocationOutDTO.setEnterWarehouse(allocationPlan.getReceiveWarehouse());
+
+        addAllocationOutDTO.setRemark("系统自动生成");
+        User user = userMapper.selectOne(Wrappers.<User>lambdaQuery().eq(User::getLoginName,allocationPlan.getSendUser()).last("limit 1"));
+       if(null != user && null != user.getCompanyName()){
+           addAllocationOutDTO.setSendCompany(user.getCompanyName());
+       }
+
+
+        addAllocationOutDTOAndDetails.setAddAllocationOutDTO(addAllocationOutDTO);
+
+        /**
+         * 处理明细
+         */
+        List<AllocationPlanDetail> allocationPlanDetailsList = allocationPlanDetailService.getAllocationPlanDetailsListByDocNum(allocationPlan.getAllocationNumber());
+        for (AllocationPlanDetail allocationPlanDetail:allocationPlanDetailsList
+        ) {
+            AddAllocationOutDetailsDTO addAllocationOutDetailsDTO = new AddAllocationOutDetailsDTO();
+            BeanUtil.copyProperties(allocationPlanDetail,addAllocationOutDetailsDTO);
+            addAllocationOutDetailsDTO.setRemark("系统自动生成");
+            addAllocationOutDetailsDTOList.add(addAllocationOutDetailsDTO);
+        }
+        addAllocationOutDTOAndDetails.setAddAllocationOutDetailsDTOS(addAllocationOutDetailsDTOList);
+        return  add(addAllocationOutDTOAndDetails);
     }
 }

@@ -1,17 +1,18 @@
 package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.AllocationPlanDetail;
-import com.huanhong.wms.entity.ArrivalVerificationDetails;
-import com.huanhong.wms.entity.dto.AddAllocationPlanDetailDTO;
-import com.huanhong.wms.entity.dto.AddArrivalVerificationDetailsDTO;
-import com.huanhong.wms.entity.dto.UpdateAllocationPlanDetailDTO;
-import com.huanhong.wms.entity.dto.UpdateArrivalVerificationDetailsDTO;
-import com.huanhong.wms.mapper.AllocationPlanDetailMapper;
-import com.huanhong.wms.service.IAllocationPlanDetailService;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.huanhong.wms.SuperServiceImpl;
+import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.entity.AllocationPlan;
+import com.huanhong.wms.entity.AllocationPlanDetail;
+import com.huanhong.wms.entity.User;
+import com.huanhong.wms.entity.dto.*;
+import com.huanhong.wms.mapper.AllocationPlanDetailMapper;
+import com.huanhong.wms.mapper.UserMapper;
+import com.huanhong.wms.service.IAllocationPlanDetailService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;

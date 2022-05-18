@@ -1,13 +1,11 @@
 package com.huanhong.wms.service;
 
-import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.AllocationPlanDetail;
 import com.huanhong.wms.SuperService;
-import com.huanhong.wms.entity.ArrivalVerificationDetails;
+import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.entity.AllocationPlan;
+import com.huanhong.wms.entity.AllocationPlanDetail;
 import com.huanhong.wms.entity.dto.AddAllocationPlanDetailDTO;
-import com.huanhong.wms.entity.dto.AddArrivalVerificationDetailsDTO;
 import com.huanhong.wms.entity.dto.UpdateAllocationPlanDetailDTO;
-import com.huanhong.wms.entity.dto.UpdateArrivalVerificationDetailsDTO;
 
 import java.util.List;
 
@@ -48,4 +46,5 @@ public interface IAllocationPlanDetailService extends SuperService<AllocationPla
      * @return
      */
     List<AllocationPlanDetail> getAllocationPlanDetailsListByDocNum(String docNum);
+
 }

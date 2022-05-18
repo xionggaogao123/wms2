@@ -1,17 +1,17 @@
 package com.huanhong.wms.controller;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
-import com.huanhong.wms.bean.LoginUser;
+import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
-import com.huanhong.wms.entity.dto.*;
+import com.huanhong.wms.entity.dto.AddAllocationOutDTOAndDetails;
+import com.huanhong.wms.entity.dto.UpdateAllocationOutAndDetailsDTO;
+import com.huanhong.wms.entity.dto.UpdateAllocationOutDTO;
+import com.huanhong.wms.entity.dto.UpdateAllocationOutDetailsDTO;
 import com.huanhong.wms.entity.vo.AllocationOutVO;
 import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
@@ -20,15 +20,11 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.RestController;
-import com.huanhong.wms.BaseController;
-import com.huanhong.wms.mapper.AllocationOutMapper;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @ApiSort()
 @Api(tags = "调拨出库主表")
@@ -92,18 +88,8 @@ public class AllocationOutController extends BaseController {
         @PostMapping("/add")
         public Result add(@Valid @RequestBody AddAllocationOutDTOAndDetails addAllocationOutDTOAndDetails) {
             try {
-                AddAllocationOutDTO addAllocationOutDTO = addAllocationOutDTOAndDetails.getAddAllocationOutDTO();
-                List<AddAllocationOutDetailsDTO> addAllocationOutDetailsDTOList = addAllocationOutDTOAndDetails.getAddAllocationOutDetailsDTOS();
-                Result result = allocationOutService.addAllocationOutDTO(addAllocationOutDTO);
-                if (!result.isOk()) {
-                    return Result.failure("新增调拨出库失败！");
-                }
-                AllocationOut allocationOut = (AllocationOut) result.getData();
-                String docNum = allocationOut.getAllocationOutNumber();
-                for (AddAllocationOutDetailsDTO addAllocationOutDetailsDTO : addAllocationOutDetailsDTOList) {
-                    addAllocationOutDetailsDTO.setAllocationOutNumber(allocationOut.getAllocationOutNumber());
-                }
-                return allocationOutDetailsService.addAllocationOutDetails(addAllocationOutDetailsDTOList);
+                return allocationOutService.add(addAllocationOutDTOAndDetails);
+
             } catch (Exception e) {
                 log.error("新增调拨出库失败");
                 return Result.failure("系统异常，新增调拨出库失败！");
@@ -237,50 +223,8 @@ public class AllocationOutController extends BaseController {
         @PutMapping("/allocationPlanToAllocationOut")
         public Result allocationPlanToAllocationOut(@Valid @RequestBody AllocationPlan allocationPlan){
 
+            return allocationOutService.allocationPlanToAllocationOut(allocationPlan);
 
-            AddAllocationOutDTOAndDetails addAllocationOutDTOAndDetails = new AddAllocationOutDTOAndDetails();
-
-            List<AddAllocationOutDetailsDTO> addAllocationOutDetailsDTOList = new ArrayList<>();
-
-            LoginUser loginUser = this.getLoginUser();
-
-            if (ObjectUtil.isNull(allocationPlan)){
-                return Result.failure("单据不存在！");
-            }
-
-            /**
-             * 处理主表
-             */
-            AddAllocationOutDTO addAllocationOutDTO = new AddAllocationOutDTO();
-
-            BeanUtil.copyProperties(allocationPlan,addAllocationOutDTO);
-
-            //库管员
-            addAllocationOutDTO.setLibrarian(loginUser.getLoginName());
-            //检验人
-            addAllocationOutDTO.setVerification(loginUser.getLoginName());
-            //调入仓库
-            addAllocationOutDTO.setEnterWarehouse(allocationPlan.getReceiveWarehouse());
-
-            addAllocationOutDTO.setRemark("系统自动生成");
-
-            addAllocationOutDTO.setSendCompany(loginUser.getCompanyId().toString());
-
-            addAllocationOutDTOAndDetails.setAddAllocationOutDTO(addAllocationOutDTO);
-
-            /**
-             * 处理明细
-             */
-            List<AllocationPlanDetail> allocationPlanDetailsList = allocationPlanDetailService.getAllocationPlanDetailsListByDocNum(allocationPlan.getAllocationNumber());
-            for (AllocationPlanDetail allocationPlanDetail:allocationPlanDetailsList
-                 ) {
-                AddAllocationOutDetailsDTO addAllocationOutDetailsDTO = new AddAllocationOutDetailsDTO();
-                BeanUtil.copyProperties(allocationPlanDetail,addAllocationOutDetailsDTO);
-                addAllocationOutDetailsDTO.setRemark("系统自动生成");
-                addAllocationOutDetailsDTOList.add(addAllocationOutDetailsDTO);
-            }
-            addAllocationOutDTOAndDetails.setAddAllocationOutDetailsDTOS(addAllocationOutDetailsDTOList);
-            return  add(addAllocationOutDTOAndDetails);
         }
 
 

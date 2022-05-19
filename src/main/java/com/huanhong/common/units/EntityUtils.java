@@ -500,7 +500,7 @@ public class EntityUtils {
             case "estimatedAmount":
                 jsonObject.put("name", "预估金额");
                 jsonObject.put("type", "text");
-                jsonObject.put("class", "input");
+                jsonObject.put("class", "readonly");
                 return jsonObject;
             case "arrivalTime":
                 jsonObject.put("name", "要求到货时间");

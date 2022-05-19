@@ -28,7 +28,6 @@ public class AddInventoryDocumentDetailsDTO {
     @ApiModelProperty(value = "应到数量")
     private Double receivableQuantity;
 
-    @NotNull
     @ApiModelProperty(value = "到货数量")
     private Double arrivalQuantity;
 

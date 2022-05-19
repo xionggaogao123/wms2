@@ -1,9 +1,9 @@
 package com.huanhong.wms.controller;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -153,7 +153,7 @@ public class EnterWarehouseController extends BaseController {
             }
             // 恢复到货检验单可导入
             String originalDocumentNumber = enterWarehouse.getVerificationDocumentNumber();
-            String[] originalDocumentNumbers = Convert.toStrArray(originalDocumentNumber);
+            String[] originalDocumentNumbers = JSON.parseArray(originalDocumentNumber).toArray(new String[]{});
             arrivalVerificationService.updateIsImportedByDocumentNumbers(0,"",originalDocumentNumbers);
             return Result.success("删除成功！");
         }else {

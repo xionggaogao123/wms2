@@ -1,6 +1,5 @@
 package com.huanhong.wms.controller;
 
-import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
@@ -32,7 +31,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
-@RequestMapping("/v1//procurement-plan")
+@RequestMapping("/v1/procurement-plan")
 @ApiSort()
 @Api(tags = "采购计划主表")
 public class ProcurementPlanController extends BaseController {
@@ -148,7 +147,7 @@ public class ProcurementPlanController extends BaseController {
             }
             // 恢复采购计划可导入
             String originalDocumentNumber = procurementPlan.getOriginalDocumentNumber();
-            String[] originalDocumentNumbers = Convert.toStrArray(originalDocumentNumber);
+            String[] originalDocumentNumbers = JSON.parseArray(originalDocumentNumber).toArray(new String[]{});
             requirementsPlanningService.updateIsImportedByPlanNumbers(0,"",originalDocumentNumbers);
         }
         return Result.success("删除成功");

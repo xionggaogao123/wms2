@@ -31,7 +31,7 @@ import java.util.List;
 @Slf4j
 @Validated
 @RestController
-@RequestMapping("/v1//requirements-planning")
+@RequestMapping("/v1/requirements-planning")
 @ApiSort()
 @Api(tags = "需求计划表")
 public class RequirementsPlanningController extends BaseController {

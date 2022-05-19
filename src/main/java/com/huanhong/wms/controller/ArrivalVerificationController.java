@@ -188,7 +188,7 @@ public class ArrivalVerificationController extends BaseController {
             }
             // 恢复清点单可导入
             String originalDocumentNumber = arrivalVerification.getOriginalDocumentNumber();
-            String[] originalDocumentNumbers = Convert.toStrArray(originalDocumentNumber);
+            String[] originalDocumentNumbers = JSON.parseArray(originalDocumentNumber).toArray(new String[]{});
             inventoryDocumentService.updateIsImportedByDocumentNumbers(0,"",originalDocumentNumbers);
         }
         return Result.success("删除成功");

@@ -349,7 +349,10 @@ public class ProcurementPlanController extends BaseController {
                         addProcurementPlanDetailsDTOFirst.setWarehouseId(requirementsPlanning.getWarehouseId());
                         //备注
                         addProcurementPlanDetailsDTOFirst.setRemark("系统自动生成");
-
+                        // 到货时间
+                        addProcurementPlanDetailsDTOFirst.setRequestArrivalTime(requiremetsPlanningDetails.getArrivalTime());
+                        addProcurementPlanDetailsDTOFirst.setMaterialId(requiremetsPlanningDetails.getMaterialId());
+                        addProcurementPlanDetailsDTOFirst.setMaterialName(requiremetsPlanningDetails.getMaterialName());
                         addProcurementPlanDetailsDTOList.add(addProcurementPlanDetailsDTOFirst);
                     }else {
                         for (int j =0; j<addProcurementPlanDetailsDTOList.size();j++) {
@@ -365,6 +368,9 @@ public class ProcurementPlanController extends BaseController {
                                 addProcurementPlanDetailsDTO.setEstimatedAmount(NumberUtil.add(addProcurementPlanDetailsDTO.getEstimatedAmount(),requiremetsPlanningDetails.getEstimatedAmount()));
                                 //备注
                                 addProcurementPlanDetailsDTO.setRemark("系统自动生成");
+                                if(addProcurementPlanDetailsDTO.getRequestArrivalTime().compareTo(requiremetsPlanningDetails.getArrivalTime())>0){
+                                    addProcurementPlanDetailsDTO.setRequestArrivalTime(requiremetsPlanningDetails.getArrivalTime());
+                                }
                                 //执行更新操作后代表当前需求计划明细已经并入采购计划明细中,flag++;
                                 flag++;
                                 //合并后跳出对比物料编码的循环
@@ -386,9 +392,12 @@ public class ProcurementPlanController extends BaseController {
                             //预估金额
                             addProcurementPlanDetailsDTONew.setEstimatedAmount(requiremetsPlanningDetails.getEstimatedAmount());
                             //预期到货时间
+                            addProcurementPlanDetailsDTONew.setRequestArrivalTime(requiremetsPlanningDetails.getArrivalTime());
                             addProcurementPlanDetailsDTONew.setWarehouseId(requirementsPlanning.getWarehouseId());
                             //备注
                             addProcurementPlanDetailsDTONew.setRemark("系统自动生成");
+                            addProcurementPlanDetailsDTONew.setMaterialId(requiremetsPlanningDetails.getMaterialId());
+                            addProcurementPlanDetailsDTONew.setMaterialName(requiremetsPlanningDetails.getMaterialName());
                             addProcurementPlanDetailsDTOList.add(addProcurementPlanDetailsDTONew);
                          }
                        }

@@ -78,6 +78,13 @@ public class UpdateMakeInventoryDetailsDTO {
     @ApiModelProperty(value = "供应商")
     private String supplier;
 
+    @ApiModelProperty(value = "盘点人Id")
+    private Integer checkerId;
+
+    @ApiModelProperty(value = "盘点人名")
+    private String checkerName;
+
+
     @Min(0)
     @Max(5)
     @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")

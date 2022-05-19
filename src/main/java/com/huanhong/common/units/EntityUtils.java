@@ -1237,13 +1237,28 @@ public class EntityUtils {
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "readOnly");
                 return jsonObject;
-            case "userId":
-                jsonObject.put("name", "盘点人");
+            case "checkerIds":
+                jsonObject.put("name", "盘点人列表");
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "readOnly");
                 return jsonObject;
             case "auditId":
-                jsonObject.put("name", "稽核人");
+                jsonObject.put("name", "稽核人Id");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "auditName":
+                jsonObject.put("name", "稽核人姓名");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "checkerId":
+                jsonObject.put("name", "盘点人");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "checkerName":
+                jsonObject.put("name", "盘点人姓名");
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "readOnly");
                 return jsonObject;
@@ -1507,6 +1522,31 @@ public class EntityUtils {
                 value.put("1", "暂存库存");
                 value.put("2","临时库存");
                 jsonObject.put("value", value);
+                return jsonObject;
+            case "checkerIds":
+                jsonObject.put("name", "盘点人列表");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "auditId":
+                jsonObject.put("name", "稽核人Id");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "auditName":
+                jsonObject.put("name", "稽核人姓名");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "checkerId":
+                jsonObject.put("name", "盘点人");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "checkerName":
+                jsonObject.put("name", "盘点人姓名");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
                 return jsonObject;
             case "inventoryCredit":
                 jsonObject.put("name", "库存数量");

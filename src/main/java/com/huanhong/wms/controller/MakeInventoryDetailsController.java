@@ -1,5 +1,6 @@
 package com.huanhong.wms.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -74,6 +75,23 @@ public class MakeInventoryDetailsController extends BaseController {
         @DeleteMapping("delete/{id}")
         public Result delete(@PathVariable Integer id) {
             return render(makeInventoryDetailsService.removeById(id));
+        }
+
+
+        @ApiOperationSupport(order = 5)
+        @ApiOperation(value = "根据id查询盘点单明细", notes = "生成代码")
+        @GetMapping("getMakeInventoryDetailsById/{id}")
+        public Result getMakeInventoryDetailsById(@PathVariable Integer id) {
+            MakeInventoryDetails makeInventoryDetails = makeInventoryDetailsService.getMakeInventoryDetailsById(id);
+            return ObjectUtil.isNotNull(makeInventoryDetails)?Result.success(makeInventoryDetails):Result.failure("查询为空！");
+        }
+
+        @ApiOperationSupport(order = 6)
+        @ApiOperation(value = "根据id查询盘点单明细", notes = "生成代码")
+        @GetMapping("/getMakeInventoryDetailsById")
+        public Result getMakeInventoryDetailsByDocNumAndWarehouseId(@RequestParam String docNum,@RequestParam String warehouseId) {
+            List<MakeInventoryDetails> makeInventoryDetailsList = makeInventoryDetailsService.getMakeInventoryDetailsByDocNumAndWarehouseId(docNum,warehouseId);
+            return ObjectUtil.isNotNull(makeInventoryDetailsList)?Result.success(makeInventoryDetailsList):Result.failure("查询为空！");
         }
 
 }

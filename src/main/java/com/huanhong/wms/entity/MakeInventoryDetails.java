@@ -95,6 +95,14 @@ public class MakeInventoryDetails extends SuperEntity {
     @ApiModelProperty(value = "供应商")
     private String supplier;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "盘点人Id")
+    private Integer checkerId;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "盘点人名")
+    private String checkerName;
+
     @ApiModelProperty(value = "版本-乐观锁")
     private Integer version;
 

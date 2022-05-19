@@ -921,7 +921,7 @@ public class MakeInventoryController extends BaseController {
         if (ObjectUtil.isEmpty(makeInventory)) {
             return Result.success("未查到相关数据！");
         }
-        List<MakeInventoryDetails> makeInventoryDetailsList = new ArrayList<>();
+        List<MakeInventoryDetails> makeInventoryDetailsList = makeInventoryDetailsService.getMakeInventoryDetailsByDocNumAndWarehouseId(docNum,warehouseId);
         JSONArray jsonArray = new JSONArray();
         for (MakeInventoryDetails makeInventoryDetails:makeInventoryDetailsList
              ) {
@@ -1117,5 +1117,6 @@ public class MakeInventoryController extends BaseController {
             return Result.failure("同步更新盘点报告失败！");
         }
     }
+
 }
 

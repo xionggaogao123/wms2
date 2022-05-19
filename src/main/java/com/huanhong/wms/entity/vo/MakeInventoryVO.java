@@ -32,9 +32,6 @@ public class MakeInventoryVO {
     @ApiModelProperty(value = "库存类型：0-暂存库存 1-正式库存 2-临时库存 3-全部 ")
     private Integer inventoryType;
 
-    @ApiModelProperty(value = "稽核人")
-    private String auditId;
-
     @ApiModelProperty(value = "货主： 0-泰丰盛和  1-矿上自有 2-全部")
     private Integer consignor;
 

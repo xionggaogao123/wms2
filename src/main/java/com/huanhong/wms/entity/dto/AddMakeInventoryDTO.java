@@ -58,8 +58,11 @@ public class AddMakeInventoryDTO {
     @ApiModelProperty(value = "盘点人")
     private String checkerIds;
 
-    @ApiModelProperty(value = "稽核人")
-    private String auditId;
+    @ApiModelProperty(value = "稽核人Id")
+    private Integer auditId;
+
+    @ApiModelProperty(value = "稽核人姓名")
+    private String auditName;
 
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;

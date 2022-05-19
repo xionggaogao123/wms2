@@ -49,8 +49,12 @@ public class MakeInventory extends SuperEntity {
     private String checkerIds;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "稽核人")
-    private String auditId;
+    @ApiModelProperty(value = "稽核人Id")
+    private Integer auditId;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "稽核人姓名")
+    private String auditName;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "驳回原因")

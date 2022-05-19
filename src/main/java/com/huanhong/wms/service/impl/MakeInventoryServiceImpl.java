@@ -108,10 +108,6 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
         query.eq(ObjectUtil.isNotNull(makeInventoryVO.getConsignor()),"consignor",makeInventoryVO.getConsignor());
 
 
-        query.eq(StringUtils.isNotBlank(makeInventoryVO.getAuditId()),"audit_id",makeInventoryVO.getAuditId());
-
-
-
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         /**
          * 盘点单创建时间区间查询

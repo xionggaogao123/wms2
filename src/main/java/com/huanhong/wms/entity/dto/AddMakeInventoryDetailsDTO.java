@@ -67,6 +67,12 @@ public class AddMakeInventoryDetailsDTO {
     @ApiModelProperty(value = "计量单位")
     private String measurementUnit;
 
+    @ApiModelProperty(value = "盘点人Id")
+    private Integer checkerId;
+
+    @ApiModelProperty(value = "盘点人名")
+    private String checkerName;
+
     @Min(0)
     @Max(1)
     @ApiModelProperty(value = "状态: 0-待盘点，1-已盘点")

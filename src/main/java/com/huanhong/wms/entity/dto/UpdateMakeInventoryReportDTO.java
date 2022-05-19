@@ -44,7 +44,10 @@ public class UpdateMakeInventoryReportDTO {
     private Integer checkStatus;
 
     @ApiModelProperty(value = "盘点人")
-    private String userId;
+    private String checkerIds;
+
+    @ApiModelProperty(value = "稽核人Id")
+    private Integer auditId;
 
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;

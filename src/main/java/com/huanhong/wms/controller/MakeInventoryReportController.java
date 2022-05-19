@@ -86,6 +86,7 @@ public class MakeInventoryReportController extends BaseController {
                 String docNum = makeInventoryReport.getReportNumber();
                 String warehouseId = makeInventoryReport.getWarehouseId();
                 List<AddMakeInventoryReportDetailsDTO> addMakeInventoryReportDetailsDTOList = addMakeInventoryReportAndDetailsDTO.getAddMakeInventoryReportDetailsDTOList();
+
                 if (ObjectUtil.isNotNull(addMakeInventoryReportDetailsDTOList)) {
                     for (AddMakeInventoryReportDetailsDTO details : addMakeInventoryReportDetailsDTOList
                     ) {

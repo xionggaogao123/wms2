@@ -33,11 +33,8 @@ public class UpdateMakeInventoryReportDetailsDTO {
 
     @Min(0)
     @Max(3)
-    @ApiModelProperty(value = "盘点状态: 0-待盘点，1-一致 ，2-盘盈 ，3-盘亏")
+    @ApiModelProperty(value = "盘点状态: 0-待盘点，1-一致，2-盘盈，3-盘亏")
     private Integer checkStatusDetails;
-
-    @ApiModelProperty(value = "盘点人")
-    private String userId;
 
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;
@@ -63,6 +60,13 @@ public class UpdateMakeInventoryReportDetailsDTO {
     @ApiModelProperty(value = "盘点结束时间")
     private LocalDateTime endTime;
 
+    @ApiModelProperty(value = "盘点人Id")
+    private Integer checkerId;
+
+    @ApiModelProperty(value = "盘点人名")
+    private String checkerName;
+
     @ApiModelProperty(value = "备注")
     private String remark;
+
 }

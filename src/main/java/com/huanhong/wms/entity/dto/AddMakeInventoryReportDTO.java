@@ -45,7 +45,10 @@ public class AddMakeInventoryReportDTO {
 
     @NotBlank
     @ApiModelProperty(value = "盘点人")
-    private String userId;
+    private String checkerIds;
+
+    @ApiModelProperty(value = "稽核人Id")
+    private Integer auditId;
 
     @NotBlank
     @ApiModelProperty(value = "库房编号")

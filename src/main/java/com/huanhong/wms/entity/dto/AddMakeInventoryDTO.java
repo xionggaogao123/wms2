@@ -56,7 +56,7 @@ public class AddMakeInventoryDTO {
     private Integer checkStatus;
 
     @ApiModelProperty(value = "盘点人")
-    private List<Integer> userId;
+    private String checkerIds;
 
     @ApiModelProperty(value = "稽核人")
     private String auditId;

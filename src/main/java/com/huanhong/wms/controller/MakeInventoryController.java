@@ -776,6 +776,7 @@ public class MakeInventoryController extends BaseController {
             /**
              * 如果当前时间晚于盘点开始时间则不能更新
              */
+
             //如果想比较日期则写成"yyyy-MM-dd"就可以了
             //SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
             //将字符串形式的时间转化为Date类型的时间
@@ -803,8 +804,6 @@ public class MakeInventoryController extends BaseController {
             log.info("更新盘点明细{}",resultDetails);
 
 
-
-
             //明细更新完成后,查询所有明细是否已完成
             MakeInventory makeInventory = makeInventoryService.getMakeInventoryById(updateMakeInventoryDTO.getId());
 
@@ -816,75 +815,12 @@ public class MakeInventoryController extends BaseController {
                 result = makeInventoryService.updateMakeInventory(updateMakeInventoryDTO);
             }
 
-
             /**
-             * 盘点单更新明细后，更新盘点报告中的对应明细
+             * 如果盘点报告单已生成则同步更新盘点报告
              */
-            //物料编码 批次 货位编码
-            HashMap resultMap = (HashMap)resultDetails.getData();
-            List<UpdateMakeInventoryDetailsDTO> listSuccess = (List<UpdateMakeInventoryDetailsDTO>) resultMap.get("success");
-
-
-            List<UpdateMakeInventoryReportDetailsDTO> updateMakeInventoryReportDetailsDTOList = new ArrayList<>();
-            MakeInventoryReportDetails makeInventoryReportDetails = new MakeInventoryReportDetails();
-
-            for (UpdateMakeInventoryDetailsDTO updateMakeInventoryDetailsDTO:listSuccess
-            ) {
-                UpdateMakeInventoryReportDetailsDTO updateMakeInventoryReportDetailsDTO = new UpdateMakeInventoryReportDetailsDTO();
-                String materialCoding = updateMakeInventoryDetailsDTO.getMaterialCoding();
-                String batch = updateMakeInventoryDetailsDTO.getBatch();
-                String cargoSpaceId = updateMakeInventoryDetailsDTO.getCargoSpaceId();
-                makeInventoryReportDetails  = makeInventoryReportDetailsService.getMakeInventoryReportDetailsByMaterialCodingAndBatchAndCargoSpaceId(materialCoding,batch,cargoSpaceId);
-                if (ObjectUtil.isNotEmpty(makeInventoryReportDetails)){
-                    BeanUtil.copyProperties(makeInventoryReportDetails,updateMakeInventoryReportDetailsDTO);
-                    //实盘数量
-                    updateMakeInventoryReportDetailsDTO.setCheckCredit(updateMakeInventoryDetailsDTO.getCheckCredit());
-                    //盈亏数量
-                    updateMakeInventoryReportDetailsDTO.setFinalCredit(NumberUtil.sub(updateMakeInventoryDetailsDTO.getInventoryCredit(),updateMakeInventoryDetailsDTO.getCheckCredit()));
-                    //盈亏金额
-                    if (updateMakeInventoryDTO.getConsignor()==0){
-                        updateMakeInventoryReportDetailsDTO.setFinalAmounts(NumberUtil.mul(updateMakeInventoryDetailsDTO.getUnitPrice(),updateMakeInventoryReportDetailsDTO.getFinalAmounts()));
-                    }else {
-                        updateMakeInventoryReportDetailsDTO.setFinalAmounts(NumberUtil.mul(updateMakeInventoryDetailsDTO.getSalesUnitPrice(),updateMakeInventoryReportDetailsDTO.getFinalAmounts()));
-                    }
-                    //差异原因
-                    updateMakeInventoryReportDetailsDTO.setReason(updateMakeInventoryDetailsDTO.getReason());
-                    //盘点状态
-                    /**
-                     * 盈亏数量大于0则亏，等于0一致，小于零则盈
-                     */
-                    int event = updateMakeInventoryReportDetailsDTO.getFinalAmounts().compareTo(BigDecimal.valueOf(0));
-
-                    //"盘点状态: 0-待盘点，1-一致 ，2-盘盈 ，3-盘亏"
-                    if (event==0){
-                        updateMakeInventoryReportDetailsDTO.setCheckStatusDetails(1);
-                    }else if (event>0){
-                        updateMakeInventoryReportDetailsDTO.setCheckStatusDetails(3);
-                    }else {
-                        updateMakeInventoryReportDetailsDTO.setCheckStatusDetails(2);
-                    }
-
-                    updateMakeInventoryReportDetailsDTOList.add(updateMakeInventoryReportDetailsDTO);
-                }
-            }
-
-            //更新盘点报告list
-            Result resultUpdateReport = makeInventoryReportDetailsService.updateInventoryDocumentDetailsList(updateMakeInventoryReportDetailsDTOList);
-
-            log.info("更新盘点报告明细{}",resultUpdateReport);
-
-            int countReport = makeInventoryReportDetailsService.getMakeInventoryReportDetailsByDocNumAndWarehouseIdNotComplete(makeInventoryReportDetails.getReportNumber(),makeInventoryReportDetails.getWarehouseId());
-
-            /**
-             *
-             */
-            if (countReport==0){
-                UpdateMakeInventoryReportDTO updateMakeInventoryReportDTO = new UpdateMakeInventoryReportDTO();
-                MakeInventoryReport makeInventoryReport = makeInventoryReportService.getMakeInventoryReportByDocNumAndWarehouse(makeInventoryReportDetails.getReportNumber(),makeInventoryReportDetails.getWarehouseId());
-                updateMakeInventoryReportDTO.setId(makeInventoryReport.getId());
-                updateMakeInventoryReportDTO.setCheckStatus(1);
-                Result resultReport = makeInventoryReportService.updateMakeInventoryReport(updateMakeInventoryReportDTO);
-                log.info("更新盘点报告主表{}",resultReport);
+            if (ObjectUtil.isNotNull(makeInventoryReportService.getMakeInventoryReportByDocNumAndWarehouse(makeInventory.getDocumentNumber(), makeInventory.getWarehouseId()))){
+                Result resultUpdateReport = updateMakeInventoryReport(resultDetails);
+                log.info("同步更新报告单{}",resultUpdateReport);
             }
 
             return result;
@@ -1093,6 +1029,92 @@ public class MakeInventoryController extends BaseController {
         } catch (Exception e) {
             log.error("流程启动接口异常", e);
             return Result.failure("系统异常");
+        }
+    }
+
+    /**
+     * 盘点报告跟随盘点单同步更新
+     * @param resultDetails
+     * @return
+     */
+    public Result updateMakeInventoryReport(Result resultDetails){
+
+        /**
+         * 盘点单更新明细后，更新盘点报告中的对应明细
+         */
+        //物料编码 批次 货位编码
+        try {
+            JSONObject jsonObject = (JSONObject) resultDetails.getData();
+
+            List<UpdateMakeInventoryDetailsDTO> listSuccess = (List<UpdateMakeInventoryDetailsDTO>) jsonObject.get("success");
+
+            List<UpdateMakeInventoryReportDetailsDTO> updateMakeInventoryReportDetailsDTOList = new ArrayList<>();
+
+            MakeInventoryReportDetails makeInventoryReportDetails = new MakeInventoryReportDetails();
+
+            for (UpdateMakeInventoryDetailsDTO updateMakeInventoryDetailsDTO:listSuccess
+            ) {
+                UpdateMakeInventoryReportDetailsDTO updateMakeInventoryReportDetailsDTO = new UpdateMakeInventoryReportDetailsDTO();
+                String materialCoding = updateMakeInventoryDetailsDTO.getMaterialCoding();
+                String batch = updateMakeInventoryDetailsDTO.getBatch();
+                String cargoSpaceId = updateMakeInventoryDetailsDTO.getCargoSpaceId();
+                makeInventoryReportDetails  = makeInventoryReportDetailsService.getMakeInventoryReportDetailsByMaterialCodingAndBatchAndCargoSpaceId(materialCoding,batch,cargoSpaceId);
+                if (ObjectUtil.isNotEmpty(makeInventoryReportDetails)){
+                    BeanUtil.copyProperties(makeInventoryReportDetails,updateMakeInventoryReportDetailsDTO);
+                    //实盘数量
+                    updateMakeInventoryReportDetailsDTO.setCheckCredit(updateMakeInventoryDetailsDTO.getCheckCredit());
+                    //盈亏数量
+                    updateMakeInventoryReportDetailsDTO.setFinalCredit(NumberUtil.sub(updateMakeInventoryDetailsDTO.getInventoryCredit(),updateMakeInventoryDetailsDTO.getCheckCredit()));
+                    //盈亏金额
+                    if (makeInventoryReportDetails.getConsignor()==0){
+                        updateMakeInventoryReportDetailsDTO.setFinalAmounts(NumberUtil.mul(updateMakeInventoryDetailsDTO.getUnitPrice(),updateMakeInventoryReportDetailsDTO.getFinalAmounts()));
+                    }else {
+                        updateMakeInventoryReportDetailsDTO.setFinalAmounts(NumberUtil.mul(updateMakeInventoryDetailsDTO.getSalesUnitPrice(),updateMakeInventoryReportDetailsDTO.getFinalAmounts()));
+                    }
+                    //差异原因
+                    updateMakeInventoryReportDetailsDTO.setReason(updateMakeInventoryDetailsDTO.getReason());
+                    //盘点状态
+                    /**
+                     * 盈亏数量大于0则亏，等于0一致，小于零则盈
+                     */
+                    int event = updateMakeInventoryReportDetailsDTO.getFinalAmounts().compareTo(BigDecimal.valueOf(0));
+
+                    //"盘点状态: 0-待盘点，1-一致 ，2-盘盈 ，3-盘亏"
+                    if (event==0){
+                        updateMakeInventoryReportDetailsDTO.setCheckStatusDetails(1);
+                    }else if (event>0){
+                        updateMakeInventoryReportDetailsDTO.setCheckStatusDetails(3);
+                    }else {
+                        updateMakeInventoryReportDetailsDTO.setCheckStatusDetails(2);
+                    }
+
+                    updateMakeInventoryReportDetailsDTOList.add(updateMakeInventoryReportDetailsDTO);
+                }
+            }
+
+            //更新盘点报告list
+            Result resultUpdateReport = makeInventoryReportDetailsService.updateMakeInventoryReportDetailsList(updateMakeInventoryReportDetailsDTOList);
+
+            log.info("更新盘点报告明细{}",resultUpdateReport);
+
+            int countReport = makeInventoryReportDetailsService.getMakeInventoryReportDetailsByDocNumAndWarehouseIdNotComplete(makeInventoryReportDetails.getReportNumber(),makeInventoryReportDetails.getWarehouseId());
+
+            /**
+             *
+             */
+            if (countReport==0){
+                UpdateMakeInventoryReportDTO updateMakeInventoryReportDTO = new UpdateMakeInventoryReportDTO();
+                MakeInventoryReport makeInventoryReport = makeInventoryReportService.getMakeInventoryReportByReportNumAndWarehouse(makeInventoryReportDetails.getReportNumber(),makeInventoryReportDetails.getWarehouseId());
+                updateMakeInventoryReportDTO.setId(makeInventoryReport.getId());
+                updateMakeInventoryReportDTO.setCheckStatus(1);
+                Result resultReport = makeInventoryReportService.updateMakeInventoryReport(updateMakeInventoryReportDTO);
+                log.info("更新盘点报告主表{}",resultReport);
+                return resultReport;
+            }
+            return resultUpdateReport;
+        }catch (Exception e){
+            log.error("同步更新盘点报告失败,",e);
+            return Result.failure("同步更新盘点报告失败！");
         }
     }
 }

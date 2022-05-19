@@ -3,6 +3,7 @@ package com.huanhong.wms.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.MakeInventory;
+import com.huanhong.wms.entity.MakeInventoryDetails;
 import com.huanhong.wms.entity.MakeInventoryReport;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.entity.dto.AddMakeInventoryDTO;
@@ -11,6 +12,8 @@ import com.huanhong.wms.entity.dto.UpdateMakeInventoryDTO;
 import com.huanhong.wms.entity.dto.UpdateMakeInventoryReportDTO;
 import com.huanhong.wms.entity.vo.MakeInventoryReportVO;
 import com.huanhong.wms.entity.vo.MakeInventoryVO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -58,12 +61,20 @@ public interface IMakeInventoryReportService extends SuperService<MakeInventoryR
 
 
     /**
-     * 通过单据编号和仓库号获取盘点单
+     * 通过盘点计划单据编号和仓库号获取盘点单
      * @param docNum
      * @param warehouseId
      * @return
      */
     MakeInventoryReport getMakeInventoryReportByDocNumAndWarehouse(String docNum, String warehouseId);
 
+
+    /**
+     * 通过盘点单单据编号和仓库号获取盘点单
+     * @param reportNum
+     * @param warehouseId
+     * @return
+     */
+    MakeInventoryReport  getMakeInventoryReportByReportNumAndWarehouse(String reportNum, String warehouseId);
 
 }

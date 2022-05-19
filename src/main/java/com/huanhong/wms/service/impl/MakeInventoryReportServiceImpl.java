@@ -10,6 +10,7 @@ import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.AllocationEnter;
+import com.huanhong.wms.entity.MakeInventoryDetails;
 import com.huanhong.wms.entity.MakeInventoryReport;
 import com.huanhong.wms.entity.dto.AddMakeInventoryReportDTO;
 import com.huanhong.wms.entity.dto.UpdateMakeInventoryReportDTO;
@@ -21,7 +22,9 @@ import com.huanhong.wms.SuperServiceImpl;
 import jdk.nashorn.internal.ir.annotations.Reference;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * <p>
@@ -34,7 +37,7 @@ import java.time.format.DateTimeFormatter;
 @Service
 public class MakeInventoryReportServiceImpl extends SuperServiceImpl<MakeInventoryReportMapper, MakeInventoryReport> implements IMakeInventoryReportService {
 
-    @Reference
+    @Resource
     private MakeInventoryReportMapper makeInventoryReportMapper;
 
     @Override
@@ -138,7 +141,7 @@ public class MakeInventoryReportServiceImpl extends SuperServiceImpl<MakeInvento
             makeInventoryReport.setReportNumber(orderNo);
             int i = makeInventoryReportMapper.insert(makeInventoryReport);
             if (i > 0) {
-                return Result.success(getMakeInventoryReportByDocNumAndWarehouse(addMakeInventoryReportDTO.getWarehouseId(),orderNo), "新增成功");
+                return Result.success(getMakeInventoryReportByReportNumAndWarehouse(orderNo,addMakeInventoryReportDTO.getWarehouseId()), "新增成功");
             } else {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "新增失败！");
             }
@@ -164,6 +167,14 @@ public class MakeInventoryReportServiceImpl extends SuperServiceImpl<MakeInvento
 
     @Override
     public MakeInventoryReport getMakeInventoryReportByDocNumAndWarehouse(String docNum, String warehouseId) {
+        QueryWrapper<MakeInventoryReport> queryWrapperMakeInventoryReport = new QueryWrapper<>();
+        queryWrapperMakeInventoryReport.eq("document_number",docNum);
+        queryWrapperMakeInventoryReport.eq("warehouse_id",warehouseId);
+        return makeInventoryReportMapper.selectOne(queryWrapperMakeInventoryReport);
+    }
+
+    @Override
+    public MakeInventoryReport getMakeInventoryReportByReportNumAndWarehouse(String docNum, String warehouseId) {
         QueryWrapper<MakeInventoryReport> queryWrapperMakeInventoryReport = new QueryWrapper<>();
         queryWrapperMakeInventoryReport.eq("report_number",docNum);
         queryWrapperMakeInventoryReport.eq("warehouse_id",warehouseId);

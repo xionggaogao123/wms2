@@ -66,7 +66,7 @@ public class MakeInventoryReportDetailsController extends BaseController {
         @ApiOperation(value = "更新", notes = "生成代码")
         @PutMapping("/update")
         public Result update(@Valid @RequestBody List<UpdateMakeInventoryReportDetailsDTO> updateMakeInventoryReportDetailsDTOList) {
-              return makeInventoryReportDetailsService.updateInventoryDocumentDetailsList(updateMakeInventoryReportDetailsDTOList);
+              return makeInventoryReportDetailsService.updateMakeInventoryReportDetailsList(updateMakeInventoryReportDetailsDTOList);
         }
 
         @ApiOperationSupport(order = 4)

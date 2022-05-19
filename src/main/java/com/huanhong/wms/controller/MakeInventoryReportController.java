@@ -108,7 +108,7 @@ public class MakeInventoryReportController extends BaseController {
             try {
                 Result resultUpdateMakeInventory = makeInventoryReportService.updateMakeInventoryReport(updateMakeInventoryReportAndDetailsDTO.getUpdateMakeInventoryReportDTO());
                 if (resultUpdateMakeInventory.isOk()) {
-                    return makeInventoryReportDetailsService.updateInventoryDocumentDetailsList(updateMakeInventoryReportAndDetailsDTO.getUpdateMakeInventoryReportDetailsDTOList());
+                    return makeInventoryReportDetailsService.updateMakeInventoryReportDetailsList(updateMakeInventoryReportAndDetailsDTO.getUpdateMakeInventoryReportDetailsDTOList());
                 } else {
                     return Result.failure("更新失败");
                 }

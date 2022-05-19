@@ -46,7 +46,7 @@ public class MakeInventory extends SuperEntity {
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "盘点人")
-    private List<Integer> userId;
+    private String checkerIds;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "稽核人")

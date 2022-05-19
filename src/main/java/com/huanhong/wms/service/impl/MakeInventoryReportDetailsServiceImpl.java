@@ -52,7 +52,7 @@ public class MakeInventoryReportDetailsServiceImpl extends SuperServiceImpl<Make
     }
 
     @Override
-    public Result updateInventoryDocumentDetailsList(List<UpdateMakeInventoryReportDetailsDTO> updateMakeInventoryReportDetailsDTOList) {
+    public Result updateMakeInventoryReportDetailsList(List<UpdateMakeInventoryReportDetailsDTO> updateMakeInventoryReportDetailsDTOList) {
         List<UpdateMakeInventoryReportDetailsDTO> listSuccess = new ArrayList<>();
         List<UpdateMakeInventoryReportDetailsDTO> listFalse = new ArrayList<>();
         MakeInventoryReportDetails makeInventoryReportDetailsOld = new MakeInventoryReportDetails();

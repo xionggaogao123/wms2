@@ -34,7 +34,7 @@ public interface IMakeInventoryReportDetailsService extends SuperService<MakeInv
      * @param updateMakeInventoryReportDetailsDTOList
      * @return
      */
-    Result updateInventoryDocumentDetailsList(List<UpdateMakeInventoryReportDetailsDTO> updateMakeInventoryReportDetailsDTOList);
+    Result updateMakeInventoryReportDetailsList(List<UpdateMakeInventoryReportDetailsDTO> updateMakeInventoryReportDetailsDTOList);
 
 
     /**

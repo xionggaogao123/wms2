@@ -8,6 +8,8 @@ import lombok.Data;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 @Data
 @ApiModel(description = "临库点验明细新增")
@@ -15,9 +17,11 @@ public class AddTemporaryLibraryInventoryDetailsDTO {
 
     private static final long serialVersionUID=1L;
 
+    @NotEmpty
     @ApiModelProperty(value = "清点单编号")
     private String documentNumber;
 
+    @NotEmpty
     @ApiModelProperty(value = "物料编码")
     private String materialCoding;
 
@@ -25,13 +29,16 @@ public class AddTemporaryLibraryInventoryDetailsDTO {
     @ApiModelProperty(value = "应到数量")
     private Double receivableQuantity;
 
+    @NotNull
     @Min(0)
     @ApiModelProperty(value = "到货数量")
     private Double arrivalQuantity;
 
+    @NotNull
     @ApiModelProperty(value = "批次")
     private String batch;
 
+    @NotEmpty
     @ApiModelProperty(value = "仓库编号")
     private String warehouseId;
 

@@ -98,8 +98,11 @@ public class AddInventoryInformationDTO {
     @ApiModelProperty(value = "供应商")
     private String supplier;
 
+
+    @NotEmpty
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;
+
 
     @ApiModelProperty(value = "库区编号")
     private String warehouseAreaId;

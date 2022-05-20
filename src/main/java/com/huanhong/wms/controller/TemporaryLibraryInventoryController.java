@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RestController;
 import com.huanhong.wms.BaseController;
@@ -36,6 +37,7 @@ import java.util.Map;
 @ApiSort()
 @Api(tags = "临库清点单")
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/v1/temporary-library-inventory")
 public class TemporaryLibraryInventoryController extends BaseController {

@@ -347,6 +347,10 @@ public class ProcurementPlanController extends BaseController {
                         addProcurementPlanDetailsDTOFirst.setEstimatedAmount(requiremetsPlanningDetails.getEstimatedAmount());
                         //仓库id
                         addProcurementPlanDetailsDTOFirst.setWarehouseId(requirementsPlanning.getWarehouseId());
+                        //使用地点
+                        addProcurementPlanDetailsDTOFirst.setUsePlace(requiremetsPlanningDetails.getUsePlace());
+                        //使用用途
+                        addProcurementPlanDetailsDTOFirst.setUsePurpose(requiremetsPlanningDetails.getUsePurpose());
                         //备注
                         addProcurementPlanDetailsDTOFirst.setRemark("系统自动生成");
                         // 到货时间
@@ -366,6 +370,10 @@ public class ProcurementPlanController extends BaseController {
                                 addProcurementPlanDetailsDTO.setPlannedPurchaseQuantity(addProcurementPlanDetailsDTO.getRequiredQuantity());
                                 //预估金额  采购计划明细的预估金额+需求计划明细的预估金额
                                 addProcurementPlanDetailsDTO.setEstimatedAmount(NumberUtil.add(addProcurementPlanDetailsDTO.getEstimatedAmount(),requiremetsPlanningDetails.getEstimatedAmount()));
+                                //使用地点
+                                addProcurementPlanDetailsDTO.setUsePlace(addProcurementPlanDetailsDTO.getUsePlace()+","+requiremetsPlanningDetails.getUsePlace());
+                                //使用用途
+                                addProcurementPlanDetailsDTO.setUsePurpose(addProcurementPlanDetailsDTO.getUsePurpose()+","+requiremetsPlanningDetails.getUsePurpose());
                                 //备注
                                 addProcurementPlanDetailsDTO.setRemark("系统自动生成");
                                 if(addProcurementPlanDetailsDTO.getRequestArrivalTime().compareTo(requiremetsPlanningDetails.getArrivalTime())>0){
@@ -394,6 +402,10 @@ public class ProcurementPlanController extends BaseController {
                             //预期到货时间
                             addProcurementPlanDetailsDTONew.setRequestArrivalTime(requiremetsPlanningDetails.getArrivalTime());
                             addProcurementPlanDetailsDTONew.setWarehouseId(requirementsPlanning.getWarehouseId());
+                            //使用地点
+                            addProcurementPlanDetailsDTONew.setUsePlace(requiremetsPlanningDetails.getUsePlace());
+                            //使用用途
+                            addProcurementPlanDetailsDTONew.setUsePurpose(requiremetsPlanningDetails.getUsePurpose());
                             //备注
                             addProcurementPlanDetailsDTONew.setRemark("系统自动生成");
                             addProcurementPlanDetailsDTONew.setMaterialId(requiremetsPlanningDetails.getMaterialId());

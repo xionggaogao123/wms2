@@ -150,8 +150,8 @@ public class MakeInventoryController extends BaseController {
                             ) {
                                 AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
                                 Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
-                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
-                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryDetailsDTO);
                                 addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                 addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
@@ -205,8 +205,8 @@ public class MakeInventoryController extends BaseController {
                             ) {
                                 AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
                                 Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
-                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
-                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryDetailsDTO);
                                 addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                 addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
@@ -231,8 +231,8 @@ public class MakeInventoryController extends BaseController {
                             ) {
                                 AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
                                 Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
-                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
-                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryDetailsDTO);
                                 addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                 addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
@@ -289,8 +289,8 @@ public class MakeInventoryController extends BaseController {
                             ) {
                                 AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
                                 Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
-                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
-                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryDetailsDTO);
                                 addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                 addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
@@ -314,8 +314,8 @@ public class MakeInventoryController extends BaseController {
                         ) {
                             AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
                             Material material = materialService.getMeterialByMeterialCode(temporaryLibrary.getMaterialCoding());
-                            BeanUtil.copyProperties(temporaryLibrary, addMakeInventoryAndDetailsDTO);
-                            BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                            BeanUtil.copyProperties(temporaryLibrary, addMakeInventoryDetailsDTO);
+                            BeanUtil.copyProperties(material, addMakeInventoryDetailsDTO);
                             addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                             addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                             addMakeInventoryDetailsDTO.setSublibraryId(temporaryLibrary.getCargoSpaceId().substring(0, 6));
@@ -347,8 +347,8 @@ public class MakeInventoryController extends BaseController {
                             ) {
                                 AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
                                 Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
-                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
-                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryDetailsDTO);
                                 addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                 addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
@@ -402,8 +402,8 @@ public class MakeInventoryController extends BaseController {
                             ) {
                                 AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
                                 Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
-                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
-                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryDetailsDTO);
                                 addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                 addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
@@ -428,8 +428,8 @@ public class MakeInventoryController extends BaseController {
                             ) {
                                 AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
                                 Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
-                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
-                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryDetailsDTO);
                                 addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                 addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
@@ -486,8 +486,8 @@ public class MakeInventoryController extends BaseController {
                             ) {
                                 AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
                                 Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
-                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
-                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryDetailsDTO);
                                 addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                 addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
@@ -511,8 +511,8 @@ public class MakeInventoryController extends BaseController {
                         ) {
                             AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
                             Material material = materialService.getMeterialByMeterialCode(temporaryLibrary.getMaterialCoding());
-                            BeanUtil.copyProperties(temporaryLibrary, addMakeInventoryAndDetailsDTO);
-                            BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                            BeanUtil.copyProperties(temporaryLibrary, addMakeInventoryDetailsDTO);
+                            BeanUtil.copyProperties(material, addMakeInventoryDetailsDTO);
                             addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                             addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                             addMakeInventoryDetailsDTO.setSublibraryId(temporaryLibrary.getCargoSpaceId().substring(0, 6));
@@ -545,8 +545,8 @@ public class MakeInventoryController extends BaseController {
                             ) {
                                 AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
                                 Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
-                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
-                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryDetailsDTO);
                                 addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                 addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
@@ -598,8 +598,8 @@ public class MakeInventoryController extends BaseController {
                             ) {
                                 AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
                                 Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
-                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
-                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryDetailsDTO);
                                 addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                 addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
@@ -624,8 +624,8 @@ public class MakeInventoryController extends BaseController {
                             ) {
                                 AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
                                 Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
-                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
-                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryDetailsDTO);
                                 addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                 addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
@@ -682,8 +682,8 @@ public class MakeInventoryController extends BaseController {
                             ) {
                                 AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
                                 Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
-                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
-                                BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                                BeanUtil.copyProperties(inventoryInformation, addMakeInventoryDetailsDTO);
+                                BeanUtil.copyProperties(material, addMakeInventoryDetailsDTO);
                                 addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                 addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
@@ -707,8 +707,8 @@ public class MakeInventoryController extends BaseController {
                         ) {
                             AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
                             Material material = materialService.getMeterialByMeterialCode(temporaryLibrary.getMaterialCoding());
-                            BeanUtil.copyProperties(temporaryLibrary, addMakeInventoryAndDetailsDTO);
-                            BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                            BeanUtil.copyProperties(temporaryLibrary, addMakeInventoryDetailsDTO);
+                            BeanUtil.copyProperties(material, addMakeInventoryDetailsDTO);
                             addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                             addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                             addMakeInventoryDetailsDTO.setSublibraryId(temporaryLibrary.getCargoSpaceId().substring(0, 6));
@@ -733,8 +733,8 @@ public class MakeInventoryController extends BaseController {
                 ) {
                     AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
                     Material material = materialService.getMeterialByMeterialCode(inventoryInformation.getMaterialCoding());
-                    BeanUtil.copyProperties(inventoryInformation, addMakeInventoryAndDetailsDTO);
-                    BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                    BeanUtil.copyProperties(inventoryInformation, addMakeInventoryDetailsDTO);
+                    BeanUtil.copyProperties(material, addMakeInventoryDetailsDTO);
                     addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                     addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                     addMakeInventoryDetailsDTO.setSublibraryId(inventoryInformation.getCargoSpaceId().substring(0, 6));
@@ -749,8 +749,8 @@ public class MakeInventoryController extends BaseController {
                 ) {
                     AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO = new AddMakeInventoryDetailsDTO();
                     Material material = materialService.getMeterialByMeterialCode(temporaryLibrary.getMaterialCoding());
-                    BeanUtil.copyProperties(temporaryLibrary, addMakeInventoryAndDetailsDTO);
-                    BeanUtil.copyProperties(material, addMakeInventoryAndDetailsDTO);
+                    BeanUtil.copyProperties(temporaryLibrary, addMakeInventoryDetailsDTO);
+                    BeanUtil.copyProperties(material, addMakeInventoryDetailsDTO);
                     addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                     addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                     addMakeInventoryDetailsDTO.setSublibraryId(temporaryLibrary.getCargoSpaceId().substring(0, 6));

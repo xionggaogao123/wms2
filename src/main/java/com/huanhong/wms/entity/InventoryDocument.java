@@ -57,6 +57,7 @@ public class InventoryDocument extends SuperEntity {
 
     @ApiModelProperty(value = "是否被导入 0.否 1.是")
     private Integer isImported;
+
     @ApiModelProperty(value = "被导入到的计划单号")
     private String documentNumberImported;
 }

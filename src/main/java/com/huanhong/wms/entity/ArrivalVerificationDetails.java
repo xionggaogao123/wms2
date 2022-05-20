@@ -78,6 +78,7 @@ public class ArrivalVerificationDetails extends SuperEntity {
 
     @ApiModelProperty(value = "检验人id")
     private Integer checkerId;
+
     @ApiModelProperty(value = "检验人名")
     private String checkerName;
 }

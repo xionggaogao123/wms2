@@ -222,6 +222,7 @@ public class InventoryDocumentController extends BaseController {
                     addInventoryInformationDTO.setSafeQuantity((double) 0);
                     addInventoryInformationDTO.setBatch(inventoryDocumentDetails.getBatch());
                     addInventoryInformationDTO.setConsignor(0);
+                    addInventoryInformationDTO.setWarehouseId(inventoryDocumentDetails.getWarehouse());
                     //现将内部单价定为0 等后面改
                     addInventoryInformationDTO.setUnitPrice(BigDecimal.valueOf(0));
                     addInventoryInformationDTO.setManagementFeeRate(1.1);

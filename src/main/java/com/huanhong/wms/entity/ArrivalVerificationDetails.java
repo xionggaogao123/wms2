@@ -73,6 +73,7 @@ public class ArrivalVerificationDetails extends SuperEntity {
 
     @ApiModelProperty(value = "物料ID")
     private String materialId;
+
     @ApiModelProperty(value = "物料名称")
     private String materialName;
 

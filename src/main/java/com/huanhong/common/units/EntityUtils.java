@@ -477,6 +477,16 @@ public class EntityUtils {
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "readOnly");
                 return jsonObject;
+            case "materialId":
+                jsonObject.put("name", "物料ID");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "materialName":
+                jsonObject.put("name", "物料名称");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
             case "requiredQuantity":
                 jsonObject.put("name", "需求数量");
                 jsonObject.put("type", "text");
@@ -492,7 +502,7 @@ public class EntityUtils {
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "input");
                 return jsonObject;
-            case "estimatedUnitPric":
+            case "estimatedUnitPrice":
                 jsonObject.put("name", "预估单价");
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "input");
@@ -757,6 +767,16 @@ public class EntityUtils {
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "readonly");
                 return jsonObject;
+            case "checkerId":
+                jsonObject.put("name", "检验人id");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "checkerName":
+                jsonObject.put("name", "检验人名");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
             case "inspector":
                 jsonObject.put("name", "理货人");
                 jsonObject.put("type", "text");
@@ -797,6 +817,16 @@ public class EntityUtils {
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "readOnly");
                 return jsonObject;
+            case "materialId":
+                jsonObject.put("name", "物料ID");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
+            case "materialName":
+                jsonObject.put("name", "物料名称");
+                jsonObject.put("type", "text");
+                jsonObject.put("class", "readOnly");
+                return jsonObject;
             case "batch":
                 jsonObject.put("name", "批次");
                 jsonObject.put("type", "text");
@@ -815,12 +845,12 @@ public class EntityUtils {
             case "qualifiedQuantity":
                 jsonObject.put("name", "合格数量");
                 jsonObject.put("type", "text");
-                jsonObject.put("class", "input");
+                jsonObject.put("class", "readOnly");
                 return jsonObject;
             case "unqualifiedQuantity":
                 jsonObject.put("name", "不合格数量");
                 jsonObject.put("type", "text");
-                jsonObject.put("class", "input");
+                jsonObject.put("class", "readOnly");
                 return jsonObject;
             case "version":
                 jsonObject.put("name", "版本号");

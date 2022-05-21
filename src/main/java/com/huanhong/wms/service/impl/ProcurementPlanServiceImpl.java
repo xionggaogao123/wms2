@@ -75,6 +75,8 @@ public class ProcurementPlanServiceImpl extends SuperServiceImpl<ProcurementPlan
         query.like(StringUtils.isNotBlank(procurementPlanVO.getPlanningDepartment()), "planning_department", procurementPlanVO.getPlanningDepartment());
         //计划员
         query.like(StringUtils.isNotBlank(procurementPlanVO.getPlanner()), "planner", procurementPlanVO.getPlanner());
+        //仓库编号
+        query.like(StringUtils.isNotBlank(procurementPlanVO.getWarehouseId()), "warehouse_id", procurementPlanVO.getWarehouseId());
         //需求部门
         query.like(StringUtils.isNotBlank(procurementPlanVO.getDemandDepartment()), "demand_department", procurementPlanVO.getDemandDepartment());
 

@@ -215,7 +215,7 @@ public class MakeInventoryReportController extends BaseController {
 
                 if (ObjectUtil.isNotNull(makeInventoryReport)) {
 
-                    List<MakeInventoryReportDetails> makeInventoryReportDetailsList = makeInventoryReportDetailsService.getMakeInventoryReportDetailsByDocNumberAndWarehosueId(makeInventoryReport.getDocumentNumber(),makeInventoryReport.getWarehouseId());
+                    List<MakeInventoryReportDetails> makeInventoryReportDetailsList = makeInventoryReportDetailsService.getMakeInventoryReportDetailsByDocNumberAndWarehosueId(makeInventoryReport.getReportNumber(),makeInventoryReport.getWarehouseId());
 
                     /**
                      * 当查询到主表事进行数据封装

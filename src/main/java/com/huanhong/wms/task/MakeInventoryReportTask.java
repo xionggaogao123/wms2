@@ -24,7 +24,7 @@ public class MakeInventoryReportTask {
     /**
      * 每5分钟同步任务
      */
-    @Scheduled(cron = "0/10 * * * * ?")
+    @Scheduled(cron = "0 0/1 * * * ?")
     public void syncTask() {
         Instant startTime = Instant.now();
         log.info("***** 盘点报告生成任务开始 *****");

@@ -17,7 +17,6 @@ public class AddTemporaryLibraryInventoryDetailsDTO {
 
     private static final long serialVersionUID=1L;
 
-    @NotEmpty
     @ApiModelProperty(value = "清点单编号")
     private String documentNumber;
 

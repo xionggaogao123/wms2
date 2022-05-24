@@ -100,4 +100,11 @@ public class MakeInventoryDetailsServiceImpl extends SuperServiceImpl<MakeInvent
         return makeInventoryDetailsMapper.selectCount(queryWrapper);
 
     }
+
+    @Override
+    public List<MakeInventoryDetails> findByDocumentNumber(String documentNumber) {
+        QueryWrapper<MakeInventoryDetails> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("document_number",documentNumber);
+        return makeInventoryDetailsMapper.selectList(queryWrapper);
+    }
 }

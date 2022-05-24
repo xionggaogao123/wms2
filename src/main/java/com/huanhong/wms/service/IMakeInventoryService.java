@@ -12,6 +12,7 @@ import com.huanhong.wms.entity.vo.MakeInventoryVO;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  * <p>
@@ -79,4 +80,11 @@ public interface IMakeInventoryService extends SuperService<MakeInventory> {
      * @param response
      */
     void inventorySurplusLossExport(InventorySurplusLossPage page, HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 查询所有盘点计划表数据
+     * @param status 盘点状态
+     * @return 盘点计划表数据
+     */
+    List<MakeInventory> findByCheckStatus(Integer status);
 }

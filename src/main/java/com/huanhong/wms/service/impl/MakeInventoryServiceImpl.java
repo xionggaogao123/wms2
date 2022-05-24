@@ -282,4 +282,11 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
         ExportExcel.exportExcel(templatePath, ossProperties.getPath() + "temp/", "盘点盈亏表.xlsx", params, request, response);
 
     }
+
+    @Override
+    public List<MakeInventory> findByCheckStatus(Integer status) {
+        QueryWrapper<MakeInventory> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("check_status",status);
+        return makeInventoryMapper.selectList(queryWrapper);
+    }
 }

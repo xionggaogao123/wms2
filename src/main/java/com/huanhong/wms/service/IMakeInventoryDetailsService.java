@@ -65,4 +65,11 @@ public interface IMakeInventoryDetailsService extends SuperService<MakeInventory
      */
     Integer getMakeInventoryDetailsByDocNumAndWarehouseIdNotComplete(String docNum, String warehouseId);
 
+    /**
+     * 根据盘点单单据编号查询物资信息
+     * @param documentNumber
+     * @return
+     */
+    List<MakeInventoryDetails> findByDocumentNumber(String documentNumber);
+
 }

@@ -72,5 +72,9 @@ public interface Constant {
      * 用户代理
      */
     String USER_AGENT = "User-Agent";
+
+    Integer CHECK_STATUS_0 = 0;
+
+    Integer CHECK_STATUS_1 = 1;
 }
 

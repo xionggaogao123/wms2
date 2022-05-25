@@ -79,26 +79,7 @@ public class AllocationPlanController extends BaseController {
         @ApiOperation(value = "添加调拨计划主表")
         @PostMapping("/add")
         public Result add(@Valid @RequestBody AddAllocationPlanAndDetailsDTO addAllocationPlanAndDetailsDTO) {
-            try {
-                AddAllocationPlanDTO addAllocationPlanDTO = addAllocationPlanAndDetailsDTO.getAddAllocationPlanDTO();
-                List<AddAllocationPlanDetailDTO> addAllocationPlanDetailDTOList = addAllocationPlanAndDetailsDTO.getAddAllocationPlanDetailDTOList();
-                Result result = allocationPlanService.addAllocationPlan(addAllocationPlanDTO);
-                if (!result.isOk()) {
-                    return Result.failure("新增调拨计失败！");
-                }
-                AllocationPlan allocationPlan = (AllocationPlan) result.getData();
-                String docNum = allocationPlan.getAllocationNumber();
-                if (ObjectUtil.isNotNull(addAllocationPlanDetailDTOList)){
-                    for (AddAllocationPlanDetailDTO addAllocationPlanDetailDTO : addAllocationPlanDetailDTOList) {
-                        addAllocationPlanDetailDTO.setAllocationNumber(docNum);
-                    }
-                }
-                allocationPlanDetailService.addAllocationPlanDetails(addAllocationPlanDetailDTOList);
-                return result;
-            } catch (Exception e) {
-                log.error("新增调拨计划失败");
-                return Result.failure("系统异常，新增调拨计划失败！");
-            }
+                return allocationPlanService.add(addAllocationPlanAndDetailsDTO);
         }
 
         @ApiOperationSupport(order = 3)

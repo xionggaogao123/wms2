@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.AllocationPlan;
+import com.huanhong.wms.entity.dto.AddAllocationPlanAndDetailsDTO;
 import com.huanhong.wms.entity.dto.AddAllocationPlanDTO;
 import com.huanhong.wms.entity.dto.UpdateAllocationPlanDTO;
 import com.huanhong.wms.entity.param.AllocationDetailPage;
@@ -88,4 +89,7 @@ public interface IAllocationPlanService extends SuperService<AllocationPlan> {
      * @param response
      */
     void allocationDetailExport(AllocationDetailPage page, HttpServletRequest request, HttpServletResponse response);
+
+    Result add(AddAllocationPlanAndDetailsDTO addAllocationPlanAndDetailsDTO);
+
 }

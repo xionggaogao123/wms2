@@ -11,14 +11,16 @@ import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.ProcurementPlan;
+import com.huanhong.wms.entity.dto.AddProcurementPlanAndDetailsDTO;
 import com.huanhong.wms.entity.dto.AddProcurementPlanDTO;
+import com.huanhong.wms.entity.dto.AddProcurementPlanDetailsDTO;
 import com.huanhong.wms.entity.dto.UpdateProcurementPlanDTO;
 import com.huanhong.wms.entity.param.DeptMaterialParam;
 import com.huanhong.wms.entity.param.MaterialYearParam;
-import com.huanhong.wms.entity.vo.MaterialPriceVO;
 import com.huanhong.wms.entity.vo.MaterialYearVO;
 import com.huanhong.wms.entity.vo.ProcurementPlanVO;
 import com.huanhong.wms.mapper.ProcurementPlanMapper;
+import com.huanhong.wms.service.IProcurementPlanDetailsService;
 import com.huanhong.wms.service.IProcurementPlanService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -44,6 +46,8 @@ public class ProcurementPlanServiceImpl extends SuperServiceImpl<ProcurementPlan
 
     @Resource
     private ProcurementPlanMapper procurementPlanMapper;
+    @Resource
+    private IProcurementPlanDetailsService procurementPlanDetailsService;
 
     @Override
     public Page<ProcurementPlan> pageFuzzyQuery(Page<ProcurementPlan> procurementPlanPage, ProcurementPlanVO procurementPlanVO) {
@@ -95,6 +99,9 @@ public class ProcurementPlanServiceImpl extends SuperServiceImpl<ProcurementPlan
                     .apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + createDateEnd + "')");
 
         }
+        //状态
+        query.eq(ObjectUtil.isNotNull(procurementPlanVO.getIsImported()), "is_imported", procurementPlanVO.getIsImported());
+
         return baseMapper.selectPage(procurementPlanPage, query);
     }
 
@@ -200,5 +207,27 @@ public class ProcurementPlanServiceImpl extends SuperServiceImpl<ProcurementPlan
         List<MaterialYearVO> list = procurementPlanMapper.getMaterialPurchasingAnalysisOnYearBasisByParam(param);
         map = list.stream().collect(Collectors.groupingBy(MaterialYearVO::getYearTime));
         return Result.success(map);
+    }
+
+    @Override
+    public Result add(AddProcurementPlanAndDetailsDTO addProcurementPlanAndDetailsDTO) {
+
+        AddProcurementPlanDTO addProcurementPlanDTO = addProcurementPlanAndDetailsDTO.getAddProcurementPlanDTO();
+        List<AddProcurementPlanDetailsDTO> addProcurementPlanDetailsDTOList = addProcurementPlanAndDetailsDTO.getAddProcurementPlanDetailsDTOList();
+        Result result = addProcurementPlan(addProcurementPlanDTO);
+        if (!result.isOk()) {
+            return Result.failure("新增采购计划失败！");
+        }
+        ProcurementPlan procurementPlan = (ProcurementPlan) result.getData();
+        String docNum = procurementPlan.getPlanNumber();
+        String warehouseId = procurementPlan.getWarehouseId();
+        if (ObjectUtil.isNotNull(addProcurementPlanDetailsDTOList)){
+            for (AddProcurementPlanDetailsDTO addProcurementPlanDetailsDTO : addProcurementPlanDetailsDTOList) {
+                addProcurementPlanDetailsDTO.setPlanNumber(docNum);
+                addProcurementPlanDetailsDTO.setWarehouseId(warehouseId);
+            }
+            procurementPlanDetailsService.addProcurementPlanDetails(addProcurementPlanDetailsDTOList);
+        }
+        return result;
     }
 }

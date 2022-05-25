@@ -86,28 +86,8 @@ public class ProcurementPlanController extends BaseController {
     @ApiOperation(value = "添加采购计划主表", notes = "生成代码")
     @PostMapping("/add")
     public Result add(@Valid @RequestBody AddProcurementPlanAndDetailsDTO addProcurementPlanAndDetailsDTO) {
-        try {
-            AddProcurementPlanDTO addProcurementPlanDTO = addProcurementPlanAndDetailsDTO.getAddProcurementPlanDTO();
-            List<AddProcurementPlanDetailsDTO> addProcurementPlanDetailsDTOList = addProcurementPlanAndDetailsDTO.getAddProcurementPlanDetailsDTOList();
-            Result result = procurementPlanService.addProcurementPlan(addProcurementPlanDTO);
-            if (!result.isOk()) {
-                return Result.failure("新增采购计划失败！");
-            }
-            ProcurementPlan procurementPlan = (ProcurementPlan) result.getData();
-            String docNum = procurementPlan.getPlanNumber();
-            String warehouseId = procurementPlan.getWarehouseId();
-            if (ObjectUtil.isNotNull(addProcurementPlanDetailsDTOList)){
-                for (AddProcurementPlanDetailsDTO addProcurementPlanDetailsDTO : addProcurementPlanDetailsDTOList) {
-                    addProcurementPlanDetailsDTO.setPlanNumber(docNum);
-                    addProcurementPlanDetailsDTO.setWarehouseId(warehouseId);
-                }
-                procurementPlanDetailsService.addProcurementPlanDetails(addProcurementPlanDetailsDTOList);
-            }
-            return result;
-        } catch (Exception e) {
-            log.error("新增采购计划失败");
-            return Result.failure("系统异常，新增采购计划失败！");
-        }
+        return procurementPlanService.add(addProcurementPlanAndDetailsDTO);
+
     }
 
     @ApiOperationSupport(order = 3)

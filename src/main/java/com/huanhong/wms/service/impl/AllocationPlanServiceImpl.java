@@ -28,6 +28,7 @@ import com.huanhong.wms.service.IInventoryInformationService;
 import com.huanhong.wms.service.IOutboundRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -407,6 +408,25 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
         String templatePath = ossProperties.getPath() + "templates/allocationDetail.xlsx";
         ExportExcel.exportExcel(templatePath, ossProperties.getPath() + "temp/", "调拨明细汇总表.xlsx", params, request, response);
 
+    }
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Result add(AddAllocationPlanAndDetailsDTO addAllocationPlanAndDetailsDTO) {
+        AddAllocationPlanDTO addAllocationPlanDTO = addAllocationPlanAndDetailsDTO.getAddAllocationPlanDTO();
+        List<AddAllocationPlanDetailDTO> addAllocationPlanDetailDTOList = addAllocationPlanAndDetailsDTO.getAddAllocationPlanDetailDTOList();
+        Result result = addAllocationPlan(addAllocationPlanDTO);
+        if (!result.isOk()) {
+            return Result.failure("新增调拨计失败！");
+        }
+        AllocationPlan allocationPlan = (AllocationPlan) result.getData();
+        String docNum = allocationPlan.getAllocationNumber();
+        if (ObjectUtil.isNotNull(addAllocationPlanDetailDTOList)){
+            for (AddAllocationPlanDetailDTO addAllocationPlanDetailDTO : addAllocationPlanDetailDTOList) {
+                addAllocationPlanDetailDTO.setAllocationNumber(docNum);
+            }
+        }
+        allocationPlanDetailService.addAllocationPlanDetails(addAllocationPlanDetailDTOList);
+        return result;
     }
 
     /**

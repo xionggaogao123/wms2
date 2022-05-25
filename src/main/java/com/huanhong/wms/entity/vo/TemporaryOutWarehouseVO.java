@@ -1,7 +1,5 @@
 package com.huanhong.wms.entity.vo;
 
-import com.baomidou.mybatisplus.annotation.FieldStrategy;
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -15,19 +13,13 @@ import java.time.LocalDateTime;
 @ApiModel(value = "临库出库分页查询")
 public class TemporaryOutWarehouseVO {
 
-    @ApiModelProperty(value = "单据编号")
-    private String documentNumber;
+    @ApiModelProperty(value = "出库单据编号")
+    private String outNumber;
 
     @Min(1)
     @Max(4)
     @ApiModelProperty(value = "审批状态:1.草拟 2.审批中 3.审批生效 4.作废 5.驳回")
     private Integer status;
-
-    @ApiModelProperty(value = "物料编码")
-    private String materialCoding;
-
-    @ApiModelProperty(value = "物料名称")
-    private String materialName;
 
     @ApiModelProperty(value = "批次")
     private String batch;

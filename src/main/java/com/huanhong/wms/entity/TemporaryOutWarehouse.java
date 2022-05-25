@@ -20,7 +20,7 @@ public class TemporaryOutWarehouse extends SuperEntity {
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "单据编号")
-    private String documentNumber;
+    private String outNumber;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "流程Id")
@@ -32,22 +32,6 @@ public class TemporaryOutWarehouse extends SuperEntity {
 
     @ApiModelProperty(value = "驳回原因")
     private String rejectReason;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "物料编码")
-    private String materialCoding;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "物料名称")
-    private String materialName;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "批次")
-    private String batch;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "领用数量")
-    private Double requisitionQuantity;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "领用单位")

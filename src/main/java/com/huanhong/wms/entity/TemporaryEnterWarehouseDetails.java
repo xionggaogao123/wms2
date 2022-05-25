@@ -11,16 +11,20 @@ import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
 
+/**
+ * @Author wang
+ * @date 2022/5/25 13:20
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ApiModel(description="")
-public class TemporaryLibraryInventoryDetails extends SuperEntity {
+public class TemporaryEnterWarehouseDetails extends SuperEntity {
 
     private static final long serialVersionUID=1L;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "清点单编号")
-    private String documentNumber;
+    @ApiModelProperty(value = "临时库入库单据编号")
+    private String enterNumber;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "物料编码")
@@ -54,7 +58,7 @@ public class TemporaryLibraryInventoryDetails extends SuperEntity {
     private Integer version;
 
     @TableField(value = "effective_time", fill = FieldFill.INSERT)
-    @ApiModelProperty(value = "创建日期")
+    @ApiModelProperty(value = "有效日期")
     private LocalDateTime effectiveTime;
 
     @TableField(value = "create_time", fill = FieldFill.INSERT)
@@ -64,5 +68,4 @@ public class TemporaryLibraryInventoryDetails extends SuperEntity {
     @TableField(value = "last_update", fill = FieldFill.INSERT_UPDATE)
     @ApiModelProperty(value = "最后更新时间")
     private LocalDateTime lastUpdate;
-
 }

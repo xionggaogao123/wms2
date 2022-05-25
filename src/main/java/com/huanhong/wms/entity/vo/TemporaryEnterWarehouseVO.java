@@ -13,22 +13,11 @@ import java.time.LocalDateTime;
 @ApiModel(value = "分页查询临库入库")
 public class TemporaryEnterWarehouseVO {
 
-    @ApiModelProperty(value = "临时库入库单据编号")
+    @ApiModelProperty(value = "清点单据编号")
     private String documentNumber;
 
-    @Min(1)
-    @Max(4)
-    @ApiModelProperty(value = "状态:1.草拟 2.审批中 3.审批生效 4.作废")
-    private Integer state;
-
-    @ApiModelProperty(value = "物料编码")
-    private String materialCoding;
-
-    @ApiModelProperty(value = "批次")
-    private String batch;
-
-    @ApiModelProperty(value = "仓库编号")
-    private String warehouseId;
+    @ApiModelProperty(value = "临时库入库单据编号")
+    private String enterNumber;
 
     @ApiModelProperty(value = "创建日期-起始")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

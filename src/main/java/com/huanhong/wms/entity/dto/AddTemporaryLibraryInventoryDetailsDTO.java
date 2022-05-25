@@ -1,5 +1,6 @@
 package com.huanhong.wms.entity.dto;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
@@ -10,6 +11,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 @Data
 @ApiModel(description = "临库点验明细新增")
@@ -27,6 +29,9 @@ public class AddTemporaryLibraryInventoryDetailsDTO {
     @Min(0)
     @ApiModelProperty(value = "应到数量")
     private Double receivableQuantity;
+
+    @ApiModelProperty(value = "有效日期")
+    private LocalDateTime effectiveTime;
 
     @NotNull
     @Min(0)

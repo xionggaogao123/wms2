@@ -23,6 +23,10 @@ public class TemporaryEnterWarehouse extends SuperEntity {
     private String documentNumber;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "临时库入库单据编号")
+    private String enterNumber;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "流程Id")
     private String processInstanceId;
 
@@ -32,25 +36,15 @@ public class TemporaryEnterWarehouse extends SuperEntity {
 
     @ApiModelProperty(value = "驳回原因")
     private String rejectReason;
-    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "有效日期")
-    private LocalDateTime effectiveDate;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "实收数量")
-    private Double actualQuantity;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "物料编码")
-    private String materialCoding;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "批次")
-    private String batch;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "仓库编号")
     private String warehouseId;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "仓库管理员")
+    private String warehouse;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "入库时间")

@@ -53,15 +53,6 @@ public class TemporaryEnterWarehouseServiceImpl extends SuperServiceImpl<Tempora
         //若Vo对象不为空，分别获取其中的字段，
         //并对其进行判断是否为空，这一步类似动态SQL的拼装
         query.like(StringUtils.isNotBlank(temporaryEnterWarehouseVO.getDocumentNumber()), "document_number", temporaryEnterWarehouseVO.getDocumentNumber());
-
-        query.like(ObjectUtil.isNotNull(temporaryEnterWarehouseVO.getState()),"state",temporaryEnterWarehouseVO.getState());
-
-        query.like(StringUtils.isNotBlank(temporaryEnterWarehouseVO.getMaterialCoding()),"material_coding",temporaryEnterWarehouseVO.getMaterialCoding());
-
-        query.like(StringUtils.isNotBlank(temporaryEnterWarehouseVO.getBatch()),"batch",temporaryEnterWarehouseVO.getBatch());
-
-        query.like(StringUtils.isNotBlank(temporaryEnterWarehouseVO.getWarehouseId()),"warehouse_id",temporaryEnterWarehouseVO.getWarehouseId());
-
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         /**
          * 入库时间区间

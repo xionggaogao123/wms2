@@ -16,9 +16,11 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.zaxxer.hikari.HikariDataSource
     platform: mysql
-    username: wms
-    password: FpLSHCiY66KaMxz7
-    url: jdbc:mysql://wms.aiairy.com:3316/wms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&autoReconnect=true&tinyInt1isBit=false&timezone=utc&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+#    username: wms
+#    password: FpLSHCiY66KaMxz7
+    username: root
+    password: root
+    url: jdbc:mysql://192.168.200.128:3306/wms?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&autoReconnect=true&tinyInt1isBit=false&timezone=utc&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
   redis:
     database: 0
     host: 192.168.200.128

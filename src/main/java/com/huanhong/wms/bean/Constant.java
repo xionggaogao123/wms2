@@ -76,5 +76,7 @@ public interface Constant {
     Integer CHECK_STATUS_0 = 0;
 
     Integer CHECK_STATUS_1 = 1;
+
+    Integer STATUS_9999 = 9999;
 }
 

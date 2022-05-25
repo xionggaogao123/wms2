@@ -40,4 +40,10 @@ public interface TemporaryOutWarehouseV1Service {
      * @return 返回值
      */
     Page<TemporaryOutWarehouse> pageFuzzyQuery(Page<TemporaryOutWarehouse> objectPage, TemporaryOutWarehouseVO temporaryOutWarehouseVO);
+
+    /**
+     * 查询所有临时库存信息
+     * @return
+     */
+    Result selectAll();
 }

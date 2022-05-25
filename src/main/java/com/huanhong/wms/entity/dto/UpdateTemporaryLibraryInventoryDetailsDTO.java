@@ -24,6 +24,9 @@ public class UpdateTemporaryLibraryInventoryDetailsDTO {
     @ApiModelProperty(value = "物料编码")
     private String materialCoding;
 
+    @ApiModelProperty(value = "物料名称")
+    private String materialName;
+
     @Min(0)
     @ApiModelProperty(value = "应到数量")
     private Double receivableQuantity;

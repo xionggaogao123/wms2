@@ -1,6 +1,7 @@
 package com.huanhong.wms.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.huanhong.common.units.JsonUtil;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.dto.request.UpdateTemporaryEnterWarehouseRequest;
 import com.huanhong.wms.dto.response.TemporaryEnterWarehouseResponse;
@@ -9,6 +10,7 @@ import com.huanhong.wms.entity.TemporaryEnterWarehouseDetails;
 import com.huanhong.wms.mapper.TemporaryEnterWarehouseDetailsMapper;
 import com.huanhong.wms.mapper.TemporaryEnterWarehouseMapper;
 import com.huanhong.wms.service.TemporaryEnterWarehouseV1Service;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -21,6 +23,7 @@ import static org.apache.commons.math3.distribution.fitting.MultivariateNormalMi
  * @Author wang
  * @date 2022/5/25 13:50
  */
+@Slf4j
 @Service
 public class TemporaryEnterWarehouseV1ServiceImpl implements TemporaryEnterWarehouseV1Service {
 
@@ -53,6 +56,7 @@ public class TemporaryEnterWarehouseV1ServiceImpl implements TemporaryEnterWareh
         TemporaryEnterWarehouse temporaryEnterWarehouse = updateTemporaryEnterWarehouseRequest.getTemporaryEnterWarehouse();
         //判断是否存在该条数据
         TemporaryEnterWarehouse estimate = temporaryEnterWarehouseMapper.selectById(temporaryEnterWarehouse.getId());
+        log.info("查询的数据为:{}", JsonUtil.toJson(estimate));
         if(estimate == null){
             return Result.failure("临时入库修改失败，该数据不存在");
         }

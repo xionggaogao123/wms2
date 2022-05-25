@@ -102,109 +102,109 @@ public class TemporaryLibraryInventoryController extends BaseController {
             }
         }
 
-        @ApiOperationSupport(order = 3)
-        @ApiOperation(value = "更新", notes = "生成代码")
-        @PutMapping("/update")
-        public Result update(@Valid @RequestBody UpdateTemporaryLibraryInventoryAndDetailsDTO updateTemporaryLibraryInventoryAndDetailsDTO) {
-
-            try {
-
-                LoginUser loginUser = this.getLoginUser();
-
-                UpdateTemporaryLibraryInventoryDTO updateTemporaryLibraryInventoryDTO = updateTemporaryLibraryInventoryAndDetailsDTO.getUpdateTemporaryLibraryInventoryDTO();
-                List<UpdateTemporaryLibraryInventoryDetailsDTO> updateTemporaryLibraryInventoryDetailsDTOList = updateTemporaryLibraryInventoryAndDetailsDTO.getUpdateTemporaryLibraryInventoryDetailsDTOList();
-                /**
-                 * 先判断主表是否已经点验完成 若已完成则不能更新
-                 */
-                TemporaryLibraryInventory temporaryLibraryInventory = temporaryLibraryInventoryService.getTemporaryLibraryInventoryById(updateTemporaryLibraryInventoryDTO.getId());
-                if (temporaryLibraryInventory.getComplete() == 1) {
-                    return Result.failure("单据已完成,不能更新");
-                }
-                String docNum = temporaryLibraryInventory.getDocumentNumber();
-                String warehouseId = temporaryLibraryInventory.getWarehouseId();
-                /**
-                 * 如果此次更新主表要更新为已完成，判断其明细是否都已完成，若没有则主表不能更新为已完成
-                 */
-                if (null != updateTemporaryLibraryInventoryDTO.getComplete() && updateTemporaryLibraryInventoryDTO.getComplete() == 1) {
-                    //查询已经点验完成的明细以及本次更新的明细总数是否等于明细
-                    int updateNum = 0;
-                    for (UpdateTemporaryLibraryInventoryDetailsDTO updateTemporaryLibraryInventoryDetailsDTO : updateTemporaryLibraryInventoryDetailsDTOList
-                    ) {
-                        if (updateTemporaryLibraryInventoryDetailsDTO.getComplete() == 1) {
-                            updateNum++;
-                        }
-                    }
-                    int completeNum = temporaryLibraryInventoryDetailsService.getCompleteNum(docNum, warehouseId, 1);
-                    completeNum += updateNum;
-                    int allNum = temporaryLibraryInventoryDetailsService.getTemporaryLibraryInventoryDetailsListByDocNumberAndWarehosueId(docNum, warehouseId).size();
-                    if (allNum != completeNum) {
-                        return Result.failure("有明细未完成点验,主表无法完成！");
-                    }
-                }
-
-                Result result = temporaryLibraryInventoryService.updateTemporaryLibraryInventory(updateTemporaryLibraryInventoryDTO);
-                if (!result.isOk()) {
-                    return Result.failure("更新点验单失败！");
-                }
-                Result resultDetails = temporaryLibraryInventoryDetailsService.updateTemporaryLibraryInventoryDetailsList(updateTemporaryLibraryInventoryDetailsDTOList);
-
-                HashMap map = (HashMap) resultDetails.getData();
-
-                List<UpdateTemporaryLibraryInventoryDetailsDTO> UpdateTemporaryLibraryInventoryDetailsDTOListFalse = (List<UpdateTemporaryLibraryInventoryDetailsDTO>) map.get("false");
-
-                if (UpdateTemporaryLibraryInventoryDetailsDTOListFalse.size() != 0) {
-                    return Result.success(UpdateTemporaryLibraryInventoryDetailsDTOListFalse, "有明细更新失败！请重试！");
-                }
-                //点验单及明细完成后变动库存
-                List<TemporaryLibraryInventoryDetails> temporaryLibraryInventoryDetailsList = temporaryLibraryInventoryDetailsService.getTemporaryLibraryInventoryDetailsListByDocNumberAndWarehosueId(docNum, warehouseId);
-
-                AddTemporaryLibraryDTO addTemporaryLibraryDTO = new AddTemporaryLibraryDTO();
-
-                int count = 0;
-
-                List<TemporaryLibraryInventoryDetails> listfalse = new ArrayList<>();
-
-                for (TemporaryLibraryInventoryDetails temporaryLibraryInventoryDetails : temporaryLibraryInventoryDetailsList
-                ) {
-                    addTemporaryLibraryDTO.setMaterialCoding(temporaryLibraryInventoryDetails.getMaterialCoding());
-                    Material material = materialService.getMeterialByMeterialCode(temporaryLibraryInventoryDetails.getMaterialCoding());
-                    addTemporaryLibraryDTO.setMaterialName(material.getMaterialName());
-                    addTemporaryLibraryDTO.setMeasurementUnit(material.getMeasurementUnit());
-                    if (ObjectUtil.isNotNull(material.getAuxiliaryUnit())) {
-                        addTemporaryLibraryDTO.setAuxiliaryUnit(material.getAuxiliaryUnit());
-                    }
-                    addTemporaryLibraryDTO.setCargoSpaceId(temporaryLibraryInventoryDetails.getWarehouseId() + "01AA9999");
-                    addTemporaryLibraryDTO.setInventoryCredit(temporaryLibraryInventoryDetails.getArrivalQuantity());
-                    addTemporaryLibraryDTO.setBatch(temporaryLibraryInventoryDetails.getBatch());
-                    addTemporaryLibraryDTO.setWarehouseId(warehouseId);
-                    addTemporaryLibraryDTO.setInventoryCredit(temporaryLibraryInventoryDetails.getArrivalQuantity());
-                    addTemporaryLibraryDTO.setRemark("系统自动生成");
-
-                    Result resultAddIventory = temporaryLibraryService.addTemporaryLibrary(addTemporaryLibraryDTO);
-
-                    if (resultAddIventory.isOk()) {
-                        //库存新增成功后，新增入库记录
-                        AddTemporaryRecordDTO addTemporaryRecordDTO = new AddTemporaryRecordDTO();
-                        addTemporaryRecordDTO.setDocumentNumber(docNum);
-                        addTemporaryRecordDTO.setRecordType(1);
-                        addTemporaryRecordDTO.setWarehouseId(warehouseId);
-                        addTemporaryRecordDTO.setMaterialCoding(material.getMaterialCoding());
-                        addTemporaryRecordDTO.setMaterialName(material.getMaterialName());
-                        addTemporaryRecordDTO.setBatch(addTemporaryLibraryDTO.getBatch());
-                        addTemporaryRecordDTO.setCargoSpaceId(addTemporaryLibraryDTO.getCargoSpaceId());
-                        addTemporaryRecordDTO.setEnterQuantity(addTemporaryLibraryDTO.getInventoryCredit());
-                        addTemporaryRecordDTO.setWarehouseManager(loginUser.getLoginName());
-                        count++;
-                    } else {
-                        listfalse.add(temporaryLibraryInventoryDetails);
-                    }
-                }
-                return count == temporaryLibraryInventoryDetailsList.size() ? Result.success("库存新增成功！") : Result.success(listfalse, "若干点验单新增库存失败！");
-                } catch(Exception e){
-                    log.error("更新点验单失败", e);
-                    return Result.failure("系统异常：更新点验单失败!");
-                }
-        }
+//        @ApiOperationSupport(order = 3)
+//        @ApiOperation(value = "更新", notes = "生成代码")
+//        @PutMapping("/update")
+//        public Result update(@Valid @RequestBody UpdateTemporaryLibraryInventoryAndDetailsDTO updateTemporaryLibraryInventoryAndDetailsDTO) {
+//
+//            try {
+//
+//                LoginUser loginUser = this.getLoginUser();
+//
+//                UpdateTemporaryLibraryInventoryDTO updateTemporaryLibraryInventoryDTO = updateTemporaryLibraryInventoryAndDetailsDTO.getUpdateTemporaryLibraryInventoryDTO();
+//                List<UpdateTemporaryLibraryInventoryDetailsDTO> updateTemporaryLibraryInventoryDetailsDTOList = updateTemporaryLibraryInventoryAndDetailsDTO.getUpdateTemporaryLibraryInventoryDetailsDTOList();
+//                /**
+//                 * 先判断主表是否已经点验完成 若已完成则不能更新
+//                 */
+//                TemporaryLibraryInventory temporaryLibraryInventory = temporaryLibraryInventoryService.getTemporaryLibraryInventoryById(updateTemporaryLibraryInventoryDTO.getId());
+//                if (temporaryLibraryInventory.getComplete() == 1) {
+//                    return Result.failure("单据已完成,不能更新");
+//                }
+//                String docNum = temporaryLibraryInventory.getDocumentNumber();
+//                String warehouseId = temporaryLibraryInventory.getWarehouseId();
+//                /**
+//                 * 如果此次更新主表要更新为已完成，判断其明细是否都已完成，若没有则主表不能更新为已完成
+//                 */
+//                if (null != updateTemporaryLibraryInventoryDTO.getComplete() && updateTemporaryLibraryInventoryDTO.getComplete() == 1) {
+//                    //查询已经点验完成的明细以及本次更新的明细总数是否等于明细
+//                    int updateNum = 0;
+//                    for (UpdateTemporaryLibraryInventoryDetailsDTO updateTemporaryLibraryInventoryDetailsDTO : updateTemporaryLibraryInventoryDetailsDTOList
+//                    ) {
+//                        if (updateTemporaryLibraryInventoryDetailsDTO.getComplete() == 1) {
+//                            updateNum++;
+//                        }
+//                    }
+//                    int completeNum = temporaryLibraryInventoryDetailsService.getCompleteNum(docNum, warehouseId, 1);
+//                    completeNum += updateNum;
+//                    int allNum = temporaryLibraryInventoryDetailsService.getTemporaryLibraryInventoryDetailsListByDocNumberAndWarehosueId(docNum, warehouseId).size();
+//                    if (allNum != completeNum) {
+//                        return Result.failure("有明细未完成点验,主表无法完成！");
+//                    }
+//                }
+//
+//                Result result = temporaryLibraryInventoryService.updateTemporaryLibraryInventory(updateTemporaryLibraryInventoryDTO);
+//                if (!result.isOk()) {
+//                    return Result.failure("更新点验单失败！");
+//                }
+//                Result resultDetails = temporaryLibraryInventoryDetailsService.updateTemporaryLibraryInventoryDetailsList(updateTemporaryLibraryInventoryDetailsDTOList);
+//
+//                HashMap map = (HashMap) resultDetails.getData();
+//
+//                List<UpdateTemporaryLibraryInventoryDetailsDTO> UpdateTemporaryLibraryInventoryDetailsDTOListFalse = (List<UpdateTemporaryLibraryInventoryDetailsDTO>) map.get("false");
+//
+//                if (UpdateTemporaryLibraryInventoryDetailsDTOListFalse.size() != 0) {
+//                    return Result.success(UpdateTemporaryLibraryInventoryDetailsDTOListFalse, "有明细更新失败！请重试！");
+//                }
+//                //点验单及明细完成后变动库存
+//                List<TemporaryLibraryInventoryDetails> temporaryLibraryInventoryDetailsList = temporaryLibraryInventoryDetailsService.getTemporaryLibraryInventoryDetailsListByDocNumberAndWarehosueId(docNum, warehouseId);
+//
+//                AddTemporaryLibraryDTO addTemporaryLibraryDTO = new AddTemporaryLibraryDTO();
+//
+//                int count = 0;
+//
+//                List<TemporaryLibraryInventoryDetails> listfalse = new ArrayList<>();
+//
+//                for (TemporaryLibraryInventoryDetails temporaryLibraryInventoryDetails : temporaryLibraryInventoryDetailsList
+//                ) {
+//                    addTemporaryLibraryDTO.setMaterialCoding(temporaryLibraryInventoryDetails.getMaterialCoding());
+//                    Material material = materialService.getMeterialByMeterialCode(temporaryLibraryInventoryDetails.getMaterialCoding());
+//                    addTemporaryLibraryDTO.setMaterialName(material.getMaterialName());
+//                    addTemporaryLibraryDTO.setMeasurementUnit(material.getMeasurementUnit());
+//                    if (ObjectUtil.isNotNull(material.getAuxiliaryUnit())) {
+//                        addTemporaryLibraryDTO.setAuxiliaryUnit(material.getAuxiliaryUnit());
+//                    }
+//                    addTemporaryLibraryDTO.setCargoSpaceId(temporaryLibraryInventoryDetails.getWarehouseId() + "01AA9999");
+//                    addTemporaryLibraryDTO.setInventoryCredit(temporaryLibraryInventoryDetails.getArrivalQuantity());
+//                    addTemporaryLibraryDTO.setBatch(temporaryLibraryInventoryDetails.getBatch());
+//                    addTemporaryLibraryDTO.setWarehouseId(warehouseId);
+//                    addTemporaryLibraryDTO.setInventoryCredit(temporaryLibraryInventoryDetails.getArrivalQuantity());
+//                    addTemporaryLibraryDTO.setRemark("系统自动生成");
+//
+//                    Result resultAddIventory = temporaryLibraryService.addTemporaryLibrary(addTemporaryLibraryDTO);
+//
+//                    if (resultAddIventory.isOk()) {
+//                        //库存新增成功后，新增入库记录
+//                        AddTemporaryRecordDTO addTemporaryRecordDTO = new AddTemporaryRecordDTO();
+//                        addTemporaryRecordDTO.setDocumentNumber(docNum);
+//                        addTemporaryRecordDTO.setRecordType(1);
+//                        addTemporaryRecordDTO.setWarehouseId(warehouseId);
+//                        addTemporaryRecordDTO.setMaterialCoding(material.getMaterialCoding());
+//                        addTemporaryRecordDTO.setMaterialName(material.getMaterialName());
+//                        addTemporaryRecordDTO.setBatch(addTemporaryLibraryDTO.getBatch());
+//                        addTemporaryRecordDTO.setCargoSpaceId(addTemporaryLibraryDTO.getCargoSpaceId());
+//                        addTemporaryRecordDTO.setEnterQuantity(addTemporaryLibraryDTO.getInventoryCredit());
+//                        addTemporaryRecordDTO.setWarehouseManager(loginUser.getLoginName());
+//                        count++;
+//                    } else {
+//                        listfalse.add(temporaryLibraryInventoryDetails);
+//                    }
+//                }
+//                return count == temporaryLibraryInventoryDetailsList.size() ? Result.success("库存新增成功！") : Result.success(listfalse, "若干点验单新增库存失败！");
+//                } catch(Exception e){
+//                    log.error("更新点验单失败", e);
+//                    return Result.failure("系统异常：更新点验单失败!");
+//                }
+//        }
 
 
         @ApiOperationSupport(order = 4)

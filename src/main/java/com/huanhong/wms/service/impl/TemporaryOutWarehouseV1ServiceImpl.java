@@ -50,6 +50,7 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
 
     /**
      * 添加临时出库主表和子表数据
+     *
      * @param request 主表子表数据
      * @return
      */
@@ -66,36 +67,37 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
 
     /**
      * 扣减临时入库物资数量
+     *
      * @param temporaryOutWarehouseDetailsRequest 出库数据
      */
     private void deductingInventory(List<TemporaryOutWarehouseDetailsRequest> temporaryOutWarehouseDetailsRequest) {
         BigDecimal number3 = new BigDecimal(0);
         //遍历数据扣减库存
-        temporaryOutWarehouseDetailsRequest.forEach(details->{
+        temporaryOutWarehouseDetailsRequest.forEach(details -> {
             QueryWrapper<TemporaryEnterWarehouseDetails> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("material_coding",details.getMaterialCoding());
-            queryWrapper.eq("material_name",details.getMaterialName());
+            queryWrapper.eq("material_coding", details.getMaterialCoding());
+            queryWrapper.eq("material_name", details.getMaterialName());
             //查询入库子表数据
             List<TemporaryEnterWarehouseDetails> enterWarehouseDetails = temporaryEnterWarehouseDetailsMapper.selectList(queryWrapper);
             //遍历 扣减对应的数据
             enterWarehouseDetails.forEach(warehouseDetails -> {
                 BigDecimal number1 = new BigDecimal(warehouseDetails.getArrivalQuantity());
                 BigDecimal number2 = new BigDecimal(details.getRequisitionQuantity());
-                if(number1.compareTo(number2) > 0){
+                if (number1.compareTo(number2) > 0) {
                     throw new BizException("出库数量大于库存数量");
                 }
                 BigDecimal subtract = number1.subtract(number2);
                 //当库存数据==0时删除子表数据 当库存数据<0
-                if(subtract.compareTo(number3) == 0){
+                if (subtract.compareTo(number3) == 0) {
                     //删除入库子表数据
                     temporaryEnterWarehouseDetailsMapper.deleteById(warehouseDetails.getId());
                     //查询该入库编号下是否存在数据 不存在数据删除入库单
                     QueryWrapper<TemporaryEnterWarehouseDetails> temporaryEnterWarehouseDetailsQueryWrapper = new QueryWrapper<>();
-                    temporaryEnterWarehouseDetailsQueryWrapper.eq("enter_number",warehouseDetails.getEnterNumber());
+                    temporaryEnterWarehouseDetailsQueryWrapper.eq("enter_number", warehouseDetails.getEnterNumber());
                     List<TemporaryEnterWarehouseDetails> temporaryEnterWarehouseDetails = temporaryEnterWarehouseDetailsMapper.selectList(temporaryEnterWarehouseDetailsQueryWrapper);
-                    if(CollectionUtils.isEmpty(temporaryEnterWarehouseDetails)){
+                    if (CollectionUtils.isEmpty(temporaryEnterWarehouseDetails)) {
                         QueryWrapper<TemporaryEnterWarehouse> temporaryEnterWarehouseQueryWrapper = new QueryWrapper<>();
-                        temporaryEnterWarehouseQueryWrapper.eq("enter_number",warehouseDetails.getEnterNumber());
+                        temporaryEnterWarehouseQueryWrapper.eq("enter_number", warehouseDetails.getEnterNumber());
                         temporaryEnterWarehouseMapper.delete(temporaryEnterWarehouseQueryWrapper);
                     }
                 }
@@ -107,6 +109,7 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
 
     /**
      * 根据id查询信息
+     *
      * @param id id
      * @return 返回值
      */
@@ -130,6 +133,7 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
 
     /**
      * 根据id删除
+     *
      * @param id id
      * @return 返回值
      */
@@ -154,8 +158,8 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
     public Page<TemporaryOutWarehouse> pageFuzzyQuery(Page<TemporaryOutWarehouse> objectPage, TemporaryOutWarehouseVO temporaryOutWarehouseVO) {
         QueryWrapper<TemporaryOutWarehouse> queryWrapper = new QueryWrapper<>();
         queryWrapper.orderByDesc("id");
-        if(temporaryOutWarehouseVO == null){
-            return warehouseManager.selectPage(objectPage,queryWrapper);
+        if (temporaryOutWarehouseVO == null) {
+            return warehouseManager.selectPage(objectPage, queryWrapper);
         }
         //条件查询
         queryWrapper.like(StringUtils.isNotBlank(temporaryOutWarehouseVO.getOutNumber()), "document_number", temporaryOutWarehouseVO.getOutNumber());
@@ -163,7 +167,7 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
         queryWrapper.like(StringUtils.isNotBlank(temporaryOutWarehouseVO.getBatch()), "batch", temporaryOutWarehouseVO.getBatch());
         queryWrapper.like(StringUtils.isNotBlank(temporaryOutWarehouseVO.getRequisitioningUnit()), "requisitioning_unit", temporaryOutWarehouseVO.getRequisitioningUnit());
         queryWrapper.eq(StringUtils.isNotBlank(temporaryOutWarehouseVO.getRecipient()), "recipient", temporaryOutWarehouseVO.getRecipient());
-        queryWrapper.eq(StringUtils.isNotBlank(temporaryOutWarehouseVO.getWarehouseId()),"warehouse_id",temporaryOutWarehouseVO.getWarehouseId());
+        queryWrapper.eq(StringUtils.isNotBlank(temporaryOutWarehouseVO.getWarehouseId()), "warehouse_id", temporaryOutWarehouseVO.getWarehouseId());
         //根据时间查询
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         if (ObjectUtil.isNotEmpty(temporaryOutWarehouseVO.getCreateTimeStart()) && ObjectUtil.isNotEmpty(temporaryOutWarehouseVO.getCreateTimeEnd())) {
@@ -177,10 +181,17 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
         return warehouseManager.selectPage(objectPage, queryWrapper);
     }
 
+    @Override
+    public Result selectAll() {
+        List<TemporaryEnterWarehouseDetails> temporaryEnterWarehouseDetails = temporaryEnterWarehouseDetailsMapper.selectList(null);
+        return Result.success(temporaryEnterWarehouseDetails);
+    }
+
     /**
      * 添加临时出库子表信息
+     *
      * @param detailsRequest 子表数据
-     * @param outNumber 主表关联字段
+     * @param outNumber      主表关联字段
      */
     private void addWarehouseDetails(List<TemporaryOutWarehouseDetailsRequest> detailsRequest, String outNumber) {
         //转换
@@ -195,6 +206,7 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
 
     /**
      * 添加临时出库主表数据
+     *
      * @param request 主表数据
      * @return 返回值
      */

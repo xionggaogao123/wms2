@@ -98,4 +98,16 @@ public class TemporaryOutWarehouseV1Controller extends BaseController {
             return Result.failure("查询失败--系统异常，请联系管理员");
         }
     }
+
+    @ApiOperationSupport(order = 5)
+    @ApiOperation(value = "查询所有", notes = "生成代码")
+    @DeleteMapping("/selectAll")
+    public Result selectAll() {
+        try {
+            return tempOutWarehouseV1Service.selectAll();
+        } catch (Exception e) {
+            log.error("查询临时出库数据异常:{}", e.getMessage());
+            return Result.failure("系统异常：临库出库单添加失败。");
+        }
+    }
 }

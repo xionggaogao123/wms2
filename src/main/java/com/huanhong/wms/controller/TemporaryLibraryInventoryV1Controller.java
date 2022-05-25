@@ -9,6 +9,7 @@ import com.huanhong.wms.entity.TemporaryLibraryInventory;
 import com.huanhong.wms.entity.dto.AddTemporaryLibraryInventoryAndDetailsDTO;
 import com.huanhong.wms.entity.dto.AddTemporaryLibraryInventoryDTO;
 import com.huanhong.wms.entity.dto.AddTemporaryLibraryInventoryDetailsDTO;
+import com.huanhong.wms.entity.dto.UpdateTemporaryLibraryInventoryAndDetailsDTO;
 import com.huanhong.wms.service.ITemporaryLibraryInventoryDetailsService;
 import com.huanhong.wms.service.ITemporaryLibraryInventoryService;
 import com.huanhong.wms.service.TemporaryLibraryInventoryV1Service;
@@ -46,6 +47,22 @@ public class TemporaryLibraryInventoryV1Controller extends BaseController {
     @PostMapping("/add")
     public Result add(@Valid @RequestBody AddTemporaryLibraryInventoryAndDetailsDTO addTemporaryLibraryInventoryAndDetailsDTO) {
         log.info("新增临时清点的数据为:{}", JsonUtil.obj2String(addTemporaryLibraryInventoryAndDetailsDTO));
-        return temporaryLibraryInventoryV1Service.addTemporaryMainAndSublistAndWarehouse(addTemporaryLibraryInventoryAndDetailsDTO);
+        try {
+           return temporaryLibraryInventoryV1Service.addTemporaryMainAndSublistAndWarehouse(addTemporaryLibraryInventoryAndDetailsDTO);
+        } catch (Exception e) {
+            return Result.failure("添加失败");
+        }
+    }
+
+    @ApiOperationSupport(order = 2)
+    @ApiOperation(value = "更新", notes = "生成代码")
+    @PostMapping("/update")
+    public Result update(@Valid @RequestBody UpdateTemporaryLibraryInventoryAndDetailsDTO update) {
+        log.info("新增临时清点的数据为:{}", JsonUtil.obj2String(update));
+        try {
+            return temporaryLibraryInventoryV1Service.updateTemporaryMainAndSublistAndWarehouse(update);
+        } catch (Exception e) {
+            return Result.failure("更新失败");
+        }
     }
 }

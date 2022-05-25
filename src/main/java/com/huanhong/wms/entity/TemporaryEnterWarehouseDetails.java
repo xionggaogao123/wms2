@@ -30,6 +30,10 @@ public class TemporaryEnterWarehouseDetails extends SuperEntity {
     @ApiModelProperty(value = "物料编码")
     private String materialCoding;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "物料名称")
+    private String materialName;
+
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "应到数量")
     private Double receivableQuantity;

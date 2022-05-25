@@ -5,19 +5,26 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huanhong.common.exception.BizException;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.dto.request.TemporaryOutWarehouseDetailsRequest;
 import com.huanhong.wms.dto.request.TemporaryOutWarehouseV1AddRequest;
 import com.huanhong.wms.dto.response.TemporaryOutWarehouseResponse;
+import com.huanhong.wms.entity.TemporaryEnterWarehouse;
+import com.huanhong.wms.entity.TemporaryEnterWarehouseDetails;
 import com.huanhong.wms.entity.TemporaryOutWarehouse;
 import com.huanhong.wms.entity.TemporaryOutWarehouseDetails;
 import com.huanhong.wms.entity.vo.TemporaryOutWarehouseVO;
+import com.huanhong.wms.mapper.TemporaryEnterWarehouseDetailsMapper;
+import com.huanhong.wms.mapper.TemporaryEnterWarehouseMapper;
 import com.huanhong.wms.mapper.TemporaryOutWarehouseDetailsMapper;
 import com.huanhong.wms.mapper.TemporaryOutWarehouseMapper;
 import com.huanhong.wms.service.TemporaryOutWarehouseV1Service;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -35,6 +42,12 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
     @Resource
     private TemporaryOutWarehouseDetailsMapper warehouseDetailsManager;
 
+    @Resource
+    private TemporaryEnterWarehouseDetailsMapper temporaryEnterWarehouseDetailsMapper;
+
+    @Resource
+    private TemporaryEnterWarehouseMapper temporaryEnterWarehouseMapper;
+
     /**
      * 添加临时出库主表和子表数据
      * @param request 主表子表数据
@@ -46,8 +59,50 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
         String outNumber = addWarehouse(request);
         //添加子表数据
         addWarehouseDetails(request.getTemporaryOutWarehouseDetailsRequest(), outNumber);
-        //TODO 扣减对应的库存
+        //扣减对应的库存
+        deductingInventory(request.getTemporaryOutWarehouseDetailsRequest());
         return Result.success("添加临时出库信息成功");
+    }
+
+    /**
+     * 扣减临时入库物资数量
+     * @param temporaryOutWarehouseDetailsRequest 出库数据
+     */
+    private void deductingInventory(List<TemporaryOutWarehouseDetailsRequest> temporaryOutWarehouseDetailsRequest) {
+        BigDecimal number3 = new BigDecimal(0);
+        //遍历数据扣减库存
+        temporaryOutWarehouseDetailsRequest.forEach(details->{
+            QueryWrapper<TemporaryEnterWarehouseDetails> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("material_coding",details.getMaterialCoding());
+            queryWrapper.eq("material_name",details.getMaterialName());
+            //查询入库子表数据
+            List<TemporaryEnterWarehouseDetails> enterWarehouseDetails = temporaryEnterWarehouseDetailsMapper.selectList(queryWrapper);
+            //遍历 扣减对应的数据
+            enterWarehouseDetails.forEach(warehouseDetails -> {
+                BigDecimal number1 = new BigDecimal(warehouseDetails.getArrivalQuantity());
+                BigDecimal number2 = new BigDecimal(details.getRequisitionQuantity());
+                if(number1.compareTo(number2) > 0){
+                    throw new BizException("出库数量大于库存数量");
+                }
+                BigDecimal subtract = number1.subtract(number2);
+                //当库存数据==0时删除子表数据 当库存数据<0
+                if(subtract.compareTo(number3) == 0){
+                    //删除入库子表数据
+                    temporaryEnterWarehouseDetailsMapper.deleteById(warehouseDetails.getId());
+                    //查询该入库编号下是否存在数据 不存在数据删除入库单
+                    QueryWrapper<TemporaryEnterWarehouseDetails> temporaryEnterWarehouseDetailsQueryWrapper = new QueryWrapper<>();
+                    temporaryEnterWarehouseDetailsQueryWrapper.eq("enter_number",warehouseDetails.getEnterNumber());
+                    List<TemporaryEnterWarehouseDetails> temporaryEnterWarehouseDetails = temporaryEnterWarehouseDetailsMapper.selectList(temporaryEnterWarehouseDetailsQueryWrapper);
+                    if(CollectionUtils.isEmpty(temporaryEnterWarehouseDetails)){
+                        QueryWrapper<TemporaryEnterWarehouse> temporaryEnterWarehouseQueryWrapper = new QueryWrapper<>();
+                        temporaryEnterWarehouseQueryWrapper.eq("enter_number",warehouseDetails.getEnterNumber());
+                        temporaryEnterWarehouseMapper.delete(temporaryEnterWarehouseQueryWrapper);
+                    }
+                }
+            });
+        });
+
+
     }
 
     /**

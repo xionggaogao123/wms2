@@ -77,4 +77,8 @@ public class ProcurementPlan extends SuperEntity {
     @ApiModelProperty(value = "最后更新时间")
     private LocalDateTime lastUpdate;
 
+    @ApiModelProperty(value = "是否被导入 0.否 1.是")
+    private Integer isImported;
+    @ApiModelProperty(value = "被导入到的平衡利库单号")
+    private String documentNumberImported;
 }

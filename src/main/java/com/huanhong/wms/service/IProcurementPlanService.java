@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.ProcurementPlan;
+import com.huanhong.wms.entity.dto.AddProcurementPlanAndDetailsDTO;
 import com.huanhong.wms.entity.dto.AddProcurementPlanDTO;
 import com.huanhong.wms.entity.dto.UpdateProcurementPlanDTO;
 import com.huanhong.wms.entity.param.DeptMaterialParam;
@@ -68,4 +69,6 @@ public interface IProcurementPlanService extends SuperService<ProcurementPlan> {
     Result<Object> getProcurementPlanFrequencyAndQuantity(DeptMaterialParam param);
 
     Result<Object> getMaterialPurchasingAnalysisOnYearBasis(MaterialYearParam param);
+
+    Result add(AddProcurementPlanAndDetailsDTO addProcurementPlanAndDetailsDTO);
 }

@@ -46,7 +46,7 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
         String outNumber = addWarehouse(request);
         //添加子表数据
         addWarehouseDetails(request.getTemporaryOutWarehouseDetailsRequest(), outNumber);
-        //扣减对应的
+        //TODO 扣减对应的库存
         return Result.success("添加临时出库信息成功");
     }
 

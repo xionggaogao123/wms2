@@ -83,8 +83,6 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
             List<TemporaryEnterWarehouseDetails> enterWarehouseDetails = temporaryEnterWarehouseDetailsMapper.selectList(queryWrapper);
             //遍历 扣减对应的数据
             enterWarehouseDetails.forEach(warehouseDetails -> {
-                warehouseDetails.setOutNumber(outNumber);
-                warehouseDetails.setOutQuantity(details.getRequisitionQuantity());
                 BigDecimal number1 = new BigDecimal(warehouseDetails.getArrivalQuantity());
                 BigDecimal number2 = new BigDecimal(details.getRequisitionQuantity());
                 if (number1.compareTo(number2) > 0) {

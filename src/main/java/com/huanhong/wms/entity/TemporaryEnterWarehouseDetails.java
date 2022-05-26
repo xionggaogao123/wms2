@@ -31,14 +31,6 @@ public class TemporaryEnterWarehouseDetails extends SuperEntity {
     private String materialCoding;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "出库编码")
-    private String outNumber;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "出库数量")
-    private Double outQuantity;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "物料名称")
     private String materialName;
 

@@ -19,67 +19,35 @@ public class TemporaryRecord extends SuperEntity {
     private static final long serialVersionUID=1L;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "单据编号")
-    private String documentNumber;
+    @ApiModelProperty(value = "临时入库单据,临时出库单据")
+    private String number;
+
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "需求计划单据编号")
     private String requirementsPlanningNumber;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "记录类型：1-临时库入库 2-临时库出库")
-    private Integer recordType;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "库房ID")
-    private String warehouseId;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "物料编码")
-    private String materialCoding;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "物料名称")
-    private String materialName;
+    private String recordType;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "批次")
     private String batch;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "计量单位")
-    private String measurementUnit;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "货位编码")
-    private String cargoSpaceId;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "入库数量")
-    private Double enterQuantity;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
-    @ApiModelProperty(value = "出库数量")
-    private Double outQuantity;
-
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "库管员")
     private String warehouseManager;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "领用人")
-    private String recipient;
 
-    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
-    @ApiModelProperty(value = "备注")
-    private String remark;
+    @TableField(value = "enter_time", fill = FieldFill.INSERT)
+    @ApiModelProperty(value = "入库时间")
+    private LocalDateTime enterTime;
 
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
+
+    @TableField(value = "out_time", fill = FieldFill.INSERT)
     @ApiModelProperty(value = "创建日期")
-    private LocalDateTime createTime;
+    private LocalDateTime outTime;
 
-    @TableField(value = "last_update", fill = FieldFill.INSERT_UPDATE)
-    @ApiModelProperty(value = "最后更新时间")
-    private LocalDateTime lastUpdate;
 
 }

@@ -56,6 +56,10 @@ public class TemporaryOutWarehouse extends SuperEntity {
     @ApiModelProperty(value = "备注")
     private String remark;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "单据编号")
+    private String planNumber;
+
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     @ApiModelProperty(value = "创建日期")
     private LocalDateTime createTime;

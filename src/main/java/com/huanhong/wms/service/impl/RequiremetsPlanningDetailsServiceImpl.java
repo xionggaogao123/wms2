@@ -2,6 +2,7 @@ package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.huanhong.common.units.JsonUtil;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.Material;
@@ -11,9 +12,11 @@ import com.huanhong.wms.entity.dto.UpdateRequiremetsPlanningDetailsDTO;
 import com.huanhong.wms.mapper.MaterialMapper;
 import com.huanhong.wms.mapper.RequiremetsPlanningDetailsMapper;
 import com.huanhong.wms.service.IRequiremetsPlanningDetailsService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +29,7 @@ import java.util.List;
  * @author liudeyi
  * @since 2022-03-16
  */
+@Slf4j
 @Service
 public class RequiremetsPlanningDetailsServiceImpl extends SuperServiceImpl<RequiremetsPlanningDetailsMapper, RequiremetsPlanningDetails> implements IRequiremetsPlanningDetailsService {
 
@@ -69,6 +73,8 @@ public class RequiremetsPlanningDetailsServiceImpl extends SuperServiceImpl<Requ
             requiremetsPlanningDetails.setMaterialId(addRequiremetsPlanningDetailsDTO.getMaterialId());
             requiremetsPlanningDetails.setMaterialName(material.getMaterialName());
             requiremetsPlanningDetails.setMaterialCoding(material.getMaterialCoding());
+            requiremetsPlanningDetails.setCreateTime(LocalDateTime.now());
+            log.info("新增管理子表数据为:{}", JsonUtil.obj2String(requiremetsPlanningDetails));
             int add = requiremetsPlanningDetailsMapper.insert(requiremetsPlanningDetails);
             if (add > 0) {
                 listSuccess.add(addRequiremetsPlanningDetailsDTO);

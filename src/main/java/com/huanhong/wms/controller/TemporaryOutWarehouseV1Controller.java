@@ -7,7 +7,6 @@ import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.dto.request.TemporaryOutWarehouseV1AddRequest;
-import com.huanhong.wms.dto.request.UpdateTemporaryOutWarehouseV1AddRequest;
 import com.huanhong.wms.entity.TemporaryOutWarehouse;
 import com.huanhong.wms.entity.vo.TemporaryOutWarehouseVO;
 import com.huanhong.wms.service.TemporaryOutWarehouseV1Service;
@@ -50,18 +49,6 @@ public class TemporaryOutWarehouseV1Controller extends BaseController {
         }
     }
 
-//    @ApiOperationSupport(order = 1)
-//    @ApiOperation(value = "更新", notes = "生成代码")
-//    @PostMapping("/update")
-//    public Result update(@Valid @RequestBody UpdateTemporaryOutWarehouseV1AddRequest request) {
-//        try {
-//            return tempOutWarehouseV1Service.updateTemporaryOutWarehouse(request);
-//        } catch (Exception e) {
-//            log.error("添加临库出库单出错，异常", e);
-//            return Result.failure("系统异常：临库出库单添加失败。");
-//        }
-//    }
-
 
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "id查询", notes = "生成代码")
@@ -74,19 +61,6 @@ public class TemporaryOutWarehouseV1Controller extends BaseController {
             return Result.failure("系统异常：临库出库单添加失败。");
         }
     }
-
-
-//    @ApiOperationSupport(order = 3)
-//    @ApiOperation(value = "id删除", notes = "生成代码")
-//    @DeleteMapping("/deleteById/{id}")
-//    public Result deleteById(@PathVariable("id") Long id) {
-//        try {
-//            return tempOutWarehouseV1Service.deleteById(id);
-//        } catch (Exception e) {
-//            log.error("查询临时出库数据异常:{}", e.getMessage());
-//            return Result.failure("系统异常：临库出库单添加失败。");
-//        }
-//    }
 
 
     @ApiOperationSupport(order = 4)

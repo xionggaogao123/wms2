@@ -160,4 +160,10 @@ public class TemporaryLibraryInventoryServiceImpl extends SuperServiceImpl<Tempo
         queryWrapper.eq("warehouse_id", warehouseId);
         return temporaryLibraryInventoryMapper.selectOne(queryWrapper);
     }
+
+    @Override
+    public TemporaryLibraryInventory addTemporaryLibraryInventory(TemporaryLibraryInventory temporaryLibraryInventory) {
+        return null;
+    }
+
 }

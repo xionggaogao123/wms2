@@ -7,18 +7,14 @@ import com.huanhong.common.units.JsonUtil;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.dto.request.TemporaryLibraryInventoryRequest;
 import com.huanhong.wms.entity.*;
-import com.huanhong.wms.entity.dto.AddTemporaryLibraryInventoryAndDetailsDTO;
-import com.huanhong.wms.entity.dto.AddTemporaryLibraryInventoryDTO;
-import com.huanhong.wms.entity.dto.AddTemporaryLibraryInventoryDetailsDTO;
-import com.huanhong.wms.entity.dto.UpdateTemporaryLibraryInventoryAndDetailsDTO;
+import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.mapper.*;
-import com.huanhong.wms.service.ITemporaryLibraryInventoryDetailsService;
-import com.huanhong.wms.service.ITemporaryLibraryInventoryService;
-import com.huanhong.wms.service.TemporaryLibraryInventoryV1Service;
+import com.huanhong.wms.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +25,9 @@ import java.util.List;
 @Slf4j
 @Service
 public class TemporaryLibraryInventoryV1ServiceImpl implements TemporaryLibraryInventoryV1Service {
+
+    @Resource
+    private IRequiremetsPlanningDetailsService requiremetsPlanningDetailsService;
 
     @Resource
     private ITemporaryLibraryInventoryService temporaryLibraryInventoryService;
@@ -51,6 +50,18 @@ public class TemporaryLibraryInventoryV1ServiceImpl implements TemporaryLibraryI
     @Resource
     private TemporaryEnterWarehouseDetailsMapper temporaryEnterWarehouseDetailsMapper;
 
+    @Resource
+    private IRequirementsPlanningService requirementsPlanningService;
+
+    @Resource
+    private RequiremetsPlanningDetailsMapper requiremetsPlanningDetailsMapper;
+
+    @Resource
+    private TemporaryRecordMapper temporaryRecordMapper;
+
+    @Resource
+    private TemporaryRecordDetailsMapper temporaryRecordDetailsMapper;
+
     /**
      * 添加临时清点单子表数据和主表数据 添加临时入库数据
      *
@@ -59,8 +70,33 @@ public class TemporaryLibraryInventoryV1ServiceImpl implements TemporaryLibraryI
      */
     @Override
     public Result addTemporaryMainAndSublistAndWarehouse(AddTemporaryLibraryInventoryAndDetailsDTO addTemporaryLibraryInventoryAndDetailsDTO) {
+        //申请需求管理
+        AddRequirementsPlanningDTO addRequirementsPlanningDTO = new AddRequirementsPlanningDTO();
+        BeanUtil.copyProperties(addTemporaryLibraryInventoryAndDetailsDTO.getAddTemporaryLibraryInventoryDTO(),addRequirementsPlanningDTO);
+        addRequirementsPlanningDTO.setPlanStatus(1);
+        addRequirementsPlanningDTO.setPlanClassification(3);
+        Result result = requirementsPlanningService.addRequirementsPlanning(addRequirementsPlanningDTO);
+        RequirementsPlanning data = (RequirementsPlanning) result.getData();
+        log.info("添加需求管理主表数据为:{}",JsonUtil.obj2String(data));
+        AddTemporaryLibraryInventoryDTO addTemporaryLibraryInventoryDTO = addTemporaryLibraryInventoryAndDetailsDTO.getAddTemporaryLibraryInventoryDTO();
+        addTemporaryLibraryInventoryDTO.setPlanNumber(data.getPlanNumber());
+        addTemporaryLibraryInventoryDTO.setComplete(1);
+        //申请需求子表数据
+        List<AddTemporaryLibraryInventoryDetailsDTO> temporaryLibraryInventoryDetailsDTOList = addTemporaryLibraryInventoryAndDetailsDTO.getAddTemporaryLibraryInventoryDetailsDTOList();
+        List<RequiremetsPlanningDetails> requiremetsPlanningDetails = BeanUtil.copyToList(temporaryLibraryInventoryDetailsDTOList, RequiremetsPlanningDetails.class);
+        requiremetsPlanningDetails.forEach(details2->{
+            details2.setPlanNumber(data.getPlanNumber());
+            details2.setRequiredQuantity(1.0);
+            details2.setPlannedPurchaseQuantity(1.0);
+            details2.setApprovedQuantity(1.0);
+            details2.setArrivalTime(LocalDateTime.now());
+            details2.setUsePurpose(data.getMaterialUse());
+            details2.setUsePlace("");
+            requiremetsPlanningDetailsMapper.insert(details2);
+        });
+
         //新增临时清点主表
-        Result resultInventory = temporaryLibraryInventoryService.addTemporaryLibraryInventory(addTemporaryLibraryInventoryAndDetailsDTO.getAddTemporaryLibraryInventoryDTO());
+        Result resultInventory = temporaryLibraryInventoryService.addTemporaryLibraryInventory(addTemporaryLibraryInventoryDTO);
         if (!resultInventory.isOk()) {
             return Result.failure("新增点验单失败！");
         }
@@ -79,7 +115,48 @@ public class TemporaryLibraryInventoryV1ServiceImpl implements TemporaryLibraryI
         addTemporaryLibraryInventoryDetailsDTOList.forEach(details -> {
             details.setDocumentNumber(temporaryLibraryInventory.getDocumentNumber());
         });
+        //新增出入库流水表
+        addTemporaryRecord(data.getPlanNumber(),temporaryEnterWarehouse,addTemporaryLibraryInventoryDetailsDTOList,warehouseManagers);
         return temporaryLibraryInventoryDetailsService.addInventoryDocumentDetailsList(addTemporaryLibraryInventoryDetailsDTOList);
+    }
+
+    /**
+     * 入库
+     * @param planNumber 需求编号
+     * @param temporaryEnterWarehouse 入库主表数据
+     * @param addTemporaryLibraryInventoryDetailsDTOList 入库子表数据
+     * @param warehouseManagers 仓库管理数据
+     */
+    private void addTemporaryRecord(String planNumber, TemporaryEnterWarehouse temporaryEnterWarehouse, List<AddTemporaryLibraryInventoryDetailsDTO> addTemporaryLibraryInventoryDetailsDTOList,List<WarehouseManager> warehouseManagers) {
+        TemporaryRecord temporaryRecord = new TemporaryRecord();
+        temporaryRecord.setRequirementsPlanningNumber(planNumber);
+        temporaryRecord.setNumber(temporaryEnterWarehouse.getEnterNumber());
+        temporaryRecord.setBatch("1");
+        ArrayList<String> arrayList = new ArrayList<>();
+        warehouseManagers.forEach(message -> {
+            arrayList.add(message.getLoginName());
+        });
+        temporaryRecord.setWarehouseManager(String.valueOf(arrayList));
+        temporaryRecord.setRecordType("1");
+        temporaryRecord.setEnterTime(LocalDateTime.now());
+        temporaryRecord.setCreateTime(LocalDateTime.now());
+        //添加主表数据
+        temporaryRecordMapper.insert(temporaryRecord);
+        Integer relevanceId = temporaryRecord.getId();
+        //添加子表数据
+        addTemporaryLibraryInventoryDetailsDTOList.forEach(details->{
+            TemporaryRecordDetails temporaryRecordDetails = new TemporaryRecordDetails();
+            temporaryRecordDetails.setRelevanceId(relevanceId);
+            temporaryRecordDetails.setWarehouseId(details.getWarehouseId());
+            temporaryRecordDetails.setMaterialCoding(details.getMaterialCoding());
+            temporaryRecordDetails.setMaterialName(details.getMaterialName());
+            temporaryRecordDetails.setMeasurementUnit("件");
+            temporaryRecordDetails.setEnterQuantity(details.getArrivalQuantity());
+            temporaryRecordDetails.setWarehouseManager(String.valueOf(arrayList));
+            temporaryRecordDetails.setCreateTime(LocalDateTime.now());
+            log.info("添加出入库流水子表数据为:{}",JsonUtil.obj2String(temporaryRecordDetails));
+            temporaryRecordDetailsMapper.insert(temporaryRecordDetails);
+        });
     }
 
     /**
@@ -105,7 +182,6 @@ public class TemporaryLibraryInventoryV1ServiceImpl implements TemporaryLibraryI
         temporaryLibraryInventoryDetails.forEach(details -> {
             temporaryLibraryInventoryDetailsMapper.updateById(details);
         });
-
         return Result.success("修改成功");
     }
 

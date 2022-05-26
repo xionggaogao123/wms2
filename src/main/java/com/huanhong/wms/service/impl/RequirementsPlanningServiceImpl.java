@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huanhong.common.units.JsonUtil;
 import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
@@ -147,6 +148,7 @@ public class RequirementsPlanningServiceImpl extends SuperServiceImpl<Requiremen
             RequirementsPlanning requirementsPlanning = new RequirementsPlanning();
             BeanUtil.copyProperties(addRequirementsPlanningDTO, requirementsPlanning);
             requirementsPlanning.setPlanNumber(orderNo);
+            log.info("新增的数据为:{}", JsonUtil.obj2String(requirementsPlanning));
             int i = requirementsPlanningMapper.insert(requirementsPlanning);
             if (i > 0) {
                 return Result.success(getRequirementsPlanningByDocNumAndWarehouseId(orderNo, requirementsPlanning.getWarehouseId()), "新增成功");

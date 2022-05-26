@@ -61,4 +61,9 @@ public interface ITemporaryLibraryInventoryService extends SuperService<Temporar
     TemporaryLibraryInventory getTemporaryLibraryInventoryByDocumentNumberAndWarehouseId(String documentNumber, String warehouseId);
 
 
+    /**
+     * 添加并返回对应实体类
+     * @return
+     */
+    TemporaryLibraryInventory addTemporaryLibraryInventory(TemporaryLibraryInventory temporaryLibraryInventory);
 }

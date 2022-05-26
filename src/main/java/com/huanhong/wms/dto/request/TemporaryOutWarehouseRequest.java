@@ -56,4 +56,16 @@ public class TemporaryOutWarehouseRequest {
 
     @ApiModelProperty(value = "最后更新时间")
     private LocalDateTime lastUpdate;
+
+    @ApiModelProperty(value = "申请人")
+    private String applicant;
+
+    @ApiModelProperty(value = "计划部门")
+    private String planUnit;
+
+    @ApiModelProperty(value = "物料用途")
+    private String materialUse;
+
+    @ApiModelProperty(value = "单据编号（需求计划）")
+    private String planNumber;
 }

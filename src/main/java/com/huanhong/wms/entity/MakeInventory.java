@@ -52,6 +52,7 @@ public class MakeInventory extends SuperEntity {
     @ApiModelProperty(value = "稽核人Id")
     private Integer auditId;
 
+
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "稽核人姓名")
     private String auditName;
@@ -67,6 +68,10 @@ public class MakeInventory extends SuperEntity {
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "状态: 0-待盘点,1-已盘点")
     private Integer checkStatus;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "是否已生成盘点报告  1.是 0.否")
+    private Integer isReported;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "备注")

@@ -20,23 +20,22 @@ public class AddMakeInventoryDetailsDTO {
 
     private static final long serialVersionUID=1L;
 
-    @NotBlank
     @ApiModelProperty(value = "盘点单单据编号")
     private String documentNumber;
 
-    @NotBlank
+
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;
 
-    @NotBlank
+
     @ApiModelProperty(value = "子库编号")
     private String sublibraryId;
 
-    @NotBlank
+
     @ApiModelProperty(value = "库区编号")
     private String warehouseAreaId;
 
-    @NotBlank
+
     @ApiModelProperty(value = "货位编码")
     private String cargoSpaceId;
 

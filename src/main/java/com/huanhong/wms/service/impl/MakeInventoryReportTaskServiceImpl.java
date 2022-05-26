@@ -1,6 +1,7 @@
 package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.huanhong.common.units.JsonUtil;
 import com.huanhong.wms.bean.Constant;
 import com.huanhong.wms.bean.Result;
@@ -46,7 +47,10 @@ public class MakeInventoryReportTaskServiceImpl implements MakeInventoryReportTa
     @Override
     public void makeInventoryReportCreate() {
         //查询盘点报告表中的数据（盘点状态为:待盘点0）
-        List<MakeInventory> makeInventoryList = makeInventoryService.findByCheckStatus(Constant.CHECK_STATUS_0);
+        QueryWrapper<MakeInventory> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("check_status", Constant.CHECK_STATUS_0);
+        queryWrapper.eq("is_reported", 0);
+        List<MakeInventory> makeInventoryList = makeInventoryMapper.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(makeInventoryList)) {
             log.info("***** 盘点报告表中的没有待盘点数据 *****");
             return;
@@ -54,8 +58,8 @@ public class MakeInventoryReportTaskServiceImpl implements MakeInventoryReportTa
         //遍历数据判断盘点时间(创建盘点计划的时候需要在当前时间之前)
         makeInventoryList.forEach(make -> {
             if (make.getStartTime().isBefore(LocalDateTime.now())) {
-                log.info("***** 开始修改盘点报告表盘点状态 *****");
-                make.setCheckStatus(Constant.CHECK_STATUS_1);
+//                log.info("***** 开始修改盘点报告表盘点状态 *****");
+                make.setIsReported(Constant.CHECK_STATUS_1);
                 makeInventoryMapper.updateById(make);
                 log.info("***** 修改修改完的盘点报表编号:{},报表状态:{} *****", make.getDocumentNumber(), make.getCheckStatus());
                 log.info("***** 开始添加盘点报表主表 *****");

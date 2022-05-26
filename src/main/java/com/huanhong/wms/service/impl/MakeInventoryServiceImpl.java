@@ -36,7 +36,7 @@ import java.util.*;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author liudeyi
@@ -59,6 +59,7 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
 
     /**
      * 分页查询
+     *
      * @param makeInventoryPage
      * @param makeInventoryVO
      * @return
@@ -84,28 +85,28 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
         query.like(StringUtils.isNotBlank(makeInventoryVO.getDocumentNumber()), "document_number", makeInventoryVO.getDocumentNumber());
 
         //仓库编号
-        query.like(StringUtils.isNotBlank(makeInventoryVO.getWarehouseId()),"warehouse_id",makeInventoryVO.getWarehouseId());
+        query.like(StringUtils.isNotBlank(makeInventoryVO.getWarehouseId()), "warehouse_id", makeInventoryVO.getWarehouseId());
 
         //子库编号
         query.like(StringUtils.isNotBlank(makeInventoryVO.getSublibraryId()), "sublibrary_id", makeInventoryVO.getSublibraryId());
 
         //盘点状态
-        query.eq(ObjectUtil.isNotNull(makeInventoryVO.getCheckStatus()),"check_status",makeInventoryVO.getCheckStatus());
+        query.eq(ObjectUtil.isNotNull(makeInventoryVO.getCheckStatus()), "check_status", makeInventoryVO.getCheckStatus());
 
         //是否全盘
-        query.eq(ObjectUtil.isNotNull(makeInventoryVO.getAllMake()),"allMake",makeInventoryVO.getAllMake());
+        query.eq(ObjectUtil.isNotNull(makeInventoryVO.getAllMake()), "allMake", makeInventoryVO.getAllMake());
 
 
-        query.eq(ObjectUtil.isNotNull(makeInventoryVO.getPlanStatus()),"plan_status",makeInventoryVO.getPlanStatus());
+        query.eq(ObjectUtil.isNotNull(makeInventoryVO.getPlanStatus()), "plan_status", makeInventoryVO.getPlanStatus());
 
 
-        query.eq(ObjectUtil.isNotNull(makeInventoryVO.getMaterialType()),"material_type",makeInventoryVO.getMaterialType());
+        query.eq(ObjectUtil.isNotNull(makeInventoryVO.getMaterialType()), "material_type", makeInventoryVO.getMaterialType());
 
 
-        query.eq(ObjectUtil.isNotNull(makeInventoryVO.getInventoryType()),"inventory_type",makeInventoryVO.getInventoryType());
+        query.eq(ObjectUtil.isNotNull(makeInventoryVO.getInventoryType()), "inventory_type", makeInventoryVO.getInventoryType());
 
 
-        query.eq(ObjectUtil.isNotNull(makeInventoryVO.getConsignor()),"consignor",makeInventoryVO.getConsignor());
+        query.eq(ObjectUtil.isNotNull(makeInventoryVO.getConsignor()), "consignor", makeInventoryVO.getConsignor());
 
 
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -129,6 +130,7 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
 
     /**
      * 新增盘点单
+     *
      * @param addMakeInventoryDTO
      * @return
      */
@@ -147,50 +149,45 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
             /**
              * 当前仓库
              */
-            queryMakeInventory.likeRight("sublibrary_id", addMakeInventoryDTO.getSublibraryId().substring(0,4));
+            queryMakeInventory.likeRight("sublibrary_id", addMakeInventoryDTO.getSublibraryId().substring(0, 4));
 
-            /**
-             * 当前日期
-             */
-            String today = StrUtils.HandleData(DateUtil.today());
-            queryMakeInventory.likeRight("document_number", "PD" + today);
+            queryMakeInventory.likeRight("document_number", "PD" + String.valueOf(System.currentTimeMillis()));
 
             /**
              * likeRight: PD+XXXXXXXX(当前年月日)
              */
             MakeInventory maxMakeInventory = makeInventoryMapper.selectOne(queryMakeInventory.orderByDesc("id").last("limit 1"));
-
-            //目前最大的单据编码
-            String maxDocNum = null;
-            if (ObjectUtil.isNotEmpty(maxMakeInventory)) {
-                maxDocNum = maxMakeInventory.getDocumentNumber();
-            }
-
-            String orderNo = null;
-            //单据编码前缀-PD+年月日
-            String code_pfix = "PD" + today;
-            if (maxDocNum != null && maxMakeInventory.getDocumentNumber().contains(code_pfix)) {
-                String code_end = maxMakeInventory.getDocumentNumber().substring(10, 15);
-                int endNum = Integer.parseInt(code_end);
-                int tmpNum = 100000 + endNum + 1;
-                orderNo = code_pfix + StrUtils.subStr("" + tmpNum, 1);
-            } else {
-                orderNo = code_pfix + "00001";
-            }
-
-            /**
-             *处理盘点人ID
-             */
+//            //目前最大的单据编码
+//            String maxDocNum = null;
+//            if (ObjectUtil.isNotEmpty(maxMakeInventory)) {
+//                maxDocNum = maxMakeInventory.getDocumentNumber();
+//            }
+//
+//            String orderNo = null;
+//            //单据编码前缀-PD+年月日
+//            String code_pfix = "PD" + today;
+//            if (maxDocNum != null && maxMakeInventory.getDocumentNumber().contains(code_pfix)) {
+//                String code_end = maxMakeInventory.getDocumentNumber().substring(10, 15);
+//                int endNum = Integer.parseInt(code_end);
+//                int tmpNum = 100000 + endNum + 1;
+//                orderNo = code_pfix + StrUtils.subStr("" + tmpNum, 1);
+//            } else {
+//                orderNo = code_pfix + "00001";
+//            }
+//
+//            /**
+//             *处理盘点人ID String.valueOf(System.currentTimeMillis())
+//             */
 
             /**
              * 新增单据
              */
             MakeInventory makeInventory = new MakeInventory();
             BeanUtil.copyProperties(addMakeInventoryDTO, makeInventory);
-            makeInventory.setDocumentNumber(orderNo);
+            makeInventory.setDocumentNumber("PD" + String.valueOf(System.currentTimeMillis()));
             int i = makeInventoryMapper.insert(makeInventory);
             if (i > 0) {
-                return Result.success(getMakeInventoryByDocNumAndWarehouse(orderNo, addMakeInventoryDTO.getSublibraryId().substring(0,4)), "新增成功");
+                return Result.success(getMakeInventoryByDocNumAndWarehouse(makeInventory.getDocumentNumber(), addMakeInventoryDTO.getSublibraryId().substring(0, 4)), "新增成功");
             } else {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "新增失败！");
             }
@@ -203,6 +200,7 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
 
     /**
      * 更新盘点单
+     *
      * @param updateMakeInventoryDTO
      * @return
      */
@@ -212,7 +210,7 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
         //获取最新版本号的数据
         MakeInventory makeInventoryOld = getMakeInventoryById(updateMakeInventoryDTO.getId());
 
-        BeanUtil.copyProperties(updateMakeInventoryDTO,makeInventoryOld);
+        BeanUtil.copyProperties(updateMakeInventoryDTO, makeInventoryOld);
 
         int update = makeInventoryMapper.updateById(makeInventoryOld);
 
@@ -221,6 +219,7 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
 
     /**
      * 根据ID获取盘点单信息
+     *
      * @param id
      * @return
      */
@@ -232,6 +231,7 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
 
     /**
      * 根据单据号和仓库获取盘点单
+     *
      * @param docNum
      * @param warehouse
      * @return
@@ -239,8 +239,8 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
     @Override
     public MakeInventory getMakeInventoryByDocNumAndWarehouse(String docNum, String warehouse) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq("document_number",docNum);
-        queryWrapper.likeRight("sublibrary_id",warehouse);
+        queryWrapper.eq("document_number", docNum);
+        queryWrapper.likeRight("sublibrary_id", warehouse);
         MakeInventory makeInventory = makeInventoryMapper.selectOne(queryWrapper);
         return ObjectUtil.isNotNull(makeInventory) ? makeInventory : null;
     }
@@ -253,15 +253,15 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
             ii.setIndex(i);
             ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
             // 查询期间入库出库数
-            double inTotal = enterWarehouseMapper.sumNumber(ii.getMaterialCoding(),ii.getStartTime(),ii.getEndTime());
+            double inTotal = enterWarehouseMapper.sumNumber(ii.getMaterialCoding(), ii.getStartTime(), ii.getEndTime());
             ii.setInTotal(inTotal);
-            double outTotal = outboundRecordMapper.sumNumber(ii.getMaterialCoding(),ii.getStartTime(),ii.getEndTime());
+            double outTotal = outboundRecordMapper.sumNumber(ii.getMaterialCoding(), ii.getStartTime(), ii.getEndTime());
             ii.setOutTotal(outTotal);
             //账面-实盘-入库+出库 负值是盘盈 正值是盘亏 二选一
-            double num = ii.getInventoryCredit()-ii.getCheckCredit()-inTotal+outTotal;
-            if(num<0){
+            double num = ii.getInventoryCredit() - ii.getCheckCredit() - inTotal + outTotal;
+            if (num < 0) {
                 ii.setNumSurplus(Math.abs(num));
-            }else {
+            } else {
                 ii.setNumLoss(num);
             }
             i++;
@@ -286,7 +286,7 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
     @Override
     public List<MakeInventory> findByCheckStatus(Integer status) {
         QueryWrapper<MakeInventory> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("check_status",status);
+        queryWrapper.eq("check_status", status);
         return makeInventoryMapper.selectList(queryWrapper);
     }
 }

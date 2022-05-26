@@ -95,4 +95,10 @@ public interface ITemporaryRecordService extends SuperService<TemporaryRecord> {
      */
     TemporaryRecord getTemporaryRecordByDocNumAndCargoSpaceAndMaterialCodingAndBatch(String docNum, String cargoSpace, String materialCoding, String batch);
 
+    /**
+     * id查询
+     * @param id
+     * @return
+     */
+    Result selectById(Integer id);
 }

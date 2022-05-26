@@ -5,16 +5,22 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huanhong.common.units.JsonUtil;
 import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.dto.response.TemporaryRecordResponse;
 import com.huanhong.wms.entity.OutboundRecord;
 import com.huanhong.wms.entity.TemporaryRecord;
+import com.huanhong.wms.entity.TemporaryRecordDetails;
 import com.huanhong.wms.entity.dto.AddOutboundRecordDTO;
 import com.huanhong.wms.entity.dto.AddTemporaryRecordDTO;
 import com.huanhong.wms.entity.dto.UpdateTemporaryRecordDTO;
 import com.huanhong.wms.entity.vo.TemporaryRecordVO;
+import com.huanhong.wms.mapper.TemporaryRecordDetailsMapper;
 import com.huanhong.wms.mapper.TemporaryRecordMapper;
 import com.huanhong.wms.service.ITemporaryRecordService;
 import com.huanhong.wms.SuperServiceImpl;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.core.util.JsonUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -29,11 +35,15 @@ import java.util.List;
  * @author liudeyi
  * @since 2022-05-05
  */
+@Slf4j
 @Service
 public class TemporaryRecordServiceImpl extends SuperServiceImpl<TemporaryRecordMapper, TemporaryRecord> implements ITemporaryRecordService {
 
     @Resource
     private TemporaryRecordMapper temporaryRecordMapper;
+
+    @Resource
+    private TemporaryRecordDetailsMapper temporaryRecordDetailsMapper;
 
     @Override
     public Page<TemporaryRecord> pageFuzzyQuery(Page<TemporaryRecord> temporaryRecordPage, TemporaryRecordVO temporaryRecordVO) {
@@ -50,26 +60,17 @@ public class TemporaryRecordServiceImpl extends SuperServiceImpl<TemporaryRecord
         }
 
         //若Vo对象不为空，分别获取其中的字段，
-        //并对其进行判断是否为空，这一步类似动态SQL的拼装
-        query.like(StringUtils.isNotBlank(temporaryRecordVO.getDocumentNumber()), "document_number", temporaryRecordVO.getDocumentNumber());
+        //并对其进行判断是否为空，这一步类似动态SQL的拼装 requirements_planning_number
 
-        query.like(StringUtils.isNotBlank(temporaryRecordVO.getRequirementsPlanningNumber()), "document_number", temporaryRecordVO.getRequirementsPlanningNumber());
-
-        query.like(StringUtils.isNotBlank(temporaryRecordVO.getWarehouseId()), "warehouse_id", temporaryRecordVO.getWarehouseId());
+        query.like(StringUtils.isNotBlank(temporaryRecordVO.getNumber()), "number", temporaryRecordVO.getNumber());
+        query.like(StringUtils.isNotBlank(temporaryRecordVO.getRequirementsPlanningNumber()), "requirements_planning_number", temporaryRecordVO.getRequirementsPlanningNumber());
 
         query.like(ObjectUtil.isNotNull(temporaryRecordVO.getRecordType()),"record_type",temporaryRecordVO.getRecordType());
-
-        query.like(StringUtils.isNotBlank(temporaryRecordVO.getMaterialCoding()), "material_coding", temporaryRecordVO.getMaterialCoding());
-
-        query.like(StringUtils.isNotBlank(temporaryRecordVO.getMaterialName()), "material_name", temporaryRecordVO.getMaterialName());
-
-        query.like(StringUtils.isNotBlank(temporaryRecordVO.getCargoSpaceId()), "cargo_space_id", temporaryRecordVO.getCargoSpaceId());
 
         query.like(StringUtils.isNotBlank(temporaryRecordVO.getBatch()), "batch", temporaryRecordVO.getBatch());
 
         query.like(ObjectUtil.isNotNull(temporaryRecordVO.getWarehouseManager()), "warehouse_manager", temporaryRecordVO.getWarehouseManager());
 
-        query.like(ObjectUtil.isNotNull(temporaryRecordVO.getRecipient()),"recipient",temporaryRecordVO.getRecipient());
 
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         /**
@@ -153,5 +154,19 @@ public class TemporaryRecordServiceImpl extends SuperServiceImpl<TemporaryRecord
         queryWrapper.eq("batch", batch);
         queryWrapper.last("limit 1");
         return temporaryRecordMapper.selectOne(queryWrapper);
+    }
+
+    @Override
+    public Result selectById(Integer id) {
+        TemporaryRecord temporaryRecord = temporaryRecordMapper.selectById(id);
+        log.info("查询到主表数据:{}", JsonUtil.obj2String(temporaryRecord));
+        QueryWrapper<TemporaryRecordDetails> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("relevance_id",temporaryRecord.getId());
+        List<TemporaryRecordDetails> temporaryRecordDetails = temporaryRecordDetailsMapper.selectList(queryWrapper);
+        log.info("查询到子表数据:{}", JsonUtil.obj2String(temporaryRecordDetails));
+        TemporaryRecordResponse temporaryRecordResponse = new TemporaryRecordResponse();
+        temporaryRecordResponse.setTemporaryRecord(temporaryRecord);
+        temporaryRecordResponse.setTemporaryRecordDetails(temporaryRecordDetails);
+        return Result.success(temporaryRecordResponse);
     }
 }

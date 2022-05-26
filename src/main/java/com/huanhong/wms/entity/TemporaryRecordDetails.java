@@ -35,7 +35,7 @@ public class TemporaryRecordDetails extends SuperEntity {
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "批次")
-    private String bath;
+    private String batch;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "计量单位")

@@ -69,6 +69,8 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
      */
     @Override
     public Result addMasterAndSublist(TemporaryOutWarehouseV1AddRequest request) {
+        //校验数量
+        checkout(request);
         //添加需求管理
         String planNumber = addRequirementsPlanning(request);
         //添加主表数据返回对应的出库编号
@@ -80,6 +82,10 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
         //添加流水
         addTemporaryRecord(planNumber,outNumber,request);
         return Result.success("添加临时出库信息成功");
+    }
+
+    private void checkout(TemporaryOutWarehouseV1AddRequest request) {
+
     }
 
     private void addTemporaryRecord(String planNumber, String outNumber, TemporaryOutWarehouseV1AddRequest request) {
@@ -162,7 +168,7 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
             enterWarehouseDetails.forEach(warehouseDetails -> {
                 BigDecimal number1 = new BigDecimal(warehouseDetails.getArrivalQuantity());
                 BigDecimal number2 = new BigDecimal(details.getRequisitionQuantity());
-                if (number1.compareTo(number2) > 0) {
+                if (number1.compareTo(number2) < 0) {
                     throw new BizException("出库数量大于库存数量");
                 }
                 BigDecimal subtract = number1.subtract(number2);
@@ -265,8 +271,9 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
 
     @Override
     public Result selectAll() {
-        List<TemporaryEnterWarehouseDetails> temporaryEnterWarehouseDetails = temporaryEnterWarehouseDetailsMapper.selectList(null);
-        return Result.success(temporaryEnterWarehouseDetails);
+        List<TemporaryOutWarehouseDetails> temporaryOutWarehouseDetails = warehouseDetailsManager.selectList(null);
+        log.info("查询所有数据:{}",JsonUtil.obj2String(temporaryOutWarehouseDetails));
+        return Result.success(temporaryOutWarehouseDetails);
     }
 
     /**

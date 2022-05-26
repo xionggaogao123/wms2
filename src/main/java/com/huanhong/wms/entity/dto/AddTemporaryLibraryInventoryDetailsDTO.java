@@ -37,7 +37,7 @@ public class AddTemporaryLibraryInventoryDetailsDTO {
     @ApiModelProperty(value = "有效日期")
     private LocalDateTime effectiveTime;
 
-    @NotNull
+
     @Min(0)
     @ApiModelProperty(value = "到货数量")
     private Double arrivalQuantity;

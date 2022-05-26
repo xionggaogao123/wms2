@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.huanhong.common.exception.BizException;
 import com.huanhong.common.units.JsonUtil;
 import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.dto.request.TemporaryLibraryInventoryRequest;
 import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.AddTemporaryLibraryInventoryAndDetailsDTO;
 import com.huanhong.wms.entity.dto.AddTemporaryLibraryInventoryDTO;
@@ -106,6 +107,23 @@ public class TemporaryLibraryInventoryV1ServiceImpl implements TemporaryLibraryI
         });
 
         return Result.success("修改成功");
+    }
+
+    @Override
+    public Result selectById(Long id) {
+        //查询主表数据
+        TemporaryLibraryInventory temporaryLibraryInventory = temporaryLibraryInventoryMapper.selectById(id);
+        if(temporaryLibraryInventory == null){
+            throw new BizException("清点单不存在");
+        }
+        QueryWrapper<TemporaryLibraryInventoryDetails> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("document_number",temporaryLibraryInventory.getDocumentNumber());
+        List<TemporaryLibraryInventoryDetails> temporaryLibraryInventoryDetails = temporaryLibraryInventoryDetailsMapper.selectList(queryWrapper);
+        //封装数据
+        TemporaryLibraryInventoryRequest temporaryLibraryInventoryRequest = new TemporaryLibraryInventoryRequest();
+        temporaryLibraryInventoryRequest.setTemporaryLibraryInventory(temporaryLibraryInventory);
+        temporaryLibraryInventoryRequest.setTemporaryLibraryInventoryDetails(temporaryLibraryInventoryDetails);
+        return Result.success(temporaryLibraryInventoryRequest);
     }
 
     private void updateTemporaryEnterWarehouseDetails(List<TemporaryLibraryInventoryDetails> temporaryLibraryInventoryDetails, String enterNumber) {

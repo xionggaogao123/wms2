@@ -24,4 +24,10 @@ public interface TemporaryLibraryInventoryV1Service {
      */
     Result updateTemporaryMainAndSublistAndWarehouse(UpdateTemporaryLibraryInventoryAndDetailsDTO update);
 
+    /**
+     * id 查询
+     * @param id
+     * @return
+     */
+    Result selectById(Long id);
 }

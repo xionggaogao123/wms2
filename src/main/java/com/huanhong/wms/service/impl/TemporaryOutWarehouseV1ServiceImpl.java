@@ -8,7 +8,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.common.exception.BizException;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.dto.request.TemporaryOutWarehouseDetailsRequest;
+import com.huanhong.wms.dto.request.TemporaryOutWarehouseRequest;
 import com.huanhong.wms.dto.request.TemporaryOutWarehouseV1AddRequest;
+import com.huanhong.wms.dto.request.UpdateTemporaryOutWarehouseV1AddRequest;
 import com.huanhong.wms.dto.response.TemporaryOutWarehouseResponse;
 import com.huanhong.wms.entity.TemporaryEnterWarehouse;
 import com.huanhong.wms.entity.TemporaryEnterWarehouseDetails;
@@ -61,7 +63,7 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
         //添加子表数据
         addWarehouseDetails(request.getTemporaryOutWarehouseDetailsRequest(), outNumber);
         //扣减对应的库存
-        deductingInventory(request.getTemporaryOutWarehouseDetailsRequest());
+        deductingInventory(request.getTemporaryOutWarehouseDetailsRequest(),outNumber);
         return Result.success("添加临时出库信息成功");
     }
 
@@ -70,7 +72,7 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
      *
      * @param temporaryOutWarehouseDetailsRequest 出库数据
      */
-    private void deductingInventory(List<TemporaryOutWarehouseDetailsRequest> temporaryOutWarehouseDetailsRequest) {
+    private void deductingInventory(List<TemporaryOutWarehouseDetailsRequest> temporaryOutWarehouseDetailsRequest,String outNumber) {
         BigDecimal number3 = new BigDecimal(0);
         //遍历数据扣减库存
         temporaryOutWarehouseDetailsRequest.forEach(details -> {
@@ -81,6 +83,8 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
             List<TemporaryEnterWarehouseDetails> enterWarehouseDetails = temporaryEnterWarehouseDetailsMapper.selectList(queryWrapper);
             //遍历 扣减对应的数据
             enterWarehouseDetails.forEach(warehouseDetails -> {
+                warehouseDetails.setOutNumber(outNumber);
+                warehouseDetails.setOutQuantity(details.getRequisitionQuantity());
                 BigDecimal number1 = new BigDecimal(warehouseDetails.getArrivalQuantity());
                 BigDecimal number2 = new BigDecimal(details.getRequisitionQuantity());
                 if (number1.compareTo(number2) > 0) {
@@ -100,6 +104,9 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
                         temporaryEnterWarehouseQueryWrapper.eq("enter_number", warehouseDetails.getEnterNumber());
                         temporaryEnterWarehouseMapper.delete(temporaryEnterWarehouseQueryWrapper);
                     }
+                }else if(subtract.compareTo(number3) > 0){
+                    warehouseDetails.setArrivalQuantity(subtract.doubleValue());
+                    temporaryEnterWarehouseDetailsMapper.updateById(warehouseDetails);
                 }
             });
         });
@@ -185,6 +192,36 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
     public Result selectAll() {
         List<TemporaryEnterWarehouseDetails> temporaryEnterWarehouseDetails = temporaryEnterWarehouseDetailsMapper.selectList(null);
         return Result.success(temporaryEnterWarehouseDetails);
+    }
+
+    /**
+     * 修改出库数据
+     * @param request
+     * @return
+     */
+    @Override
+    public Result updateTemporaryOutWarehouse(UpdateTemporaryOutWarehouseV1AddRequest request) {
+        //修改临时出库表
+        TemporaryOutWarehouse temporaryOutWarehouse = request.getTemporaryOutWarehouse();
+        warehouseManager.updateById(temporaryOutWarehouse);
+        //修改子表数据
+        List<TemporaryOutWarehouseDetails> temporaryOutWarehouseDetails = request.getTemporaryOutWarehouseDetails();
+        temporaryOutWarehouseDetails.forEach(details -> {
+            warehouseDetailsManager.updateById(details);
+        });
+        //修改临时库存数据
+        updateTemporaryEnterWarehouseDetails(temporaryOutWarehouseDetails);
+        return null;
+    }
+
+    private void updateTemporaryEnterWarehouseDetails(List<TemporaryOutWarehouseDetails> temporaryOutWarehouseDetails) {
+        temporaryOutWarehouseDetails.forEach(details -> {
+            //查询对应的库存数据
+            QueryWrapper<TemporaryEnterWarehouseDetails> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("out_number",details.getOutNumber());
+            List<TemporaryEnterWarehouseDetails> temporaryEnterWarehouseDetails = temporaryEnterWarehouseDetailsMapper.selectList(queryWrapper);
+
+        });
     }
 
     /**

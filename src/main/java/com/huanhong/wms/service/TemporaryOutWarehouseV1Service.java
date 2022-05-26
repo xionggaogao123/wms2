@@ -3,6 +3,7 @@ package com.huanhong.wms.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.dto.request.TemporaryOutWarehouseV1AddRequest;
+import com.huanhong.wms.dto.request.UpdateTemporaryOutWarehouseV1AddRequest;
 import com.huanhong.wms.entity.TemporaryOutWarehouse;
 import com.huanhong.wms.entity.vo.TemporaryOutWarehouseVO;
 
@@ -46,4 +47,11 @@ public interface TemporaryOutWarehouseV1Service {
      * @return
      */
     Result selectAll();
+
+    /**
+     * 修改出库数据
+     * @param request
+     * @return
+     */
+    Result updateTemporaryOutWarehouse(UpdateTemporaryOutWarehouseV1AddRequest request);
 }

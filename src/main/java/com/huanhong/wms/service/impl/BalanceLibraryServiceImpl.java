@@ -182,7 +182,7 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
                             .findFirst();
                     if(optionalBalanceLibraryRecord.isPresent()){
                         BalanceLibraryRecord balanceLibraryRecord = optionalBalanceLibraryRecord.get();
-                        BeanUtil.copyProperties(balanceLibraryRecord,balanceLibraryDetailVo);
+                        BeanUtil.copyProperties(balanceLibraryRecord,recordVo);
                     }
                     recordVo.setOutWarehouseId(wm.getWarehouseId());
                     recordVo.setOutWarehouse(wm.getWarehouseName());

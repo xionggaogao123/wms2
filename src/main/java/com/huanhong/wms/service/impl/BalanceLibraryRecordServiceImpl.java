@@ -59,15 +59,18 @@ public class BalanceLibraryRecordServiceImpl extends SuperServiceImpl<BalanceLib
         if (null == balanceLibraryDetail) {
             return Result.failure(400, "平衡利库明细不存在或已被删除");
         }
-        BalanceLibrary balanceLibrary = balanceLibraryMapper.selectOne(Wrappers.<BalanceLibrary>lambdaQuery().eq(BalanceLibrary::getBalanceLibraryNo, balanceLibraryDetail.getBalanceLibraryNo()).last("limit 1"));
+        BalanceLibrary balanceLibrary = balanceLibraryMapper.selectOne(Wrappers.<BalanceLibrary>lambdaQuery()
+                .eq(BalanceLibrary::getBalanceLibraryNo, balanceLibraryDetail.getBalanceLibraryNo())
+                .orderByDesc(BalanceLibrary::getId).last("limit 1"));
         if (null == balanceLibrary) {
             return Result.failure(400, "平衡利库不存在或已被删除");
         }
         // 查询该明细下是否有待审批的调拨，如果有的话不可以再次调拨，需审批通过才可以
         int count = this.baseMapper.selectCount(Wrappers.lambdaQuery(new BalanceLibraryRecord())
-                .ne(BalanceLibraryRecord::getCalibrationStatus, 3).or()
-                .ne(BalanceLibraryRecord::getCalibrationStatus2, 3).or()
-                .ne(BalanceLibraryRecord::getCalibrationStatus3, 3));
+                .eq(BalanceLibraryRecord::getBalanceLibraryDetailId, balanceLibraryDetailId).and(wrapper-> wrapper.ne(BalanceLibraryRecord::getCalibrationStatus, 3).or()
+                        .ne(BalanceLibraryRecord::getCalibrationStatus2, 3).or()
+                        .ne(BalanceLibraryRecord::getCalibrationStatus3, 3))
+                );
         if (count > 0) {
             return Result.failure("存在不是审批生效的调拨计划，请等待审批通过后再操作");
         }
@@ -127,10 +130,13 @@ public class BalanceLibraryRecordServiceImpl extends SuperServiceImpl<BalanceLib
             planNo = ((AllocationPlan) r.getData()).getAllocationNumber();
             if (null != balanceLibraryRecord.getPreCalibrationQuantity() && 0 != balanceLibraryRecord.getPreCalibrationQuantity()) {
                 balanceLibraryRecord.setPlanNo(planNo);
+                balanceLibraryRecord.setCalibrationStatus(1);
             } else if (null != balanceLibraryRecord.getPreCalibrationQuantity2() && 0 != balanceLibraryRecord.getPreCalibrationQuantity2()) {
                 balanceLibraryRecord.setPlanNo2(planNo);
+                balanceLibraryRecord.setCalibrationStatus2(1);
             } else if (null != balanceLibraryRecord.getPreCalibrationQuantity3() && 0 != balanceLibraryRecord.getPreCalibrationQuantity3()) {
                 balanceLibraryRecord.setPlanNo3(planNo);
+                balanceLibraryRecord.setCalibrationStatus3(1);
             }
             int flag = this.baseMapper.insert(balanceLibraryRecord);
             if (flag < 1) {

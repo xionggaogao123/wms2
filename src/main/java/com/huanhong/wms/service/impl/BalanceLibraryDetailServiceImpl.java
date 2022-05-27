@@ -52,7 +52,7 @@ public class BalanceLibraryDetailServiceImpl extends SuperServiceImpl<BalanceLib
         if (null == detail) {
             return Result.failure(400, "平衡利库明细不存在或已被删除");
         }
-        BalanceLibrary balanceLibrary = balanceLibraryMapper.selectOne(Wrappers.<BalanceLibrary>lambdaQuery().eq(BalanceLibrary::getBalanceLibraryNo, detail.getBalanceLibraryNo()).last("limit 1"));
+        BalanceLibrary balanceLibrary = balanceLibraryMapper.selectOne(Wrappers.<BalanceLibrary>lambdaQuery().eq(BalanceLibrary::getBalanceLibraryNo, balanceLibraryDetail.getBalanceLibraryNo()).last("limit 1"));
         if (null == balanceLibrary) {
             return Result.failure(400, "平衡利库不存在或已被删除");
         }

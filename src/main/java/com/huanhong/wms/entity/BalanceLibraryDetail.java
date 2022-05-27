@@ -26,10 +26,10 @@ public class BalanceLibraryDetail extends SuperEntity {
     @ApiModelProperty(value = "需求数量")
     private Double requiredQuantity;
 
-    @ApiModelProperty(value = "计划采购数量")
+    @ApiModelProperty(value = "计划数量")
     private Double plannedPurchaseQuantity;
 
-    @ApiModelProperty(value = "批准数量")
+    @ApiModelProperty(value = "实际批准数量")
     private Double approvedQuantity;
 
     @ApiModelProperty(value = "预估单价")

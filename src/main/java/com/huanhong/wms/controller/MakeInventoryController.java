@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.common.units.EntityUtils;
+import com.huanhong.common.units.JsonUtil;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
@@ -101,6 +102,8 @@ public class MakeInventoryController extends BaseController {
     @ApiOperation(value = "添加", notes = "生成代码")
     @PostMapping("/add")
     public Result add(@Valid @RequestBody AddMakeInventoryAndDetailsDTO addMakeInventoryAndDetailsDTO) {
+        log.info("接收到参数为:{}", JsonUtil.obj2String(addMakeInventoryAndDetailsDTO.getAddMakeInventoryDetailsDTOList()));
+        List<AddMakeInventoryDetailsDTO> addMakeInventoryDetailsDTOList1 = addMakeInventoryAndDetailsDTO.getAddMakeInventoryDetailsDTOList();
         try {
 
             List<AddMakeInventoryDetailsDTO> addMakeInventoryDetailsDTOList = new ArrayList<>();
@@ -162,13 +165,13 @@ public class MakeInventoryController extends BaseController {
                             return result;
                             //指定物料
                         } else if (makeInventory.getMaterialType() == 1) {
-                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList)) {
-                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList
+                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList1)) {
+                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList1
                                 ) {
                                     addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                     addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 }
-                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList1);
                                 return result;
                             }
                         } else {
@@ -243,13 +246,13 @@ public class MakeInventoryController extends BaseController {
                             return result;
                             //指定物料
                         } else if (makeInventory.getMaterialType() == 1) {
-                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList)) {
-                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList
+                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList1)) {
+                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList1
                                 ) {
                                     addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                     addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 }
-                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList1);
                                 return result;
                             }
                         }
@@ -359,13 +362,13 @@ public class MakeInventoryController extends BaseController {
                             return result;
                             //指定物料
                         } else if (makeInventory.getMaterialType() == 1) {
-                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList)) {
-                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList
+                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList1)) {
+                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList1
                                 ) {
                                     addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                     addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 }
-                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList1);
                                 return result;
                             }
                         } else {
@@ -440,13 +443,13 @@ public class MakeInventoryController extends BaseController {
                             return result;
                             //指定物料
                         } else if (makeInventory.getMaterialType() == 1) {
-                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList)) {
-                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList
+                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList1)) {
+                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList1
                                 ) {
                                     addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                     addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 }
-                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList1);
                                 return result;
                             }
                         }
@@ -557,13 +560,13 @@ public class MakeInventoryController extends BaseController {
                             return result;
                             //指定物料
                         } else if (makeInventory.getMaterialType() == 1) {
-                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList)) {
-                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList
+                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList1)) {
+                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList1
                                 ) {
                                     addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                     addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 }
-                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList1);
                                 return result;
                             }
                         } else {
@@ -636,13 +639,13 @@ public class MakeInventoryController extends BaseController {
                             return result;
                             //指定物料
                         } else if (makeInventory.getMaterialType() == 1) {
-                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList)) {
-                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList
+                            if (ObjectUtil.isNotNull(addMakeInventoryDetailsDTOList1)) {
+                                for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList1
                                 ) {
                                     addMakeInventoryDetailsDTO.setDocumentNumber(docNum);
                                     addMakeInventoryDetailsDTO.setWarehouseId(warehouseId);
                                 }
-                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList);
+                                makeInventoryDetailsService.addMakeInventoryDetails(addMakeInventoryDetailsDTOList1);
                                 return result;
                             }
                         }

@@ -97,12 +97,16 @@ public class BalanceLibraryRecordServiceImpl extends SuperServiceImpl<BalanceLib
 //            addAllocationPlanDTO.setSendUser();
             addAllocationPlanDTO.setSendWarehouse(balanceLibraryRecord.getOutWarehouseId());
             addAllocationPlanDTO.setAssignmentDate(balanceLibraryDetail.getRequestArrivalTime());
+            double preCalibrationQuantity = 0D;
             if (null != balanceLibraryRecord.getPreCalibrationQuantity() && 0 != balanceLibraryRecord.getPreCalibrationQuantity()) {
                 addAllocationPlanDTO.setBalanceLibraryRecordNum(1);
+                preCalibrationQuantity = balanceLibraryRecord.getPreCalibrationQuantity();
             } else if (null != balanceLibraryRecord.getPreCalibrationQuantity2() && 0 != balanceLibraryRecord.getPreCalibrationQuantity2()) {
                 addAllocationPlanDTO.setBalanceLibraryRecordNum(2);
+                preCalibrationQuantity = balanceLibraryRecord.getPreCalibrationQuantity2();
             } else if (null != balanceLibraryRecord.getPreCalibrationQuantity3() && 0 != balanceLibraryRecord.getPreCalibrationQuantity3()) {
                 addAllocationPlanDTO.setBalanceLibraryRecordNum(3);
+                preCalibrationQuantity = balanceLibraryRecord.getPreCalibrationQuantity3();
             }
             addAllocationPlanDTO.setBalanceLibraryNo(balanceLibrary.getBalanceLibraryNo());
             addAllocationPlanDTO.setBalanceLibraryDetailId(balanceLibraryDetailId);
@@ -112,8 +116,8 @@ public class BalanceLibraryRecordServiceImpl extends SuperServiceImpl<BalanceLib
             AddAllocationPlanDetailDTO addAllocationPlanDetailDTO = new AddAllocationPlanDetailDTO();
             addAllocationPlanDetailDTO.setConsignor(0);
             addAllocationPlanDetailDTO.setMaterialCoding(balanceLibraryDetail.getMaterialCoding());
-            addAllocationPlanDetailDTO.setCalibrationQuantity(balanceLibraryRecord.getCalibrationQuantity());
-            addAllocationPlanDetailDTO.setRequestQuantity(balanceLibraryRecord.getCalibrationQuantity());
+            addAllocationPlanDetailDTO.setCalibrationQuantity(preCalibrationQuantity);
+            addAllocationPlanDetailDTO.setRequestQuantity(preCalibrationQuantity);
             addAllocationPlanDetailDTOList.add(addAllocationPlanDetailDTO);
             addAllocationPlanAndDetailsDTO.setAddAllocationPlanDetailDTOList(addAllocationPlanDetailDTOList);
             Result r = allocationPlanService.add(addAllocationPlanAndDetailsDTO);

@@ -1,5 +1,6 @@
 package com.huanhong.wms.service;
 
+import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.BalanceLibraryDetail;
 import com.huanhong.wms.SuperService;
 
@@ -13,4 +14,5 @@ import com.huanhong.wms.SuperService;
  */
 public interface IBalanceLibraryDetailService extends SuperService<BalanceLibraryDetail> {
 
+    Result createProcurementPlan(BalanceLibraryDetail balanceLibraryDetail);
 }

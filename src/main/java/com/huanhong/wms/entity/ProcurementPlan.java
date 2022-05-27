@@ -81,4 +81,9 @@ public class ProcurementPlan extends SuperEntity {
     private Integer isImported;
     @ApiModelProperty(value = "被导入到的平衡利库单号")
     private String documentNumberImported;
+
+    @ApiModelProperty(value = "平衡利库明细 id")
+    private Integer balanceLibraryDetailId;
+    @ApiModelProperty(value = "平衡利库单号")
+    private String balanceLibraryNo;
 }

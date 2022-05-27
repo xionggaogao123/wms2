@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Map;
 
 @ApiSort()
@@ -44,8 +45,8 @@ public class BalanceLibraryRecordController extends BaseController {
         @ApiOperationSupport(order = 2)
         @ApiOperation(value = "添加平衡利库记录")
         @PostMapping
-        public Result add(@Valid @RequestBody BalanceLibraryRecord balanceLibraryRecord) {
-            return balanceLibraryRecordService.add(balanceLibraryRecord);
+        public Result add(@Valid @RequestBody List<BalanceLibraryRecord> balanceLibraryRecords) {
+            return balanceLibraryRecordService.add(balanceLibraryRecords);
         }
 
         @ApiOperationSupport(order = 3)

@@ -4,6 +4,8 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.BalanceLibraryRecord;
 import com.huanhong.wms.SuperService;
 
+import java.util.List;
+
 /**
  * <p>
  * 平衡利库记录 服务类
@@ -15,9 +17,9 @@ import com.huanhong.wms.SuperService;
 public interface IBalanceLibraryRecordService extends SuperService<BalanceLibraryRecord> {
     /**
      * 添加平衡利库记录
-     * @param balanceLibraryRecord
+     * @param balanceLibraryRecords
      * @return
      */
-    Result add(BalanceLibraryRecord balanceLibraryRecord);
+    Result add(List<BalanceLibraryRecord> balanceLibraryRecords);
 
 }

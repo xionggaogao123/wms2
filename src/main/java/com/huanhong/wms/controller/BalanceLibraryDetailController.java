@@ -73,6 +73,11 @@ public class BalanceLibraryDetailController extends BaseController {
             return render(balanceLibraryDetailService.removeById(id));
         }
 
-
+        @ApiOperationSupport(order = 5)
+        @ApiOperation(value = "生成采购计划")
+        @PostMapping("/createProcurementPlan")
+        public Result createProcurementPlan(@Valid @RequestBody BalanceLibraryDetail balanceLibraryDetail) {
+            return balanceLibraryDetailService.createProcurementPlan(balanceLibraryDetail);
+        }
 }
 

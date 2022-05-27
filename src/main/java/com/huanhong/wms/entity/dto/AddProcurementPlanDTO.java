@@ -53,4 +53,8 @@ public class AddProcurementPlanDTO {
 
     @ApiModelProperty(value = "备注")
     private String remark;
+    @ApiModelProperty(value = "平衡利库明细 id")
+    private Integer balanceLibraryDetailId;
+    @ApiModelProperty(value = "平衡利库单号")
+    private String balanceLibraryNo;
 }

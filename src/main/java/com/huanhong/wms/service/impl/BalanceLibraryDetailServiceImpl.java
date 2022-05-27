@@ -1,6 +1,7 @@
 package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.util.NumberUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.huanhong.common.units.user.CurrentUserUtil;
 import com.huanhong.wms.bean.LoginUser;
@@ -49,10 +50,14 @@ public class BalanceLibraryDetailServiceImpl extends SuperServiceImpl<BalanceLib
             return Result.failure(400,"id不可为空");
         }
         BalanceLibraryDetail balanceLibraryDetail = this.baseMapper.selectById(balanceLibraryDetailId);
-        if (null == detail) {
+        if (null == balanceLibraryDetail) {
             return Result.failure(400, "平衡利库明细不存在或已被删除");
         }
-        BalanceLibrary balanceLibrary = balanceLibraryMapper.selectOne(Wrappers.<BalanceLibrary>lambdaQuery().eq(BalanceLibrary::getBalanceLibraryNo, balanceLibraryDetail.getBalanceLibraryNo()).last("limit 1"));
+        if(StrUtil.isNotBlank(balanceLibraryDetail.getProcurementNo())){
+            return Result.failure(400, "该平衡利库明细已创建采购计划");
+        }
+        BalanceLibrary balanceLibrary = balanceLibraryMapper.selectOne(Wrappers.<BalanceLibrary>lambdaQuery()
+                .eq(BalanceLibrary::getBalanceLibraryNo, balanceLibraryDetail.getBalanceLibraryNo()).last("limit 1"));
         if (null == balanceLibrary) {
             return Result.failure(400, "平衡利库不存在或已被删除");
         }
@@ -110,8 +115,8 @@ public class BalanceLibraryDetailServiceImpl extends SuperServiceImpl<BalanceLib
         BalanceLibraryDetail temp = new BalanceLibraryDetail();
         temp.setProcurementNo(planNo);
         temp.setPurchasedQuantity(purchasedQuantity);
-        temp.setId(detail.getId());
+        temp.setId(balanceLibraryDetailId);
         this.baseMapper.updateById(temp);
-        return null;
+        return Result.success();
     }
 }

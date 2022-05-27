@@ -5,6 +5,7 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.InventoryInformation;
 import com.huanhong.wms.entity.TemporaryLibrary;
 import com.huanhong.wms.SuperService;
+import com.huanhong.wms.entity.TemporaryLibraryInventoryDetails;
 import com.huanhong.wms.entity.dto.AddInventoryInformationDTO;
 import com.huanhong.wms.entity.dto.AddTemporaryLibraryDTO;
 import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
@@ -28,7 +29,7 @@ public interface ITemporaryLibraryService extends SuperService<TemporaryLibrary>
     /**
      * 分页查询
      */
-    Page<TemporaryLibrary> pageFuzzyQuery(Page<TemporaryLibrary> temporaryLibraryPage, TemporaryLibraryVO temporaryLibraryVO);
+    Page<TemporaryLibraryInventoryDetails> pageFuzzyQuery(Page<TemporaryLibraryInventoryDetails> temporaryLibraryPage, TemporaryLibraryVO temporaryLibraryVO);
 
     /**
      * 库存信息更新

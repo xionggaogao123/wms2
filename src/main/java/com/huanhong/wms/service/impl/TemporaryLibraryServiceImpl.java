@@ -14,10 +14,12 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.CargoSpaceManagement;
 import com.huanhong.wms.entity.InventoryInformation;
 import com.huanhong.wms.entity.TemporaryLibrary;
+import com.huanhong.wms.entity.TemporaryLibraryInventoryDetails;
 import com.huanhong.wms.entity.dto.AddTemporaryLibraryDTO;
 import com.huanhong.wms.entity.dto.UpdateTemporaryLibraryDTO;
 import com.huanhong.wms.entity.vo.TemporaryLibraryVO;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
+import com.huanhong.wms.mapper.TemporaryLibraryInventoryDetailsMapper;
 import com.huanhong.wms.mapper.TemporaryLibraryMapper;
 import com.huanhong.wms.properties.OssProperties;
 import com.huanhong.wms.service.ICargoSpaceManagementService;
@@ -49,19 +51,22 @@ public class TemporaryLibraryServiceImpl extends SuperServiceImpl<TemporaryLibra
     private TemporaryLibraryMapper temporaryLibraryMapper;
 
     @Resource
+    private TemporaryLibraryInventoryDetailsMapper temporaryLibraryInventoryDetailsMapper;
+
+    @Resource
     private ICargoSpaceManagementService cargoSpaceManagementService;
 
     @Override
-    public Page<TemporaryLibrary> pageFuzzyQuery(Page<TemporaryLibrary> temporaryLibraryPage, TemporaryLibraryVO temporaryLibraryVO) {
+    public Page<TemporaryLibraryInventoryDetails> pageFuzzyQuery(Page<TemporaryLibraryInventoryDetails> temporaryLibraryPage, TemporaryLibraryVO temporaryLibraryVO) {
 
         //新建QueryWrapper对象
-        QueryWrapper<TemporaryLibrary> query = new QueryWrapper<>();
+        QueryWrapper<TemporaryLibraryInventoryDetails> query = new QueryWrapper<>();
         //根据id排序
         query.orderByDesc("id");
         //判断此时的条件对象Vo是否等于空，若等于空，
         //直接进行selectPage查询
         if (ObjectUtil.isEmpty(temporaryLibraryVO)) {
-            return temporaryLibraryMapper.selectPage(temporaryLibraryPage, query);
+            return temporaryLibraryInventoryDetailsMapper.selectPage(temporaryLibraryPage, query);
         }
         //若Vo对象不为空，分别获取其中的字段，
         //并对其进行判断是否为空，这一步类似动态SQL的拼装
@@ -76,7 +81,7 @@ public class TemporaryLibraryServiceImpl extends SuperServiceImpl<TemporaryLibra
         query.like(StringUtils.isNotBlank(temporaryLibraryVO.getWarehouseId()),"warehouse_id",temporaryLibraryVO.getWarehouseId());
 
 
-        return temporaryLibraryMapper.selectPage(temporaryLibraryPage, query);
+        return temporaryLibraryInventoryDetailsMapper.selectPage(temporaryLibraryPage, query);
 
     }
 

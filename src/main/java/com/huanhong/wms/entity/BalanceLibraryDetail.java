@@ -56,6 +56,15 @@ public class BalanceLibraryDetail extends SuperEntity {
     @ApiModelProperty(value = "安全库存")
     private Double safetyStock;
 
+    @ApiModelProperty(value = "待采购数量")
+    private Double purchasedQuantity;
+
+    @ApiModelProperty(value = "批准采购数量")
+    private Double approvedPurchasedQuantity;
+
+    @ApiModelProperty(value = "采购计划单号")
+    private String procurementNo;
+
     @ApiModelProperty(value = "备注")
     private String remark;
 

@@ -8,6 +8,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.common.units.StrUtils;
 import com.huanhong.common.units.task.HistoryTaskVo;
@@ -109,6 +110,14 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
     private IAllocationOutService allocationOutService;
     @Resource
     private IAllocationEnterService allocationEnterService;
+    @Resource
+    private IAllocationPlanDetailService allocationPlanDetailService;
+    @Resource
+    private BalanceLibraryRecordMapper balanceLibraryRecordMapper;
+    @Resource
+    private BalanceLibraryDetailMapper balanceLibraryDetailMapper;
+    @Resource
+    private ProcurementPlanDetailsMapper procurementPlanDetailsMapper;
 
     @Override
     public Result<Integer> syncProcessAssignment() {
@@ -663,11 +672,34 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                             }
                             //调拨计划审批生效后生成调拨入库调拨出库
                             // 调拨出库
-                          allocationOutService.allocationPlanToAllocationOut(allocationPlan);
-
+                            allocationOutService.allocationPlanToAllocationOut(allocationPlan);
                             // 调拨入库
                             allocationEnterService.allocationPlanToAllocationEnter(allocationPlan);
+                            // 判断是否属于平衡利库生成的
+                            if (null != allocationPlan.getBalanceLibraryRecordId() && allocationPlan.getBalanceLibraryRecordId() > 0) {
+                                BalanceLibraryRecord balanceLibraryRecord = balanceLibraryRecordMapper.selectById(allocationPlan.getBalanceLibraryRecordId());
+                                if (null != balanceLibraryRecord) {
+                                    //更新平衡利库记录
+                                    List<AllocationPlanDetail> allocationPlanDetails = allocationPlanDetailService.getAllocationPlanDetailsListByDocNum(allocationPlan.getAllocationNumber());
+                                    if (CollectionUtil.isNotEmpty(allocationPlanDetails)) {
+                                        BalanceLibraryRecord temp = new BalanceLibraryRecord();
+                                        temp.setId(balanceLibraryRecord.getId());
+                                        AllocationPlanDetail allocationPlanDetail = allocationPlanDetails.get(0);
+                                        if (allocationPlan.getBalanceLibraryRecordNum() == 1) {
+                                            temp.setCalibrationQuantity(allocationPlanDetail.getCalibrationQuantity());
+                                            temp.setCalibrationStatus(3);
+                                        } else if (allocationPlan.getBalanceLibraryRecordNum() == 2) {
+                                            temp.setCalibrationQuantity2(allocationPlanDetail.getCalibrationQuantity());
+                                            temp.setCalibrationStatus2(3);
+                                        } else if (allocationPlan.getBalanceLibraryRecordNum() == 3) {
+                                            temp.setCalibrationQuantity3(allocationPlanDetail.getCalibrationQuantity());
+                                            temp.setCalibrationStatus3(3);
+                                        }
+                                        balanceLibraryRecordMapper.updateById(temp);
+                                    }
+                                }
 
+                            }
                             break;
                         //    采购计划
                         case "procurement_plan":
@@ -684,6 +716,22 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                             f = procurementPlanMapper.updateById(tempProcurementPlan);
                             if (f <= 0) {
                                 return Result.failure("数据未更新，流程完成失败");
+                            }
+                            // 判断是否属于平衡利库生成的
+                            if (null != procurementPlan.getBalanceLibraryDetailId() && procurementPlan.getBalanceLibraryDetailId() > 0) {
+                                BalanceLibraryDetail balanceLibraryDetail = balanceLibraryDetailMapper.selectById(procurementPlan.getBalanceLibraryDetailId());
+                                if (null != balanceLibraryDetail) {
+                                    List<ProcurementPlanDetails> procurementPlanDetails = procurementPlanDetailsMapper.selectList(Wrappers.<ProcurementPlanDetails>lambdaQuery()
+                                            .eq(ProcurementPlanDetails::getPlanNumber, procurementPlan.getPlanNumber()));
+                                    if (CollectionUtil.isNotEmpty(procurementPlanDetails)) {
+                                        ProcurementPlanDetails planDetails = procurementPlanDetails.get(0);
+                                        BalanceLibraryDetail temp = new BalanceLibraryDetail();
+                                        temp.setId(balanceLibraryDetail.getId());
+                                        temp.setApprovedPurchasedQuantity(planDetails.getApprovedQuantity());
+                                        balanceLibraryDetailMapper.updateById(temp);
+                                    }
+
+                                }
                             }
                             break;
                         //    需求计划
@@ -721,7 +769,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                             }
                             // 到货检验审批生效后生成采购入库草拟表单
                             //TODO 经办人暂时用最后一个节点的审批人
-                            enterWarehouseService.arrivalVerificationToEnterWarehouse(user.getId(),arrivalVerification);
+                            enterWarehouseService.arrivalVerificationToEnterWarehouse(user.getId(), arrivalVerification);
                             break;
                         //    临库入库
                         case "temporary_enter_warehouse":
@@ -884,7 +932,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                         return resultAnother;
                     }
                     break;
-                    //    盘点报告
+                //    盘点报告
                 case "make_inventory_report":
                     MakeInventoryReport makeInventoryReport = makeInventoryReportMapper.selectById(id);
 

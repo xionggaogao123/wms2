@@ -13,7 +13,4 @@ public class BalanceLibraryRecordVo extends BalanceLibraryRecord {
     @ApiModelProperty("库存数量")
     private Double inventoryCredit;
 
-
-    @ApiModelProperty(value = "准调数量")
-    private List<Double> calibrationQuantities;
 }

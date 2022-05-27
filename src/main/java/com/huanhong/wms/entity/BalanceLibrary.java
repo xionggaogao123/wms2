@@ -44,6 +44,9 @@ public class BalanceLibrary extends SuperEntity {
     @ApiModelProperty(value = "备注")
     private String remark;
 
+    @ApiModelProperty(value = "创建者")
+    private String creater;
+
     @Version
     @ApiModelProperty(value = "版本-乐观锁")
     private Integer version;

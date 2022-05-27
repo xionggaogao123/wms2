@@ -1,5 +1,7 @@
 package com.huanhong.wms.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.NumberUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.huanhong.common.units.user.CurrentUserUtil;
 import com.huanhong.wms.SuperServiceImpl;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,11 +47,15 @@ public class BalanceLibraryRecordServiceImpl extends SuperServiceImpl<BalanceLib
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Result add(BalanceLibraryRecord balanceLibraryRecord) {
-        if (null == balanceLibraryRecord.getBalanceLibraryDetailId()) {
-            return Result.failure(400, "平衡利库明细有误");
+    public Result add(List<BalanceLibraryRecord> balanceLibraryRecords) {
+        if (CollectionUtil.isEmpty(balanceLibraryRecords)) {
+            return Result.failure(400, "参数不可为空");
         }
-        BalanceLibraryDetail balanceLibraryDetail = balanceLibraryDetailMapper.selectById(balanceLibraryRecord.getBalanceLibraryDetailId());
+        Integer balanceLibraryDetailId = balanceLibraryRecords.get(0).getBalanceLibraryDetailId();
+        if (null == balanceLibraryDetailId) {
+            return Result.failure(400, "平衡利库明细ID不可为空");
+        }
+        BalanceLibraryDetail balanceLibraryDetail = balanceLibraryDetailMapper.selectById(balanceLibraryDetailId);
         if (null == balanceLibraryDetail) {
             return Result.failure(400, "平衡利库明细不存在或已被删除");
         }
@@ -56,9 +63,28 @@ public class BalanceLibraryRecordServiceImpl extends SuperServiceImpl<BalanceLib
         if (null == balanceLibrary) {
             return Result.failure(400, "平衡利库不存在或已被删除");
         }
+        // 查询该明细下是否有待审批的调拨，如果有的话不可以再次调拨，需审批通过才可以
+        int count = this.baseMapper.selectCount(Wrappers.lambdaQuery(new BalanceLibraryRecord())
+                .ne(BalanceLibraryRecord::getCalibrationStatus, 3).or()
+                .ne(BalanceLibraryRecord::getCalibrationStatus2, 3).or()
+                .ne(BalanceLibraryRecord::getCalibrationStatus3, 3));
+        if (count > 0) {
+            return Result.failure("存在不是审批生效的调拨计划，请等待审批通过后再操作");
+        }
+        // 判断数量是否符合条件
+        List<BalanceLibraryRecord> libraryRecords = this.baseMapper.selectList(Wrappers.lambdaQuery(new BalanceLibraryRecord())
+                .eq(BalanceLibraryRecord::getBalanceLibraryDetailId, balanceLibraryDetailId));
+        double sumCalibrationQuantity = libraryRecords.stream().map(r -> NumberUtil.add(r.getCalibrationQuantity(), r.getCalibrationQuantity2(), r.getCalibrationQuantity3()))
+                .reduce(new BigDecimal("0"), NumberUtil::add).doubleValue();
+        double sumPreCalibrationQuantity = balanceLibraryRecords.stream().map(r -> NumberUtil.add(r.getPreCalibrationQuantity(), r.getPreCalibrationQuantity2(), r.getPreCalibrationQuantity3()))
+                .reduce(new BigDecimal("0"), NumberUtil::add).doubleValue();
+        double sumCalibration = NumberUtil.add(sumCalibrationQuantity, sumPreCalibrationQuantity);
+        if (sumCalibration > balanceLibraryDetail.getApprovedQuantity()) {
+            return Result.failure("预调拨总数超出限制");
+        }
         LoginUser loginUser = CurrentUserUtil.getCurrentUser();
         String planNo = null;
-        if (balanceLibraryRecord.getBalanceType() == 1) {
+        for (BalanceLibraryRecord balanceLibraryRecord : balanceLibraryRecords) {
             // 创建调拨计划
             AddAllocationPlanAndDetailsDTO addAllocationPlanAndDetailsDTO = new AddAllocationPlanAndDetailsDTO();
             AddAllocationPlanDTO addAllocationPlanDTO = new AddAllocationPlanDTO();
@@ -71,6 +97,15 @@ public class BalanceLibraryRecordServiceImpl extends SuperServiceImpl<BalanceLib
 //            addAllocationPlanDTO.setSendUser();
             addAllocationPlanDTO.setSendWarehouse(balanceLibraryRecord.getOutWarehouseId());
             addAllocationPlanDTO.setAssignmentDate(balanceLibraryDetail.getRequestArrivalTime());
+            if (null != balanceLibraryRecord.getPreCalibrationQuantity() && 0 != balanceLibraryRecord.getPreCalibrationQuantity()) {
+                addAllocationPlanDTO.setBalanceLibraryRecordNum(1);
+            } else if (null != balanceLibraryRecord.getPreCalibrationQuantity2() && 0 != balanceLibraryRecord.getPreCalibrationQuantity2()) {
+                addAllocationPlanDTO.setBalanceLibraryRecordNum(2);
+            } else if (null != balanceLibraryRecord.getPreCalibrationQuantity3() && 0 != balanceLibraryRecord.getPreCalibrationQuantity3()) {
+                addAllocationPlanDTO.setBalanceLibraryRecordNum(3);
+            }
+            addAllocationPlanDTO.setBalanceLibraryNo(balanceLibrary.getBalanceLibraryNo());
+            addAllocationPlanDTO.setBalanceLibraryDetailId(balanceLibraryDetailId);
             addAllocationPlanAndDetailsDTO.setAddAllocationPlanDTO(addAllocationPlanDTO);
 
             List<AddAllocationPlanDetailDTO> addAllocationPlanDetailDTOList = new ArrayList<>();
@@ -83,51 +118,25 @@ public class BalanceLibraryRecordServiceImpl extends SuperServiceImpl<BalanceLib
             addAllocationPlanAndDetailsDTO.setAddAllocationPlanDetailDTOList(addAllocationPlanDetailDTOList);
             Result r = allocationPlanService.add(addAllocationPlanAndDetailsDTO);
             if (!r.isOk()) {
-                return r;
+                throw new RuntimeException("平衡利库调拨计划创建失败：" + r.getMessage());
             }
             planNo = ((AllocationPlan) r.getData()).getAllocationNumber();
-        } else {
-            // 创建采购计划
-            AddProcurementPlanAndDetailsDTO addProcurementPlanAndDetailsDTO = new AddProcurementPlanAndDetailsDTO();
-            AddProcurementPlanDTO addProcurementPlanDTO = new AddProcurementPlanDTO();
-            addProcurementPlanDTO.setPlanClassification(balanceLibrary.getPlanClassification());
-            addProcurementPlanDTO.setPlanner(loginUser.getLoginName());
-            addProcurementPlanDTO.setWarehouseId(balanceLibraryDetail.getWarehouseId());
-            addProcurementPlanDTO.setMaterialUse(balanceLibrary.getMaterialUse());
-            addProcurementPlanDTO.setStatus(1);
-            addProcurementPlanDTO.setDemandDepartment(balanceLibrary.getDemandDepartment());
-            addProcurementPlanDTO.setPlanningDepartment(balanceLibrary.getPlanningDepartment());
-            addProcurementPlanDTO.setOriginalDocumentNumber(balanceLibrary.getBalanceLibraryNo());
-
-            addProcurementPlanAndDetailsDTO.setAddProcurementPlanDTO(addProcurementPlanDTO);
-            List<AddProcurementPlanDetailsDTO> addProcurementPlanDetailsDTOList = new ArrayList<>();
-            AddProcurementPlanDetailsDTO addProcurementPlanDetailsDTO = new AddProcurementPlanDetailsDTO();
-            addProcurementPlanDetailsDTO.setMaterialName(balanceLibraryDetail.getMaterialName());
-            addProcurementPlanDetailsDTO.setMaterialId(balanceLibraryDetail.getMaterialId());
-            addProcurementPlanDetailsDTO.setMaterialCoding(balanceLibraryDetail.getMaterialCoding());
-            addProcurementPlanDetailsDTO.setWarehouseId(balanceLibraryDetail.getWarehouseId());
-            addProcurementPlanDetailsDTO.setRequestArrivalTime(balanceLibraryDetail.getRequestArrivalTime());
-            addProcurementPlanDetailsDTO.setApprovedQuantity(balanceLibraryRecord.getCalibrationQuantity());
-            addProcurementPlanDetailsDTO.setInventory(balanceLibraryDetail.getInventory());
-            addProcurementPlanDetailsDTO.setEstimatedAmount(balanceLibraryDetail.getEstimatedAmount());
-            addProcurementPlanDetailsDTO.setPlannedPurchaseQuantity(balanceLibraryRecord.getCalibrationQuantity());
-            addProcurementPlanDetailsDTO.setEstimatedUnitPrice(balanceLibraryDetail.getEstimatedUnitPrice());
-            addProcurementPlanDetailsDTO.setSafetyStock(balanceLibraryDetail.getSafetyStock());
-            addProcurementPlanDetailsDTO.setUsePlace(balanceLibraryDetail.getUsePlace());
-            addProcurementPlanDetailsDTO.setUsePurpose(balanceLibraryDetail.getUsePurpose());
-            addProcurementPlanDetailsDTOList.add(addProcurementPlanDetailsDTO);
-            addProcurementPlanAndDetailsDTO.setAddProcurementPlanDetailsDTOList(addProcurementPlanDetailsDTOList);
-            Result r = procurementPlanService.add(addProcurementPlanAndDetailsDTO);
-            if (!r.isOk()) {
-                return r;
+            if (null != balanceLibraryRecord.getPreCalibrationQuantity() && 0 != balanceLibraryRecord.getPreCalibrationQuantity()) {
+                balanceLibraryRecord.setPlanNo(planNo);
+            } else if (null != balanceLibraryRecord.getPreCalibrationQuantity2() && 0 != balanceLibraryRecord.getPreCalibrationQuantity2()) {
+                balanceLibraryRecord.setPlanNo2(planNo);
+            } else if (null != balanceLibraryRecord.getPreCalibrationQuantity3() && 0 != balanceLibraryRecord.getPreCalibrationQuantity3()) {
+                balanceLibraryRecord.setPlanNo3(planNo);
             }
-            planNo = ((ProcurementPlan) r.getData()).getPlanNumber();
-
-        }
-        balanceLibraryRecord.setPlanNo(planNo);
-        int flag = this.baseMapper.insert(balanceLibraryRecord);
-        if (flag < 1) {
-            throw new RuntimeException("平衡利库操作记录保存失败，请稍后重试");
+            int flag = this.baseMapper.insert(balanceLibraryRecord);
+            if (flag < 1) {
+                throw new RuntimeException("平衡利库操作记录保存失败，请稍后重试");
+            }
+            AllocationPlan allocationPlan = (AllocationPlan) r.getData();
+            AllocationPlan temp = new AllocationPlan();
+            temp.setId(allocationPlan.getId());
+            temp.setBalanceLibraryRecordId(balanceLibraryRecord.getId());
+            allocationPlanService.updateById(temp);
         }
         return Result.success();
     }

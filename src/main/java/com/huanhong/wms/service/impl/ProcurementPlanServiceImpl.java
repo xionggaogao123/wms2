@@ -3,6 +3,7 @@ package com.huanhong.wms.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -101,7 +102,7 @@ public class ProcurementPlanServiceImpl extends SuperServiceImpl<ProcurementPlan
         }
         //状态
         query.eq(ObjectUtil.isNotNull(procurementPlanVO.getIsImported()), "is_imported", procurementPlanVO.getIsImported());
-
+        query.eq(StrUtil.isNotBlank(procurementPlanVO.getMaterialUse()), "material_use", procurementPlanVO.getMaterialUse());
         return baseMapper.selectPage(procurementPlanPage, query);
     }
 

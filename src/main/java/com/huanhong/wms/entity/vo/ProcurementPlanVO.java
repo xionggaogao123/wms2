@@ -45,4 +45,7 @@ public class ProcurementPlanVO {
 
     @ApiModelProperty(value = "是否被导入 0.否 1.是")
     private Integer isImported;
+
+    @ApiModelProperty(value = "物料用途")
+    private String materialUse;
 }

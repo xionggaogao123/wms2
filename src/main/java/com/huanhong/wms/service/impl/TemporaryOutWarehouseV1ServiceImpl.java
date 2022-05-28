@@ -156,9 +156,11 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
      * @param temporaryOutWarehouseDetailsRequest 出库数据
      */
     private void deductingInventory(List<TemporaryOutWarehouseDetailsRequest> temporaryOutWarehouseDetailsRequest,String outNumber) {
+        log.info("扣减条数的数据为:{}",JsonUtil.obj2String(temporaryOutWarehouseDetailsRequest.toString()));
         BigDecimal number3 = new BigDecimal(0);
         //遍历数据扣减库存
-        temporaryOutWarehouseDetailsRequest.forEach(details -> {
+        List<TemporaryOutWarehouseDetails> temporaryOutWarehouseDetails = BeanUtil.copyToList(temporaryOutWarehouseDetailsRequest, TemporaryOutWarehouseDetails.class);
+        temporaryOutWarehouseDetails.forEach(details -> {
             QueryWrapper<TemporaryEnterWarehouseDetails> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("material_coding", details.getMaterialCoding());
             queryWrapper.eq("material_name", details.getMaterialName());
@@ -271,7 +273,7 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
 
     @Override
     public Result selectAll() {
-        List<TemporaryOutWarehouseDetails> temporaryOutWarehouseDetails = warehouseDetailsManager.selectList(null);
+        List<TemporaryEnterWarehouseDetails> temporaryOutWarehouseDetails = temporaryEnterWarehouseDetailsMapper.selectList(null);
         log.info("查询所有数据:{}",JsonUtil.obj2String(temporaryOutWarehouseDetails));
         return Result.success(temporaryOutWarehouseDetails);
     }

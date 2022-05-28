@@ -11,6 +11,7 @@ import com.huanhong.wms.service.MakeInventoryReportV1Service;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -36,18 +37,29 @@ public class MakeInventoryReportV1ServiceImpl implements MakeInventoryReportV1Se
         if (makeInventoryReport == null) {
             throw new ServiceException(500, "盘点报告不存在");
         }
+        if (makeInventoryReport.getCheckStatus() == 1) {
+            throw new ServiceException(500, "盘点以完成");
+        }
         //判断盘点状态是否 盘点完成
         AtomicInteger number = new AtomicInteger();
         List<MakeInventoryReportDetails> makeInventoryReportDetails = request.getMakeInventoryReportDetails();
         makeInventoryReportDetails.forEach(details -> {
-            //更新盘点数据
-            makeInventoryReportDetailsMapper.updateById(details);
             //盘点是否全部盘点完成 盘点状态: 0-待盘点，1-一致 ，2-盘盈 ，3-盘亏
             if (details.getCheckStatusDetails() == 0) {
                 number.getAndIncrement();
             }
+            //盈亏金额 亏损数量 计算
+            BigDecimal bigDecimal1 = new BigDecimal(details.getCheckCredit());
+            BigDecimal bigDecimal2 = new BigDecimal(details.getInventoryCredit());
+            BigDecimal subtract = bigDecimal1.subtract(bigDecimal2);
+            BigDecimal multiply = subtract.multiply(details.getUnitPrice());
+            details.setFinalAmounts(multiply);
+            details.setFinalCredit(subtract.doubleValue());
+            //更新盘点数据
+            makeInventoryReportDetailsMapper.updateById(details);
+
         });
-        if(number.get() == 0){
+        if (number.get() == 0) {
             makeInventoryReport1.setCheckStatus(1);
             makeInventoryReportMapper.updateById(makeInventoryReport1);
         }

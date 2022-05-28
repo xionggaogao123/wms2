@@ -17,6 +17,7 @@ import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @Author wang
@@ -175,8 +176,17 @@ public class TemporaryLibraryInventoryV1ServiceImpl implements TemporaryLibraryI
         if (temporaryLibraryInventory1.getComplete() == 1) {
             throw new SecurityException("数据以清点");
         }
-        temporaryLibraryInventoryMapper.updateById(temporaryLibraryInventory);
+        AtomicInteger number = new AtomicInteger();
         List<TemporaryLibraryInventoryDetails> temporaryLibraryInventoryDetails = update.getTemporaryLibraryInventoryDetails();
+        temporaryLibraryInventoryDetails.forEach(details2->{
+            if(details2.getComplete() == 1){
+                number.getAndIncrement();
+            }
+        });
+        if(number.get() == 0){
+            temporaryLibraryInventory.setComplete(1);
+            temporaryLibraryInventoryMapper.updateById(temporaryLibraryInventory);
+        }
         temporaryLibraryInventoryDetails.forEach(details -> {
             temporaryLibraryInventoryDetailsMapper.updateById(details);
         });

@@ -106,46 +106,46 @@ public class InventoryDocumentServiceImpl extends SuperServiceImpl<InventoryDocu
              * 2.截取最大单据编号的后五位流水号，将流水号+1得到新的单据编号
              * 3.根据编码方案中的规则自动生成编码，新增成功后返回新增单据的详细信息
              */
-            QueryWrapper<InventoryDocument> queryInventoryDocument = new QueryWrapper<>();
+//            QueryWrapper<InventoryDocument> queryInventoryDocument = new QueryWrapper<>();
             /**
              * 当前仓库
              */
-            queryInventoryDocument.eq("warehouse", addInventoryDocumentDTO.getWarehouse());
-            /**
-             * 当前日期
-             */
-            String today = StrUtils.HandleData(DateUtil.today());
-            queryInventoryDocument.likeRight("document_number", "QD" + today);
-            /**
-             * likeRigh: QD+XXXXXXXX(当前年月日)
-             */
-            InventoryDocument maxInventoryDocument = inventoryDocumentMapper.selectOne(queryInventoryDocument.orderByDesc("id").last("limit 1"));
-            //目前最大的单据编码
-            String maxDocNum = null;
-            if (ObjectUtil.isNotEmpty(maxInventoryDocument)) {
-                maxDocNum = maxInventoryDocument.getDocumentNumber();
-            }
-            String orderNo = null;
-            //单据编码前缀-QD+年月日
-            String code_pfix = "QD" + today;
-            if (maxDocNum != null && maxInventoryDocument.getDocumentNumber().contains(code_pfix)) {
-                String code_end = maxInventoryDocument.getDocumentNumber().substring(10, 15);
-                int endNum = Integer.parseInt(code_end);
-                int tmpNum = 100000 + endNum + 1;
-                orderNo = code_pfix + StrUtils.subStr("" + tmpNum, 1);
-            } else {
-                orderNo = code_pfix + "00001";
-            }
+//            queryInventoryDocument.eq("warehouse", addInventoryDocumentDTO.getWarehouse());
+//            /**
+//             * 当前日期
+//             */
+//            String today = StrUtils.HandleData(DateUtil.today());
+//            queryInventoryDocument.likeRight("document_number", "QD" + today);
+//            /**
+//             * likeRigh: QD+XXXXXXXX(当前年月日)
+//             */
+//            InventoryDocument maxInventoryDocument = inventoryDocumentMapper.selectOne(queryInventoryDocument.orderByDesc("id").last("limit 1"));
+//            //目前最大的单据编码
+//            String maxDocNum = null;
+//            if (ObjectUtil.isNotEmpty(maxInventoryDocument)) {
+//                maxDocNum = maxInventoryDocument.getDocumentNumber();
+//            }
+//            String orderNo = null;
+//            //单据编码前缀-QD+年月日
+//            String code_pfix = "QD" + today;
+//            if (maxDocNum != null && maxInventoryDocument.getDocumentNumber().contains(code_pfix)) {
+//                String code_end = maxInventoryDocument.getDocumentNumber().substring(10, 15);
+//                int endNum = Integer.parseInt(code_end);
+//                int tmpNum = 100000 + endNum + 1;
+//                orderNo = code_pfix + StrUtils.subStr("" + tmpNum, 1);
+//            } else {
+//                orderNo = code_pfix + "00001";
+//            }
 
             /**
              * 新增单据
              */
             InventoryDocument inventoryDocument = new InventoryDocument();
             BeanUtil.copyProperties(addInventoryDocumentDTO, inventoryDocument);
-            inventoryDocument.setDocumentNumber(orderNo);
+            inventoryDocument.setDocumentNumber("QD"+ String.valueOf(System.currentTimeMillis()));
             int i = inventoryDocumentMapper.insert(inventoryDocument);
             if (i > 0) {
-                return Result.success(getInventoryDocumentByDocumentNumberAndWarehouseId(orderNo, addInventoryDocumentDTO.getWarehouse()), "新增成功");
+                return Result.success(getInventoryDocumentByDocumentNumberAndWarehouseId(inventoryDocument.getDocumentNumber(), addInventoryDocumentDTO.getWarehouse()), "新增成功");
             } else {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "新增失败！");
             }

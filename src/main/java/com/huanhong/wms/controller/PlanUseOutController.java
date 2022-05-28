@@ -790,7 +790,7 @@ public class PlanUseOutController extends BaseController {
      */
     @ApiOperationSupport(order = 16)
     @ApiOperation(value = "需求计划物料检索")
-    @GetMapping("/pagingFuzzyQueryByMaterialCodingOfrNameV1")
+    @GetMapping("/pagingFuzzyQueryByMaterialCodingOrNameV1")
     public Result pageV1(PdaMaterialVO pdaMaterialVO){
         try {
              List<Material> materialListByKey = materialService.getMaterialListByKey(pdaMaterialVO);

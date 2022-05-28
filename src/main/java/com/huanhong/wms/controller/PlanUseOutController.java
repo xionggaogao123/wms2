@@ -107,12 +107,12 @@ public class PlanUseOutController extends BaseController {
     @ApiOperation(value = ("PDA端分页查询"))
     @GetMapping("/PDApage")
     public Result<Page<PlanUseOut>> pagePda(@RequestParam(defaultValue = "1") Integer current,
-                                         @RequestParam(defaultValue = "10") Integer size,
-                                         PlanUseOutVO planUseOutVO
-    ){
+                                            @RequestParam(defaultValue = "10") Integer size,
+                                            PlanUseOutVO planUseOutVO
+    ) {
         try {
             //调用服务层方法，传入page对象和查询条件对象
-            Page<PlanUseOut> pageResult = planUseOutService.pageFuzzyQueryPDA(new Page<>(current,size),planUseOutVO);
+            Page<PlanUseOut> pageResult = planUseOutService.pageFuzzyQueryPDA(new Page<>(current, size), planUseOutVO);
             if (ObjectUtil.isEmpty(pageResult.getRecords())) {
                 return Result.success(pageResult, "未查询到出库单据信息");
             }
@@ -172,7 +172,7 @@ public class PlanUseOutController extends BaseController {
                 return Result.failure("更新失败");
             }
         } catch (Exception e) {
-            log.error("系统异常：更新领料出库主表及明细失败！",e);
+            log.error("系统异常：更新领料出库主表及明细失败！", e);
             return Result.failure("系统异常，更新失败");
         }
     }
@@ -188,18 +188,18 @@ public class PlanUseOutController extends BaseController {
 
         PlanUseOut planUseOut = planUseOutService.getPlanUseOutById(id);
 
-        if (ObjectUtil.isNull(planUseOut)){
+        if (ObjectUtil.isNull(planUseOut)) {
             return Result.failure("单据不存在！");
         }
         boolean delete = planUseOutService.removeById(id);
 
         //主表删除成功,删除明细
-        if (delete){
+        if (delete) {
             String docNum = planUseOut.getDocumentNumber();
 
-            List<PlanUseOutDetails> planUseOutDetailsList = planUseOutDetailsService.getListPlanUseOutDetailsByDocNumberAndWarehosue(planUseOut.getDocumentNumber(),planUseOut.getWarehouseId());
+            List<PlanUseOutDetails> planUseOutDetailsList = planUseOutDetailsService.getListPlanUseOutDetailsByDocNumberAndWarehosue(planUseOut.getDocumentNumber(), planUseOut.getWarehouseId());
 
-            for (PlanUseOutDetails planUseOutDetails:planUseOutDetailsList
+            for (PlanUseOutDetails planUseOutDetails : planUseOutDetailsList
             ) {
                 planUseOutDetailsService.removeById(planUseOutDetails.getId());
             }
@@ -315,8 +315,8 @@ public class PlanUseOutController extends BaseController {
                 jsonResult.put("details", entityUtils.jsonField("planUseOut", new PlanUseOutDetails()));
                 jsonResult.put("mainValue", planUseOut);
                 jsonResult.put("detailsValue", planUseOutList);
-                jsonResult.put("mainKey","updatePlanUseOutDTO");
-                jsonResult.put("detailKey","updatePlanUseOutDetailsDTOList");
+                jsonResult.put("mainKey", "updatePlanUseOutDTO");
+                jsonResult.put("detailKey", "updatePlanUseOutDetailsDTOList");
                 jsonResult.put("mainUpdate", "/wms/api/v1/plan-use-out/updatePlanUseOutAndDetails");
                 jsonResult.put("detailsUpdate", "/wms/api/v1/plan-use-out-details/update");
                 jsonResult.put("missionCompleted", "/wms/api/v1/plan-use-out/missionCompleted");
@@ -430,9 +430,9 @@ public class PlanUseOutController extends BaseController {
      */
     @ApiOperationSupport(order = 12)
     @ApiOperation(value = "物料编码和物料名称模糊查询信息及库存-区分出库类型")
-    @GetMapping("/pagingFuzzyQueryByMaterialCodingOrName")
+    @GetMapping("/pagingFuzzyQueryByMaterialCodingOfrName")
     public Result page(PdaMaterialVO pdaMaterialVO
-                       ) {
+    ) {
         try {
             List<Material> materialslist = materialService.getMaterialListByKey(pdaMaterialVO);
             if (ObjectUtil.isNull(materialslist)) {
@@ -445,19 +445,19 @@ public class PlanUseOutController extends BaseController {
                 String materialCoding = material.getMaterialCoding();
                 Double num;
                 List<InventoryInformation> inventoryInformationList;
-                if(ObjectUtil.isNotEmpty(pdaMaterialVO.getOutType())){
-                    if (pdaMaterialVO.getOutType()==0){
-                        inventoryInformationList =  inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeZero(materialCoding,pdaMaterialVO.getWarehouseId());
+                if (ObjectUtil.isNotEmpty(pdaMaterialVO.getOutType())) {
+                    if (pdaMaterialVO.getOutType() == 0) {
+                        inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeZero(materialCoding, pdaMaterialVO.getWarehouseId());
                         num = inventoryInformationService.getNumByMaterialCodingAndWarehouseIdOutTypeZero(materialCoding, pdaMaterialVO.getWarehouseId());
-                    }else {
-                        inventoryInformationList =  inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeOne(materialCoding,pdaMaterialVO.getWarehouseId());
-                        num = inventoryInformationService.getNumByMaterialCodingAndWarehouseIdOutTypeOne(materialCoding,pdaMaterialVO.getWarehouseId());
+                    } else {
+                        inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeOne(materialCoding, pdaMaterialVO.getWarehouseId());
+                        num = inventoryInformationService.getNumByMaterialCodingAndWarehouseIdOutTypeOne(materialCoding, pdaMaterialVO.getWarehouseId());
                     }
-                }else {
-                    inventoryInformationList =  inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(materialCoding,pdaMaterialVO.getWarehouseId());
+                } else {
+                    inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(materialCoding, pdaMaterialVO.getWarehouseId());
                     num = inventoryInformationService.getNumByMaterialCodingAndWarehouseId(materialCoding, pdaMaterialVO.getWarehouseId());
                 }
-                if(CollectionUtil.isNotEmpty(inventoryInformationList)){
+                if (CollectionUtil.isNotEmpty(inventoryInformationList)) {
                     BigDecimal maxPrice = new BigDecimal("0");
                     Double safeQuantity = 0.0;
                     for (InventoryInformation i : inventoryInformationList) {
@@ -500,7 +500,7 @@ public class PlanUseOutController extends BaseController {
          * 判断out_status
          * 0-未出库   1-部分出库   2-全部出库
          */
-        for (int i = 0; i < 3; i++ ){
+        for (int i = 0; i < 3; i++) {
             planUseOutDetailsList = planUseOutDetailsService.getListPlanUseOutDetailsByDocNumberAndWarehosueAndOutStatus(docNum, warehouseId, i);
             if (ObjectUtil.isNotNull(planUseOutDetailsList)) {
                 jsonObjectList.put(String.valueOf(i), getOut(planUseOutDetailsList));
@@ -508,14 +508,13 @@ public class PlanUseOutController extends BaseController {
         }
         listResult.add(jsonObjectList);
         //主表
-        PlanUseOut planUseOut = planUseOutService.getPlanUseOutByDocNumAndWarhouseId(docNum,warehouseId);
+        PlanUseOut planUseOut = planUseOutService.getPlanUseOutByDocNumAndWarhouseId(docNum, warehouseId);
         String warehouseName = warehouseManagementService.getWarehouseByWarehouseId(planUseOut.getWarehouseId()).getWarehouseName();
-        jsonObjectMain.put("warehouseName",warehouseName);
-        jsonObjectMain.put("panUseOut",planUseOut);
-        jsonObjectMain.put("list",listResult);
+        jsonObjectMain.put("warehouseName", warehouseName);
+        jsonObjectMain.put("panUseOut", planUseOut);
+        jsonObjectMain.put("list", listResult);
         return Result.success(jsonObjectMain);
     }
-
 
 
     @ApiImplicitParams({
@@ -534,7 +533,7 @@ public class PlanUseOutController extends BaseController {
             List<OutboundForPdaVO> outboundForPdaVOList = new ArrayList<>();
             //查询领料出库
             PlanUseOutVO planUseOutVO = new PlanUseOutVO();
-            BeanUtil.copyProperties(outboundDocOfPageQueryForPdaVO,planUseOutVO);
+            BeanUtil.copyProperties(outboundDocOfPageQueryForPdaVO, planUseOutVO);
             Page<PlanUseOut> pageResultPlanUseOut = planUseOutService.pageFuzzyQueryPDA(new Page<>(current, size), planUseOutVO);
             /**
              * 组装领料出库参数
@@ -542,7 +541,7 @@ public class PlanUseOutController extends BaseController {
             for (PlanUseOut planUseOut : pageResultPlanUseOut.getRecords()
             ) {
                 OutboundForPdaVO outboundForPdaVO = new OutboundForPdaVO();
-                BeanUtil.copyProperties(planUseOut,outboundForPdaVO);
+                BeanUtil.copyProperties(planUseOut, outboundForPdaVO);
                 //单据编号
                 outboundForPdaVO.setDocNum(planUseOut.getDocumentNumber());
                 //单据类型
@@ -552,20 +551,20 @@ public class PlanUseOutController extends BaseController {
 
             //查询调拨出库
             AllocationOutVO allocationOutVO = new AllocationOutVO();
-            BeanUtil.copyProperties(outboundDocOfPageQueryForPdaVO,allocationOutVO);
+            BeanUtil.copyProperties(outboundDocOfPageQueryForPdaVO, allocationOutVO);
             allocationOutVO.setAllocationOutNumber(outboundDocOfPageQueryForPdaVO.getDocumentNumber());
-            Page<AllocationOut> pageResultAllocationOut = allocationOutService.pageFuzzyQueryPDA(new Page<>(current,size),allocationOutVO);
-            if (ObjectUtil.isAllEmpty(pageResultAllocationOut.getRecords())&&ObjectUtil.isAllEmpty(pageResultAllocationOut)) {
+            Page<AllocationOut> pageResultAllocationOut = allocationOutService.pageFuzzyQueryPDA(new Page<>(current, size), allocationOutVO);
+            if (ObjectUtil.isAllEmpty(pageResultAllocationOut.getRecords()) && ObjectUtil.isAllEmpty(pageResultAllocationOut)) {
                 return Result.success(null, "未查询到调拨入库单信息");
             }
             /**
              * 组装领料出库参数
              */
             List<OutboundForPdaVO> outboundForPdaVOListNew = new ArrayList<>();
-            for (AllocationOut allocationOut: pageResultAllocationOut.getRecords()
+            for (AllocationOut allocationOut : pageResultAllocationOut.getRecords()
             ) {
                 OutboundForPdaVO outboundForPdaVO = new OutboundForPdaVO();
-                BeanUtil.copyProperties(allocationOut,outboundForPdaVO);
+                BeanUtil.copyProperties(allocationOut, outboundForPdaVO);
                 //单据编号
                 outboundForPdaVO.setDocNum(allocationOut.getAllocationOutNumber());
                 //单据类型
@@ -574,7 +573,7 @@ public class PlanUseOutController extends BaseController {
                 outboundForPdaVO.setEnterWarehouse(allocationOut.getEnterWarehouse());
                 outboundForPdaVOListNew.add(outboundForPdaVO);
             }
-            List<OutboundForPdaVO> outboundForPdaVOListLast = ListUtils.union(outboundForPdaVOList,outboundForPdaVOListNew);
+            List<OutboundForPdaVO> outboundForPdaVOListLast = ListUtils.union(outboundForPdaVOList, outboundForPdaVOListNew);
             return Result.success(outboundForPdaVOListLast);
         } catch (Exception e) {
             log.error("分页查询异常", e);
@@ -590,47 +589,45 @@ public class PlanUseOutController extends BaseController {
 
         try {
 
-        List listResult = new ArrayList();
+            List listResult = new ArrayList();
 
-        //加一层主表数据
-        JSONObject jsonObjectMain = new JSONObject();
+            //加一层主表数据
+            JSONObject jsonObjectMain = new JSONObject();
 
-        //存储于list
-        JSONObject jsonObjectList = new JSONObject();
+            //存储于list
+            JSONObject jsonObjectList = new JSONObject();
 
-        //根据单据id获取出库单主表
-        PlanUseOut planUseOut = planUseOutService.getPlanUseOutById(id);
-        if (ObjectUtil.isEmpty(planUseOut)){
-            return Result.failure("未查询到单据信息！");
-        }
-
-        List<PlanUseOutDetails> planUseOutDetailsList;
-        /**
-         * 判断out_status
-         * 0-未出库   1-部分出库   2-全部出库
-         */
-        for (int i = 0; i < 3; i++ ){
-            planUseOutDetailsList = planUseOutDetailsService.getListPlanUseOutDetailsByDocNumberAndWarehosueAndOutStatus(planUseOut.getDocumentNumber(), planUseOut.getWarehouseId(), i);
-            if (ObjectUtil.isNotNull(planUseOutDetailsList)) {
-                jsonObjectList.put(String.valueOf(i), getOut(planUseOutDetailsList));
+            //根据单据id获取出库单主表
+            PlanUseOut planUseOut = planUseOutService.getPlanUseOutById(id);
+            if (ObjectUtil.isEmpty(planUseOut)) {
+                return Result.failure("未查询到单据信息！");
             }
+
+            List<PlanUseOutDetails> planUseOutDetailsList;
+            /**
+             * 判断out_status
+             * 0-未出库   1-部分出库   2-全部出库
+             */
+            for (int i = 0; i < 3; i++) {
+                planUseOutDetailsList = planUseOutDetailsService.getListPlanUseOutDetailsByDocNumberAndWarehosueAndOutStatus(planUseOut.getDocumentNumber(), planUseOut.getWarehouseId(), i);
+                if (ObjectUtil.isNotNull(planUseOutDetailsList)) {
+                    jsonObjectList.put(String.valueOf(i), getOut(planUseOutDetailsList));
+                }
+            }
+
+            listResult.add(jsonObjectList);
+            //主表
+            String warehouseName = warehouseManagementService.getWarehouseByWarehouseId(planUseOut.getWarehouseId()).getWarehouseName();
+            jsonObjectMain.put("warehouseName", warehouseName);
+            jsonObjectMain.put("panUseOut", planUseOut);
+            jsonObjectMain.put("list", listResult);
+            return Result.success(jsonObjectMain);
+
+        } catch (Exception e) {
+            log.error("PDA查询领料出库明细异常", e);
+            return Result.failure("PDA查询领料出库明细异常!");
         }
-
-        listResult.add(jsonObjectList);
-        //主表
-        String warehouseName = warehouseManagementService.getWarehouseByWarehouseId(planUseOut.getWarehouseId()).getWarehouseName();
-        jsonObjectMain.put("warehouseName",warehouseName);
-        jsonObjectMain.put("panUseOut",planUseOut);
-        jsonObjectMain.put("list",listResult);
-        return Result.success(jsonObjectMain);
-
-        }catch (Exception e){
-        log.error("PDA查询领料出库明细异常",e);
-        return Result.failure("PDA查询领料出库明细异常!");
-       }
     }
-
-
 
 
     /**
@@ -655,9 +652,9 @@ public class PlanUseOutController extends BaseController {
                      * 出库类型：0-暂存库出库 1-正式库出库
                      */
                     BigDecimal nowNum = null;
-                    if (planUseOut.getOutType()==0){
+                    if (planUseOut.getOutType() == 0) {
                         nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndWarehouseIdOutTypeZero(planUseOutDetails.getMaterialCoding(), planUseOutDetails.getWarehouseId()));
-                    }else {
+                    } else {
                         nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndWarehouseIdOutTypeOne(planUseOutDetails.getMaterialCoding(), planUseOutDetails.getWarehouseId()));
                     }
 
@@ -675,10 +672,10 @@ public class PlanUseOutController extends BaseController {
                          * 出库类型：0-暂存库出库 1-正式库出库
                          */
                         List<InventoryInformation> inventoryInformationList;
-                        if (planUseOut.getOutType()==0){
-                            inventoryInformationList=inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeZero(planUseOutDetails.getMaterialCoding(),planUseOutDetails.getWarehouseId());
-                        }else {
-                            inventoryInformationList=inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeOne(planUseOutDetails.getMaterialCoding(),planUseOutDetails.getWarehouseId());
+                        if (planUseOut.getOutType() == 0) {
+                            inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeZero(planUseOutDetails.getMaterialCoding(), planUseOutDetails.getWarehouseId());
+                        } else {
+                            inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeOne(planUseOutDetails.getMaterialCoding(), planUseOutDetails.getWarehouseId());
                         }
 
 
@@ -779,13 +776,29 @@ public class PlanUseOutController extends BaseController {
             jsonObject.put("planUseOutDetails", planUseOutDetails);
             jsonObject.put("outboundList", outboundRecordList);
             jsonObject.put("material", materialService.getMeterialByMeterialCode(planUseOutDetails.getMaterialCoding()));
-            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(planUseOutDetails.getMaterialCoding(),planUseOutDetails.getWarehouseId());
-            jsonObject.put("inventory",inventoryInformationList);
+            List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndWarehouseId(planUseOutDetails.getMaterialCoding(), planUseOutDetails.getWarehouseId());
+            jsonObject.put("inventory", inventoryInformationList);
             listResult.add(jsonObject);
         }
         return listResult;
     }
 
-
+    /**
+     * 模糊查询
+     *
+     * @return
+     */
+    @ApiOperationSupport(order = 16)
+    @ApiOperation(value = "需求计划物料检索")
+    @GetMapping("/pagingFuzzyQueryByMaterialCodingOfrNameV1")
+    public Result pageV1(PdaMaterialVO pdaMaterialVO){
+        try {
+             List<Material> materialListByKey = materialService.getMaterialListByKey(pdaMaterialVO);
+            return Result.success(materialListByKey);
+        } catch (Exception e) {
+            Result.failure(9999,e.getMessage());
+        }
+        return Result.failure("查询失败");
+    }
 }
 

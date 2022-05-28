@@ -1,10 +1,13 @@
 package com.huanhong.wms.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.huanhong.common.exception.ServiceException;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.dto.request.UpdateMakeInventoryReportRequest;
+import com.huanhong.wms.entity.MakeInventory;
 import com.huanhong.wms.entity.MakeInventoryReport;
 import com.huanhong.wms.entity.MakeInventoryReportDetails;
+import com.huanhong.wms.mapper.MakeInventoryMapper;
 import com.huanhong.wms.mapper.MakeInventoryReportDetailsMapper;
 import com.huanhong.wms.mapper.MakeInventoryReportMapper;
 import com.huanhong.wms.service.MakeInventoryReportV1Service;
@@ -25,6 +28,9 @@ public class MakeInventoryReportV1ServiceImpl implements MakeInventoryReportV1Se
 
     @Resource
     private MakeInventoryReportMapper makeInventoryReportMapper;
+
+    @Resource
+    private MakeInventoryMapper makeInventoryMapper;
 
     @Resource
     private MakeInventoryReportDetailsMapper makeInventoryReportDetailsMapper;
@@ -62,6 +68,12 @@ public class MakeInventoryReportV1ServiceImpl implements MakeInventoryReportV1Se
         if (number.get() == 0) {
             makeInventoryReport1.setCheckStatus(1);
             makeInventoryReportMapper.updateById(makeInventoryReport1);
+            String reportNumber = makeInventoryReport1.getDocumentNumber();
+            QueryWrapper<MakeInventory> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("document_number",reportNumber);
+            MakeInventory makeInventory = makeInventoryMapper.selectOne(queryWrapper);
+            makeInventory.setCheckStatus(1);
+            makeInventoryMapper.updateById(makeInventory);
         }
         return Result.success("盘点报告更新成功");
     }

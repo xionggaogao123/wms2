@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
@@ -15,6 +16,8 @@ import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.InventoryDocumentVO;
 import com.huanhong.wms.mapper.InventoryDocumentDetailsMapper;
 import com.huanhong.wms.mapper.InventoryDocumentMapper;
+import com.huanhong.wms.mapper.TemporaryLibraryInventoryDetailsMapper;
+import com.huanhong.wms.mapper.TemporaryLibraryInventoryMapper;
 import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -43,6 +46,11 @@ public class InventoryDocumentController extends BaseController {
     @Resource
     private IInventoryDocumentService inventoryDocumentService;
 
+    @Resource
+    private TemporaryLibraryInventoryMapper temporaryLibraryInventoryMapper;
+
+    @Resource
+    private TemporaryLibraryInventoryDetailsMapper temporaryLibraryInventoryDetailsMapper;
 
 
     @Resource
@@ -52,7 +60,6 @@ public class InventoryDocumentController extends BaseController {
 
     @Resource
     private IInventoryDocumentDetailsService inventoryDocumentDetailsService;
-
 
 
     @Resource
@@ -152,14 +159,14 @@ public class InventoryDocumentController extends BaseController {
             }
 
             //判断询价单信息中填的是否是调拨出库单
-            if(StrUtil.isBlank(inventoryDocument.getRfqNumber())||inventoryDocument.getRfqNumber().length()<5){
+            if (StrUtil.isBlank(inventoryDocument.getRfqNumber()) || inventoryDocument.getRfqNumber().length() < 5) {
                 return Result.failure("询价单编号不合法");
             }
             String headKey = inventoryDocument.getRfqNumber().substring(0, 4);
-            if ("DBCK".equals(headKey)){
+            if ("DBCK".equals(headKey)) {
                 //查询出库单信息
                 AllocationOut allocationOut = allocationOutService.getAllocationOutByDocNumber(inventoryDocument.getRfqNumber());
-                if (ObjectUtil.isEmpty(allocationOut)){
+                if (ObjectUtil.isEmpty(allocationOut)) {
                     return Result.failure("未找到调拨出库单信息！");
                 }
             }
@@ -180,7 +187,7 @@ public class InventoryDocumentController extends BaseController {
             List<InventoryDocument> listfalse = new ArrayList<>();
 
 
-            if ("DBCK".equals(headKey)){
+            if ("DBCK".equals(headKey)) {
                 for (InventoryDocumentDetails inventoryDocumentDetails : inventoryDocumentDetailsList) {
                     //查询出库单信息
 
@@ -211,7 +218,7 @@ public class InventoryDocumentController extends BaseController {
                         listfalse.add(inventoryDocument);
                     }
                 }
-            }else {
+            } else {
                 for (InventoryDocumentDetails inventoryDocumentDetails : inventoryDocumentDetailsList
                 ) {
                     addInventoryInformationDTO.setMaterialCoding(inventoryDocumentDetails.getMaterialCoding());
@@ -253,7 +260,7 @@ public class InventoryDocumentController extends BaseController {
             }
             if (null != updateInventoryDocumentDTO.getComplete() && updateInventoryDocumentDTO.getComplete() == 1) {
                 // 清单完成生成上架单
-                inventoryDocumentDetailsList.forEach(idd->{
+                inventoryDocumentDetailsList.forEach(idd -> {
                     AddOnShelfDTO addOnShelfDTO = new AddOnShelfDTO();
                     addOnShelfDTO.setInventoryNo(idd.getDocumentNumber());
                     addOnShelfDTO.setInventoryCredit(idd.getArrivalQuantity());
@@ -268,7 +275,7 @@ public class InventoryDocumentController extends BaseController {
             }
             return count == inventoryDocumentDetailsList.size() ? Result.success("库存新增成功！") : Result.success(listfalse, "若干点验单新增库存失败！");
         } catch (Exception e) {
-            log.error("更新点验单失败",e);
+            log.error("更新点验单失败", e);
             return Result.failure("系统异常：更新点验单失败!");
         }
     }
@@ -280,18 +287,18 @@ public class InventoryDocumentController extends BaseController {
 
         InventoryDocument inventoryDocument = inventoryDocumentService.getInventoryDocumentById(id);
 
-        if (ObjectUtil.isNull(inventoryDocument)){
+        if (ObjectUtil.isNull(inventoryDocument)) {
             return Result.failure("单据不存在！");
         }
         boolean delete = inventoryDocumentService.removeById(id);
 
         //主表删除成功,删除明细
-        if (delete){
+        if (delete) {
             String docNum = inventoryDocument.getDocumentNumber();
 
-            List<InventoryDocumentDetails> inventoryDocumentDetailsList = inventoryDocumentDetailsService.getInventoryDocumentDetailsListByDocNumberAndWarehosue(inventoryDocument.getDocumentNumber(),inventoryDocument.getWarehouse());
+            List<InventoryDocumentDetails> inventoryDocumentDetailsList = inventoryDocumentDetailsService.getInventoryDocumentDetailsListByDocNumberAndWarehosue(inventoryDocument.getDocumentNumber(), inventoryDocument.getWarehouse());
 
-            for (InventoryDocumentDetails inventoryDocumentDetails:inventoryDocumentDetailsList
+            for (InventoryDocumentDetails inventoryDocumentDetails : inventoryDocumentDetailsList
             ) {
                 inventoryDocumentDetailsService.removeById(inventoryDocumentDetails.getId());
             }
@@ -338,28 +345,54 @@ public class InventoryDocumentController extends BaseController {
                                              @RequestParam String warehouseId
     ) {
 
-        InventoryDocument inventoryDocument = inventoryDocumentService.getInventoryDocumentByDocumentNumberAndWarehouseId(docNum, warehouseId);
+        if (docNum.substring(0,2).equals("QD")) {
+            InventoryDocument inventoryDocument = inventoryDocumentService.getInventoryDocumentByDocumentNumberAndWarehouseId(docNum, warehouseId);
 
-        if (ObjectUtil.isEmpty(inventoryDocument)) {
-            return Result.success("未查到相关数据！");
+            if (ObjectUtil.isEmpty(inventoryDocument)) {
+                return Result.success("未查到相关数据！");
+            }
+            JSONArray jsonArray = new JSONArray();
+
+            List<InventoryDocumentDetails> inventoryDocumentDetailsList = inventoryDocumentDetailsService.getInventoryDocumentDetailsListByDocNumberAndWarehosue(inventoryDocument.getDocumentNumber(), inventoryDocument.getWarehouse());
+
+            for (InventoryDocumentDetails inventoryDocumentDetails : inventoryDocumentDetailsList
+            ) {
+                JSONObject jsonObjectMaterial = new JSONObject();
+                Material material = materialService.getMeterialByMeterialCode(inventoryDocumentDetails.getMaterialCoding());
+                jsonObjectMaterial.put("material", material);
+                jsonObjectMaterial.put("details", inventoryDocumentDetails);
+                jsonArray.add(jsonObjectMaterial);
+            }
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("doc", inventoryDocument);
+            jsonObject.put("detailsList", jsonArray);
+            return Result.success(jsonObject);
+        } else if(docNum.substring(0,4).equals("LKQD")){
+            QueryWrapper<TemporaryLibraryInventory> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("document_number",docNum);
+            queryWrapper.eq("warehouse_id",warehouseId);
+            TemporaryLibraryInventory temporaryLibraryInventory = temporaryLibraryInventoryMapper.selectOne(queryWrapper);
+            if (ObjectUtil.isEmpty(temporaryLibraryInventory)) {
+                return Result.success("未查到相关数据！");
+            }
+            JSONArray jsonArray = new JSONArray();
+            QueryWrapper<TemporaryLibraryInventoryDetails> detailsQueryWrapper = new QueryWrapper<>();
+            detailsQueryWrapper.eq("document_number",temporaryLibraryInventory.getDocumentNumber());
+            detailsQueryWrapper.eq("warehouse_id",temporaryLibraryInventory.getWarehouseId());
+            List<TemporaryLibraryInventoryDetails> temporaryLibraryInventoryDetails = temporaryLibraryInventoryDetailsMapper.selectList(detailsQueryWrapper);
+            temporaryLibraryInventoryDetails.forEach(details -> {
+                JSONObject jsonObjectMaterial = new JSONObject();
+                Material material = materialService.getMeterialByMeterialCode(details.getMaterialCoding());
+                jsonObjectMaterial.put("material", material);
+                jsonObjectMaterial.put("details", details);
+                jsonArray.add(jsonObjectMaterial);
+            });
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("doc", temporaryLibraryInventory);
+            jsonObject.put("detailsList", jsonArray);
+            return Result.success(jsonObject);
         }
-        JSONArray jsonArray = new JSONArray();
-
-        List<InventoryDocumentDetails> inventoryDocumentDetailsList = inventoryDocumentDetailsService.getInventoryDocumentDetailsListByDocNumberAndWarehosue(inventoryDocument.getDocumentNumber(), inventoryDocument.getWarehouse());
-
-        for (InventoryDocumentDetails inventoryDocumentDetails : inventoryDocumentDetailsList
-        ) {
-            JSONObject jsonObjectMaterial = new JSONObject();
-            Material material = materialService.getMeterialByMeterialCode(inventoryDocumentDetails.getMaterialCoding());
-            jsonObjectMaterial.put("material", material);
-            jsonObjectMaterial.put("details", inventoryDocumentDetails);
-            jsonArray.add(jsonObjectMaterial);
-        }
-
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("doc", inventoryDocument);
-        jsonObject.put("detailsList", jsonArray);
-        return Result.success(jsonObject);
+        return Result.failure("查询的数据不存在");
     }
 
     @ApiOperationSupport(order = 8)
@@ -397,7 +430,7 @@ public class InventoryDocumentController extends BaseController {
     @GetMapping("selectById/{id}")
     public Result selectById(@PathVariable Integer id) {
         try {
-           return service.selectById(id);
+            return service.selectById(id);
         } catch (Exception e) {
             return Result.failure("删除失败");
         }

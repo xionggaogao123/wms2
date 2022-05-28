@@ -74,23 +74,36 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
         //添加需求管理
         String planNumber = addRequirementsPlanning(request);
         //添加主表数据返回对应的出库编号
-        String outNumber = addWarehouse(request,planNumber);
+        String outNumber = addWarehouse(request, planNumber);
         //添加子表数据
         addWarehouseDetails(request.getTemporaryOutWarehouseDetailsRequest(), outNumber);
         //扣减对应的库存
-        deductingInventory(request.getTemporaryOutWarehouseDetailsRequest(),outNumber);
+        deductingInventory(request.getTemporaryOutWarehouseDetailsRequest(), outNumber);
         //添加流水
-        addTemporaryRecord(planNumber,outNumber,request);
+        addTemporaryRecord(planNumber, outNumber, request);
         return Result.success("添加临时出库信息成功");
     }
 
     private void checkout(TemporaryOutWarehouseV1AddRequest request) {
-
+        List<TemporaryOutWarehouseDetailsRequest> temporaryOutWarehouseDetailsRequest = request.getTemporaryOutWarehouseDetailsRequest();
+        temporaryOutWarehouseDetailsRequest.forEach(details -> {
+            QueryWrapper<TemporaryEnterWarehouseDetails> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("material_coding", details.getMaterialCoding());
+            queryWrapper.eq("batch", details.getBatch());
+            queryWrapper.eq("warehouse_id", details.getWarehouseId());
+            List<TemporaryEnterWarehouseDetails> temporaryEnterWarehouseDetails = temporaryEnterWarehouseDetailsMapper.selectList(queryWrapper);
+            temporaryEnterWarehouseDetails.forEach(details1 -> {
+                Double receivableQuantity = details1.getReceivableQuantity();
+                if (details.getRequisitionQuantity() > receivableQuantity) {
+                    throw new SecurityException("出库数量不能大于库存数量");
+                }
+            });
+        });
     }
 
     private void addTemporaryRecord(String planNumber, String outNumber, TemporaryOutWarehouseV1AddRequest request) {
         QueryWrapper<TemporaryOutWarehouse> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("out_number",outNumber);
+        queryWrapper.eq("out_number", outNumber);
         TemporaryOutWarehouse temporaryOutWarehouse = warehouseManager.selectOne(queryWrapper);
         TemporaryRecord temporaryRecord = new TemporaryRecord();
         temporaryRecord.setRequirementsPlanningNumber(planNumber);
@@ -107,9 +120,9 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
 
         //添加子表数据
         QueryWrapper<TemporaryOutWarehouseDetails> queryWrapper2 = new QueryWrapper<>();
-        queryWrapper2.eq("out_number",outNumber);
+        queryWrapper2.eq("out_number", outNumber);
         List<TemporaryOutWarehouseDetails> temporaryOutWarehouseDetails = warehouseDetailsManager.selectList(queryWrapper2);
-        temporaryOutWarehouseDetails.forEach(details->{
+        temporaryOutWarehouseDetails.forEach(details -> {
             TemporaryRecordDetails temporaryRecordDetails = new TemporaryRecordDetails();
             temporaryRecordDetails.setRelevanceId(id);
             temporaryRecordDetails.setWarehouseId(details.getWarehouseId());
@@ -119,7 +132,7 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
             temporaryRecordDetails.setOutQuantity(details.getRequisitionQuantity());
             temporaryRecordDetails.setWarehouseManager(temporaryOutWarehouse.getLibrarian());
             temporaryRecordDetails.setCreateTime(LocalDateTime.now());
-            log.info("添加出入库流水子表数据为:{}",JsonUtil.obj2String(temporaryRecordDetails));
+            log.info("添加出入库流水子表数据为:{}", JsonUtil.obj2String(temporaryRecordDetails));
             temporaryRecordDetailsMapper.insert(temporaryRecordDetails);
         });
     }
@@ -127,7 +140,7 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
     private String addRequirementsPlanning(TemporaryOutWarehouseV1AddRequest request) {
         TemporaryOutWarehouseRequest temporaryOutWarehouseRequest = request.getTemporaryOutWarehouseRequest();
         AddRequirementsPlanningDTO addRequirementsPlanningDTO = new AddRequirementsPlanningDTO();
-        BeanUtil.copyProperties(temporaryOutWarehouseRequest,addRequirementsPlanningDTO);
+        BeanUtil.copyProperties(temporaryOutWarehouseRequest, addRequirementsPlanningDTO);
         addRequirementsPlanningDTO.setPlanUnit(temporaryOutWarehouseRequest.getPlanUnit());
         addRequirementsPlanningDTO.setPlanStatus(1);
         addRequirementsPlanningDTO.setPlanClassification(3);
@@ -137,7 +150,7 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
         //添加管理子表数据
         List<TemporaryOutWarehouseDetailsRequest> temporaryOutWarehouseDetailsRequest = request.getTemporaryOutWarehouseDetailsRequest();
         List<RequiremetsPlanningDetails> requiremetsPlanningDetails = BeanUtil.copyToList(temporaryOutWarehouseDetailsRequest, RequiremetsPlanningDetails.class);
-        requiremetsPlanningDetails.forEach(details->{
+        requiremetsPlanningDetails.forEach(details -> {
             details.setPlanNumber(planNumber);
             details.setRequiredQuantity(1.0);
             details.setPlannedPurchaseQuantity(1.0);
@@ -155,8 +168,8 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
      *
      * @param temporaryOutWarehouseDetailsRequest 出库数据
      */
-    private void deductingInventory(List<TemporaryOutWarehouseDetailsRequest> temporaryOutWarehouseDetailsRequest,String outNumber) {
-        log.info("扣减条数的数据为:{}",JsonUtil.obj2String(temporaryOutWarehouseDetailsRequest.toString()));
+    private void deductingInventory(List<TemporaryOutWarehouseDetailsRequest> temporaryOutWarehouseDetailsRequest, String outNumber) {
+        log.info("扣减条数的数据为:{}", JsonUtil.obj2String(temporaryOutWarehouseDetailsRequest.toString()));
         BigDecimal number3 = new BigDecimal(0);
         //遍历数据扣减库存
         List<TemporaryOutWarehouseDetails> temporaryOutWarehouseDetails = BeanUtil.copyToList(temporaryOutWarehouseDetailsRequest, TemporaryOutWarehouseDetails.class);
@@ -187,7 +200,7 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
                         temporaryEnterWarehouseQueryWrapper.eq("enter_number", warehouseDetails.getEnterNumber());
                         temporaryEnterWarehouseMapper.delete(temporaryEnterWarehouseQueryWrapper);
                     }
-                }else if(subtract.compareTo(number3) > 0){
+                } else if (subtract.compareTo(number3) > 0) {
                     warehouseDetails.setArrivalQuantity(subtract.doubleValue());
                     temporaryEnterWarehouseDetailsMapper.updateById(warehouseDetails);
                 }
@@ -274,12 +287,13 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
     @Override
     public Result selectAll() {
         List<TemporaryEnterWarehouseDetails> temporaryOutWarehouseDetails = temporaryEnterWarehouseDetailsMapper.selectList(null);
-        log.info("查询所有数据:{}",JsonUtil.obj2String(temporaryOutWarehouseDetails));
+        log.info("查询所有数据:{}", JsonUtil.obj2String(temporaryOutWarehouseDetails));
         return Result.success(temporaryOutWarehouseDetails);
     }
 
     /**
      * 修改出库数据
+     *
      * @param request
      * @return
      */
@@ -302,7 +316,7 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
         temporaryOutWarehouseDetails.forEach(details -> {
             //查询对应的库存数据
             QueryWrapper<TemporaryEnterWarehouseDetails> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("out_number",details.getOutNumber());
+            queryWrapper.eq("out_number", details.getOutNumber());
             List<TemporaryEnterWarehouseDetails> temporaryEnterWarehouseDetails = temporaryEnterWarehouseDetailsMapper.selectList(queryWrapper);
 
         });
@@ -331,7 +345,7 @@ public class TemporaryOutWarehouseV1ServiceImpl implements TemporaryOutWarehouse
      * @param request 主表数据
      * @return 返回值
      */
-    private String addWarehouse(TemporaryOutWarehouseV1AddRequest request,String str) {
+    private String addWarehouse(TemporaryOutWarehouseV1AddRequest request, String str) {
         TemporaryOutWarehouse temporaryOutWarehouse = new TemporaryOutWarehouse();
         BeanUtil.copyProperties(request.getTemporaryOutWarehouseRequest(), temporaryOutWarehouse);
         temporaryOutWarehouse.setOutNumber("LKCK" + String.valueOf(System.currentTimeMillis()));

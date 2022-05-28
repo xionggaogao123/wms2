@@ -45,7 +45,7 @@ public class TemporaryOutWarehouseV1Controller extends BaseController {
             return tempOutWarehouseV1Service.addMasterAndSublist(request);
         } catch (Exception e) {
             log.error("添加临库出库单出错，异常", e);
-            return Result.failure("系统异常：临库出库单添加失败。");
+            return Result.failure(e.getMessage());
         }
     }
 

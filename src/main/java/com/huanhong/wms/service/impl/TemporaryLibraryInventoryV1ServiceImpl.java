@@ -170,7 +170,10 @@ public class TemporaryLibraryInventoryV1ServiceImpl implements TemporaryLibraryI
         TemporaryLibraryInventory temporaryLibraryInventory = update.getTemporaryLibraryInventory();
         TemporaryLibraryInventory temporaryLibraryInventory1 = temporaryLibraryInventoryMapper.selectById(temporaryLibraryInventory.getId());
         if (temporaryLibraryInventory1 == null) {
-            throw new BizException("临时清单数据不存在");
+            throw new SecurityException("数据不存在");
+        }
+        if (temporaryLibraryInventory1.getComplete() == 1) {
+            throw new SecurityException("数据以清点");
         }
         temporaryLibraryInventoryMapper.updateById(temporaryLibraryInventory);
         List<TemporaryLibraryInventoryDetails> temporaryLibraryInventoryDetails = update.getTemporaryLibraryInventoryDetails();

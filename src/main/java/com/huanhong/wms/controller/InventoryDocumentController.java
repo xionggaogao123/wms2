@@ -13,6 +13,7 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.InventoryDocumentVO;
+import com.huanhong.wms.mapper.InventoryDocumentDetailsMapper;
 import com.huanhong.wms.mapper.InventoryDocumentMapper;
 import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
@@ -42,14 +43,17 @@ public class InventoryDocumentController extends BaseController {
     @Resource
     private IInventoryDocumentService inventoryDocumentService;
 
-    @Resource
-    private InventoryDocumentMapper inventoryDocumentMapper;
 
+
+    @Resource
+    private InventoryDocumentService service;
     @Resource
     private IMaterialService materialService;
 
     @Resource
     private IInventoryDocumentDetailsService inventoryDocumentDetailsService;
+
+
 
     @Resource
     private IInventoryInformationService inventoryInformationService;
@@ -386,6 +390,17 @@ public class InventoryDocumentController extends BaseController {
         jsonObject.put("doc", inventoryDocument);
         jsonObject.put("detailsList", jsonArray);
         return Result.success(jsonObject);
+    }
+
+    @ApiOperationSupport(order = 5)
+    @ApiOperation(value = "查询")
+    @GetMapping("selectById/{id}")
+    public Result selectById(@PathVariable Integer id) {
+        try {
+           return service.selectById(id);
+        } catch (Exception e) {
+            return Result.failure("删除失败");
+        }
     }
 }
 

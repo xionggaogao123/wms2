@@ -6,6 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.huanhong.common.units.JsonUtil;
 import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
@@ -18,6 +19,7 @@ import com.huanhong.wms.entity.vo.TemporaryLibraryInventoryVO;
 import com.huanhong.wms.mapper.TemporaryLibraryInventoryMapper;
 import com.huanhong.wms.service.ITemporaryLibraryInventoryService;
 import com.huanhong.wms.SuperServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +34,7 @@ import java.time.format.DateTimeFormatter;
  * @author liudeyi
  * @since 2022-05-06
  */
+@Slf4j
 @Service
 public class TemporaryLibraryInventoryServiceImpl extends SuperServiceImpl<TemporaryLibraryInventoryMapper, TemporaryLibraryInventory> implements ITemporaryLibraryInventoryService {
 
@@ -128,6 +131,8 @@ public class TemporaryLibraryInventoryServiceImpl extends SuperServiceImpl<Tempo
             TemporaryLibraryInventory temporaryLibraryInventory = new TemporaryLibraryInventory();
             BeanUtil.copyProperties(addTemporaryLibraryInventoryDTO, temporaryLibraryInventory);
             temporaryLibraryInventory.setDocumentNumber(orderNo);
+            log.info("添加临时清点的数据为:{}", JsonUtil.obj2String(temporaryLibraryInventory));
+            temporaryLibraryInventory.setComplete(0);
             int i = temporaryLibraryInventoryMapper.insert(temporaryLibraryInventory);
             if (i > 0) {
                 return Result.success(getTemporaryLibraryInventoryByDocumentNumberAndWarehouseId(orderNo, addTemporaryLibraryInventoryDTO.getWarehouseId()), "新增成功");

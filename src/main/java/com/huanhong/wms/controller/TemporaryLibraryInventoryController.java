@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
+import com.huanhong.common.units.JsonUtil;
 import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
@@ -20,12 +21,14 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.core.util.JsonUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RestController;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.mapper.TemporaryLibraryInventoryMapper;
 import com.huanhong.wms.service.ITemporaryLibraryInventoryService;
+
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.math.BigDecimal;
@@ -55,8 +58,8 @@ public class TemporaryLibraryInventoryController extends BaseController {
     private ITemporaryLibraryService temporaryLibraryService;
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "current", value = "当前页码"),
-        @ApiImplicitParam(name = "size", value = "每页行数")
+            @ApiImplicitParam(name = "current", value = "当前页码"),
+            @ApiImplicitParam(name = "size", value = "每页行数")
     })
     @ApiOperationSupport(order = 1)
     @ApiOperation(value = "分页查询", notes = "生成代码")
@@ -64,7 +67,7 @@ public class TemporaryLibraryInventoryController extends BaseController {
     public Result<Page<TemporaryLibraryInventory>> page(@RequestParam(defaultValue = "1") Integer current,
                                                         @RequestParam(defaultValue = "10") Integer size,
                                                         TemporaryLibraryInventoryVO temporaryLibraryInventoryVO
-                                                        ) {
+    ) {
         try {
             //调用服务层方法，传入page对象和查询条件对象
             Page<TemporaryLibraryInventory> pageResult = temporaryLibraryInventoryService.pageFuzzyQuery(new Page<>(current, size), temporaryLibraryInventoryVO);
@@ -76,31 +79,31 @@ public class TemporaryLibraryInventoryController extends BaseController {
             log.error("分页查询异常", e);
             return Result.failure("查询失败--系统异常，请联系管理员");
         }
-        }
+    }
 
-        @ApiOperationSupport(order = 2)
-        @ApiOperation(value = "添加", notes = "生成代码")
-        @PostMapping("/add")
-        public Result add(@Valid @RequestBody AddTemporaryLibraryInventoryAndDetailsDTO addTemporaryLibraryInventoryAndDetailsDTO) {
-
-            try {
-                AddTemporaryLibraryInventoryDTO addTemporaryLibraryInventoryDTO = addTemporaryLibraryInventoryAndDetailsDTO.getAddTemporaryLibraryInventoryDTO();
-                List<AddTemporaryLibraryInventoryDetailsDTO> addTemporaryLibraryInventoryDetailsDTOList = addTemporaryLibraryInventoryAndDetailsDTO.getAddTemporaryLibraryInventoryDetailsDTOList();
-                Result result = temporaryLibraryInventoryService.addTemporaryLibraryInventory(addTemporaryLibraryInventoryDTO);
-                if (!result.isOk()) {
-                    return Result.failure("新增点验单失败！");
-                }
-                TemporaryLibraryInventory temporaryLibraryInventory = (TemporaryLibraryInventory) result.getData();
-                String docNum = temporaryLibraryInventory.getDocumentNumber();
-                for (AddTemporaryLibraryInventoryDetailsDTO addTemporaryLibraryInventoryDetailsDTO : addTemporaryLibraryInventoryDetailsDTOList) {
-                    addTemporaryLibraryInventoryDetailsDTO.setDocumentNumber(docNum);
-                }
-                return temporaryLibraryInventoryDetailsService.addInventoryDocumentDetailsList(addTemporaryLibraryInventoryDetailsDTOList);
-            } catch (Exception e) {
-                log.error("新增点验单失败");
-                return Result.failure("系统异常，新增点验单失败！");
+    @ApiOperationSupport(order = 2)
+    @ApiOperation(value = "添加", notes = "生成代码")
+    @PostMapping("/add")
+    public Result add(@Valid @RequestBody AddTemporaryLibraryInventoryAndDetailsDTO addTemporaryLibraryInventoryAndDetailsDTO) {
+        log.info("接收添加的参数为:{}", JsonUtil.obj2String(addTemporaryLibraryInventoryAndDetailsDTO));
+        try {
+            AddTemporaryLibraryInventoryDTO addTemporaryLibraryInventoryDTO = addTemporaryLibraryInventoryAndDetailsDTO.getAddTemporaryLibraryInventoryDTO();
+            List<AddTemporaryLibraryInventoryDetailsDTO> addTemporaryLibraryInventoryDetailsDTOList = addTemporaryLibraryInventoryAndDetailsDTO.getAddTemporaryLibraryInventoryDetailsDTOList();
+            Result result = temporaryLibraryInventoryService.addTemporaryLibraryInventory(addTemporaryLibraryInventoryDTO);
+            if (!result.isOk()) {
+                return Result.failure("新增点验单失败！");
             }
+            TemporaryLibraryInventory temporaryLibraryInventory = (TemporaryLibraryInventory) result.getData();
+            String docNum = temporaryLibraryInventory.getDocumentNumber();
+            for (AddTemporaryLibraryInventoryDetailsDTO addTemporaryLibraryInventoryDetailsDTO : addTemporaryLibraryInventoryDetailsDTOList) {
+                addTemporaryLibraryInventoryDetailsDTO.setDocumentNumber(docNum);
+            }
+            return temporaryLibraryInventoryDetailsService.addInventoryDocumentDetailsList(addTemporaryLibraryInventoryDetailsDTOList);
+        } catch (Exception e) {
+            log.error("新增点验单失败");
+            return Result.failure("系统异常，新增点验单失败！");
         }
+    }
 
 //        @ApiOperationSupport(order = 3)
 //        @ApiOperation(value = "更新", notes = "生成代码")
@@ -207,32 +210,32 @@ public class TemporaryLibraryInventoryController extends BaseController {
 //        }
 
 
-        @ApiOperationSupport(order = 4)
-        @ApiOperation(value = "删除", notes = "生成代码")
-        @DeleteMapping("deleteById/{id}")
-        public Result delete(@PathVariable Integer id) {
+    @ApiOperationSupport(order = 4)
+    @ApiOperation(value = "删除", notes = "生成代码")
+    @DeleteMapping("deleteById/{id}")
+    public Result delete(@PathVariable Integer id) {
 
-            TemporaryLibraryInventory temporaryLibraryInventory = temporaryLibraryInventoryService.getTemporaryLibraryInventoryById(id);
+        TemporaryLibraryInventory temporaryLibraryInventory = temporaryLibraryInventoryService.getTemporaryLibraryInventoryById(id);
 
-            if (ObjectUtil.isNull(temporaryLibraryInventory)){
-                return Result.failure("单据不存在！");
-            }
-
-            boolean delete = temporaryLibraryInventoryService.removeById(id);
-
-            //主表删除成功,删除明细
-            if (delete){
-                String docNum = temporaryLibraryInventory.getDocumentNumber();
-
-                List<TemporaryLibraryInventoryDetails> temporaryLibraryInventoryDetailsList = temporaryLibraryInventoryDetailsService.getTemporaryLibraryInventoryDetailsListByMaterialCodeAndWarehouseId(temporaryLibraryInventory.getDocumentNumber(),temporaryLibraryInventory.getWarehouseId());
-
-                for (TemporaryLibraryInventoryDetails temporaryLibraryInventoryDetails : temporaryLibraryInventoryDetailsList
-                ) {
-                    temporaryLibraryInventoryDetailsService.removeById(temporaryLibraryInventoryDetails.getId());
-                }
-            }
-            return Result.success("删除成功");
+        if (ObjectUtil.isNull(temporaryLibraryInventory)) {
+            return Result.failure("单据不存在！");
         }
+
+        boolean delete = temporaryLibraryInventoryService.removeById(id);
+
+        //主表删除成功,删除明细
+        if (delete) {
+            String docNum = temporaryLibraryInventory.getDocumentNumber();
+
+            List<TemporaryLibraryInventoryDetails> temporaryLibraryInventoryDetailsList = temporaryLibraryInventoryDetailsService.getTemporaryLibraryInventoryDetailsListByMaterialCodeAndWarehouseId(temporaryLibraryInventory.getDocumentNumber(), temporaryLibraryInventory.getWarehouseId());
+
+            for (TemporaryLibraryInventoryDetails temporaryLibraryInventoryDetails : temporaryLibraryInventoryDetailsList
+            ) {
+                temporaryLibraryInventoryDetailsService.removeById(temporaryLibraryInventoryDetails.getId());
+            }
+        }
+        return Result.success("删除成功");
+    }
 
 }
 

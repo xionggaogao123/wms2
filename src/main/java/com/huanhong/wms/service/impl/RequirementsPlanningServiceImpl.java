@@ -110,48 +110,48 @@ public class RequirementsPlanningServiceImpl extends SuperServiceImpl<Requiremen
              * 2.截取最大单据编号的后五位流水号，将流水号+1得到新的单据编号
              * 3.根据编码方案中的规则自动生成编码，新增成功后返回新增单据的详细信息
              */
-            QueryWrapper<RequirementsPlanning> queryRequirementsPlanning = new QueryWrapper<>();
-            /**
-             * 当前仓库
-             */
-            queryRequirementsPlanning.eq("warehouse_id", addRequirementsPlanningDTO.getWarehouseId());
-            /**
-             * 当前日期
-             */
-            String today = StrUtils.HandleData(DateUtil.today());
-            queryRequirementsPlanning.likeRight("plan_number", "XQJH" + today);
-            /**
-             * likeRigh: XQJH+XXXXXXXX(当前年月日)
-             */
-            RequirementsPlanning maxRequirementsPlanning = requirementsPlanningMapper.selectOne(queryRequirementsPlanning.orderByDesc("id").last("limit 1"));
-
-            //目前最大的单据编码
-            String maxDocNum = null;
-            if (ObjectUtil.isNotEmpty(maxRequirementsPlanning)) {
-                maxDocNum = maxRequirementsPlanning.getPlanNumber();
-            }
-            String orderNo = null;
-            //单据编码前缀-CGRU+年月日
-            String code_pfix = "XQJH" + today;
-            if (maxDocNum != null && maxRequirementsPlanning.getPlanNumber().contains(code_pfix)) {
-                String code_end = maxRequirementsPlanning.getPlanNumber().substring(12, 16);
-                int endNum = Integer.parseInt(code_end);
-                int tmpNum = 10000 + endNum + 1;
-                orderNo = code_pfix + StrUtils.subStr("" + tmpNum, 1);
-            } else {
-                orderNo = code_pfix + "0001";
-            }
+//            QueryWrapper<RequirementsPlanning> queryRequirementsPlanning = new QueryWrapper<>();
+//            /**
+//             * 当前仓库
+//             */
+//            queryRequirementsPlanning.eq("warehouse_id", addRequirementsPlanningDTO.getWarehouseId());
+//            /**
+//             * 当前日期
+//             */
+//            String today = StrUtils.HandleData(DateUtil.today());
+//            queryRequirementsPlanning.likeRight("plan_number", "XQJH" + today);
+//            /**
+//             * likeRigh: XQJH+XXXXXXXX(当前年月日)
+//             */
+//            RequirementsPlanning maxRequirementsPlanning = requirementsPlanningMapper.selectOne(queryRequirementsPlanning.orderByDesc("id").last("limit 1"));
+//
+//            //目前最大的单据编码
+//            String maxDocNum = null;
+//            if (ObjectUtil.isNotEmpty(maxRequirementsPlanning)) {
+//                maxDocNum = maxRequirementsPlanning.getPlanNumber();
+//            }
+//            String orderNo = null;
+//            //单据编码前缀-CGRU+年月日
+//            String code_pfix = "XQJH" + today;
+//            if (maxDocNum != null && maxRequirementsPlanning.getPlanNumber().contains(code_pfix)) {
+//                String code_end = maxRequirementsPlanning.getPlanNumber().substring(12, 16);
+//                int endNum = Integer.parseInt(code_end);
+//                int tmpNum = 10000 + endNum + 1;
+//                orderNo = code_pfix + StrUtils.subStr("" + tmpNum, 1);
+//            } else {
+//                orderNo = code_pfix + "0001";
+//            }
 
             /**
              * 新增单据
              */
             RequirementsPlanning requirementsPlanning = new RequirementsPlanning();
             BeanUtil.copyProperties(addRequirementsPlanningDTO, requirementsPlanning);
-            requirementsPlanning.setPlanNumber(orderNo);
+            requirementsPlanning.setPlanNumber("XQJH"+String.valueOf(System.currentTimeMillis()));
             log.info("新增的数据为:{}", JsonUtil.obj2String(requirementsPlanning));
             int i = requirementsPlanningMapper.insert(requirementsPlanning);
             if (i > 0) {
-                return Result.success(getRequirementsPlanningByDocNumAndWarehouseId(orderNo, requirementsPlanning.getWarehouseId()), "新增成功");
+                return Result.success(getRequirementsPlanningByDocNumAndWarehouseId(requirementsPlanning.getPlanNumber(), requirementsPlanning.getWarehouseId()), "新增成功");
             } else {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "新增失败！");
             }

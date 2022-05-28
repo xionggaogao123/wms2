@@ -115,47 +115,47 @@ public class ProcurementPlanServiceImpl extends SuperServiceImpl<ProcurementPlan
              * 2.截取最大单据编号的后五位流水号，将流水号+1得到新的单据编号
              * 3.根据编码方案中的规则自动生成编码，新增成功后返回新增单据的详细信息
              */
-            QueryWrapper<ProcurementPlan> queryProcurementPlan = new QueryWrapper<>();
-            /**
-             * 当前仓库
-             */
-            queryProcurementPlan.eq("warehouse_id", addProcurementPlanDTO.getWarehouseId());
-            /**
-             * 当前日期
-             */
-            String today = StrUtils.HandleData(DateUtil.today());
-            queryProcurementPlan.likeRight("plan_number", "CGJH" + today);
-            /**
-             * likeRigh: XQJH+XXXXXXXX(当前年月日)
-             */
-            ProcurementPlan maxProcurementPlan = procurementPlanMapper.selectOne(queryProcurementPlan.orderByDesc("id").last("limit 1"));
-
-            //目前最大的单据编码
-            String maxDocNum = null;
-            if (ObjectUtil.isNotEmpty(maxProcurementPlan)) {
-                maxDocNum = maxProcurementPlan.getPlanNumber();
-            }
-            String orderNo = null;
-            //单据编码前缀-CGRU+年月日
-            String code_pfix = "CGJH" + today;
-            if (maxDocNum != null && maxProcurementPlan.getPlanNumber().contains(code_pfix)) {
-                String code_end = maxProcurementPlan.getPlanNumber().substring(12, 16);
-                int endNum = Integer.parseInt(code_end);
-                int tmpNum = 10000 + endNum + 1;
-                orderNo = code_pfix + StrUtils.subStr("" + tmpNum, 1);
-            } else {
-                orderNo = code_pfix + "0001";
-            }
+//            QueryWrapper<ProcurementPlan> queryProcurementPlan = new QueryWrapper<>();
+//            /**
+//             * 当前仓库
+//             */
+//            queryProcurementPlan.eq("warehouse_id", addProcurementPlanDTO.getWarehouseId());
+//            /**
+//             * 当前日期
+//             */
+//            String today = StrUtils.HandleData(DateUtil.today());
+//            queryProcurementPlan.likeRight("plan_number", "CGJH" + today);
+//            /**
+//             * likeRigh: XQJH+XXXXXXXX(当前年月日)
+//             */
+//            ProcurementPlan maxProcurementPlan = procurementPlanMapper.selectOne(queryProcurementPlan.orderByDesc("id").last("limit 1"));
+//
+//            //目前最大的单据编码
+//            String maxDocNum = null;
+//            if (ObjectUtil.isNotEmpty(maxProcurementPlan)) {
+//                maxDocNum = maxProcurementPlan.getPlanNumber();
+//            }
+//            String orderNo = null;
+//            //单据编码前缀-CGRU+年月日
+//            String code_pfix = "CGJH" + today;
+//            if (maxDocNum != null && maxProcurementPlan.getPlanNumber().contains(code_pfix)) {
+//                String code_end = maxProcurementPlan.getPlanNumber().substring(12, 16);
+//                int endNum = Integer.parseInt(code_end);
+//                int tmpNum = 10000 + endNum + 1;
+//                orderNo = code_pfix + StrUtils.subStr("" + tmpNum, 1);
+//            } else {
+//                orderNo = code_pfix + "0001";
+//            }
 
             /**
              * 新增单据
              */
             ProcurementPlan procurementPlan = new ProcurementPlan();
             BeanUtil.copyProperties(addProcurementPlanDTO, procurementPlan);
-            procurementPlan.setPlanNumber(orderNo);
+            procurementPlan.setPlanNumber("CGJH"+String.valueOf(System.currentTimeMillis()));
             int i = procurementPlanMapper.insert(procurementPlan);
             if (i > 0) {
-                return Result.success(getProcurementPlanByDocNumAndWarehouseId(orderNo, procurementPlan.getWarehouseId()), "新增成功");
+                return Result.success(getProcurementPlanByDocNumAndWarehouseId(procurementPlan.getPlanNumber(), procurementPlan.getWarehouseId()), "新增成功");
             } else {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "新增失败！");
             }

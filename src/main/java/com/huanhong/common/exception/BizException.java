@@ -1,7 +1,7 @@
 package com.huanhong.common.exception;
 
-import com.huanhong.common.exception.enums.IResultMsg;
 import com.huanhong.common.exception.enums.APIEnum;
+import com.huanhong.wms.bean.Result;
 import io.swagger.annotations.ApiModel;
 
 /**
@@ -12,33 +12,19 @@ import io.swagger.annotations.ApiModel;
 public class BizException extends AbstractException {
     private static final long serialVersionUID = -644174310560740232L;
 
-    public BizException(IResultMsg error) {
+    public BizException(Result<Object> error) {
         super(error);
     }
 
     public BizException(String error) {
-
-        super(new IResultMsg() {
-
-            private static final long serialVersionUID = -7026523857294062402L;
-
-            @Override
-            public Integer getCode() {
-                return APIEnum.BIZ_ERROR.getCode();
-            }
-
-            @Override
-            public String getMessage() {
-                return error;
-            }
-        });
+        super(Result.failure(APIEnum.BIZ_ERROR.getCode(), error));
     }
 
-    public BizException(IResultMsg error, Throwable cause) {
+    public BizException(Result<Object> error, Throwable cause) {
         super(error, cause);
     }
 
     public BizException(Throwable cause) {
-        super(APIEnum.BIZ_ERROR, cause);
+        super(Result.failure("未知异常"), cause);
     }
 }

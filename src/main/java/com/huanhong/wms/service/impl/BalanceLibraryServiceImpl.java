@@ -9,6 +9,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.huanhong.common.exception.BizException;
 import com.huanhong.common.units.StrUtils;
 import com.huanhong.common.units.user.CurrentUserUtil;
 import com.huanhong.wms.SuperServiceImpl;
@@ -71,7 +72,7 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
         }
         for (ProcurementPlan procurementPlan : procurementPlans) {
             if (procurementPlan.getIsImported() == 1) {
-                return Result.failure(400, StrUtil.format("采购计划单号：{},已被导入，不可重复导入", procurementPlan.getPlanNumber()));
+                throw new BizException( Result.failure(400,StrUtil.format("采购计划单号：{},已被导入，不可重复导入", procurementPlan.getPlanNumber())));
             }
         }
         // 合并采购计划主表数据到平衡利库
@@ -118,7 +119,7 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
         balanceLibrary.setPlanClassification(pp.getPlanClassification());
         int flag = this.baseMapper.insert(balanceLibrary);
         if (flag < 1) {
-            throw new RuntimeException("创建平衡利库主表失败");
+            throw new BizException("创建平衡利库主表失败");
         }
         // 处理明细数据
         List<ProcurementPlanDetails> procurementPlanDetails = procurementPlanDetailsService.list(Wrappers.<ProcurementPlanDetails>lambdaQuery()
@@ -143,7 +144,7 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
         });
         boolean b = balanceLibraryDetailService.saveBatch(balanceLibraryDetails);
         if (!b) {
-            throw new RuntimeException("平衡利库明细表数据保存失败");
+            throw new BizException("平衡利库明细表数据保存失败");
         }
         // 更新采购计划状态为已导入
         ProcurementPlan procurementPlan = new ProcurementPlan();

@@ -3,12 +3,18 @@ package com.huanhong.wms.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.NumberUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.huanhong.common.exception.BizException;
 import com.huanhong.common.units.user.CurrentUserUtil;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.*;
-import com.huanhong.wms.entity.dto.*;
+import com.huanhong.wms.entity.AllocationPlan;
+import com.huanhong.wms.entity.BalanceLibrary;
+import com.huanhong.wms.entity.BalanceLibraryDetail;
+import com.huanhong.wms.entity.BalanceLibraryRecord;
+import com.huanhong.wms.entity.dto.AddAllocationPlanAndDetailsDTO;
+import com.huanhong.wms.entity.dto.AddAllocationPlanDTO;
+import com.huanhong.wms.entity.dto.AddAllocationPlanDetailDTO;
 import com.huanhong.wms.mapper.BalanceLibraryDetailMapper;
 import com.huanhong.wms.mapper.BalanceLibraryMapper;
 import com.huanhong.wms.mapper.BalanceLibraryRecordMapper;
@@ -125,7 +131,7 @@ public class BalanceLibraryRecordServiceImpl extends SuperServiceImpl<BalanceLib
             addAllocationPlanAndDetailsDTO.setAddAllocationPlanDetailDTOList(addAllocationPlanDetailDTOList);
             Result r = allocationPlanService.add(addAllocationPlanAndDetailsDTO);
             if (!r.isOk()) {
-                throw new RuntimeException("平衡利库调拨计划创建失败：" + r.getMessage());
+                throw new BizException("平衡利库调拨计划创建失败：" + r.getMessage());
             }
             planNo = ((AllocationPlan) r.getData()).getAllocationNumber();
             if (null != balanceLibraryRecord.getPreCalibrationQuantity() && 0 != balanceLibraryRecord.getPreCalibrationQuantity()) {
@@ -140,7 +146,7 @@ public class BalanceLibraryRecordServiceImpl extends SuperServiceImpl<BalanceLib
             }
             int flag = this.baseMapper.insert(balanceLibraryRecord);
             if (flag < 1) {
-                throw new RuntimeException("平衡利库操作记录保存失败，请稍后重试");
+                throw new BizException("平衡利库操作记录保存失败，请稍后重试");
             }
             AllocationPlan allocationPlan = (AllocationPlan) r.getData();
             AllocationPlan temp = new AllocationPlan();

@@ -2,6 +2,7 @@ package com.huanhong.common.handler;
 
 
 import cn.hutool.core.exceptions.ValidateException;
+import com.huanhong.common.exception.BizException;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +59,7 @@ public class GlobalExceptionHandler {
             result.setMessage(fieldErrors.get(0).getDefaultMessage());
         }
         result.setStatus(ErrorCode.PARAM_ERROR);
+        response.setStatus(400);
         return result;
     }
 
@@ -71,17 +73,24 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = ValidateException.class)
     public Result<String> validateException(HttpServletResponse response, ValidateException e) {
         Result<String> result = new Result<>();
-        response.setStatus(200);
+        response.setStatus(400);
         result.setMessage(e.getLocalizedMessage());
         result.setStatus(ErrorCode.PARAM_ERROR);
         return result;
     }
 
+    @ExceptionHandler(value = BizException.class)
+    public Result<Object> bizException(HttpServletResponse response, BizException e) {
+        log.error("bizException", e);
+        response.setStatus(500);
+        return e.getMsg();
+    }
+
     @ExceptionHandler(value = RuntimeException.class)
     public Result<String> runtimeException(HttpServletResponse response, RuntimeException e) {
-        log.error("RuntimeException",e);
+        log.error("RuntimeException", e);
         Result<String> result = new Result<>();
-        response.setStatus(200);
+        response.setStatus(500);
         result.setMessage(e.getMessage());
         result.setStatus(ErrorCode.SYSTEM_ERROR);
         return result;
@@ -89,9 +98,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = Exception.class)
     public Result<String> exception(HttpServletResponse response, Exception e) {
-        log.error("Exception",e);
+        log.error("Exception", e);
         Result<String> result = new Result<>();
-        response.setStatus(200);
+        response.setStatus(500);
         result.setMessage(e.getMessage());
         result.setStatus(ErrorCode.SYSTEM_ERROR);
         return result;

@@ -2,9 +2,11 @@ package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.huanhong.common.units.StrUtils;
@@ -56,15 +58,21 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
     private WarehouseManagementMapper warehouseManagementMapper;
     @Resource
     private InventoryInformationMapper inventoryInformationMapper;
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Result importProcurementPlans(List<Integer> procurementPlanIds) {
-        if(CollectionUtil.isEmpty(procurementPlanIds)){
+        if (CollectionUtil.isEmpty(procurementPlanIds)) {
             return Result.failure("请选择采购计划");
         }
         List<ProcurementPlan> procurementPlans = procurementPlanMapper.selectBatchIds(procurementPlanIds);
-        if(CollectionUtil.isEmpty(procurementPlans)){
+        if (CollectionUtil.isEmpty(procurementPlans)) {
             return Result.failure("采购计划不存在或已被删除");
+        }
+        for (ProcurementPlan procurementPlan : procurementPlans) {
+            if (procurementPlan.getIsImported() == 1) {
+                return Result.failure(400, StrUtil.format("采购计划单号：{},已被导入，不可重复导入", procurementPlan.getPlanNumber()));
+            }
         }
         // 合并采购计划主表数据到平衡利库
         BalanceLibrary balanceLibrary = new BalanceLibrary();
@@ -73,7 +81,7 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
         // likeRigh: BL+XXXXXXXX(当前年月日)
         String today = DateUtil.date().toString("yyyyMMdd");
         BalanceLibrary balanceLibrary1 = this.baseMapper.selectOne(Wrappers.<BalanceLibrary>lambdaQuery()
-                .likeRight(BalanceLibrary::getBalanceLibraryNo,"BL"+today).orderByDesc(BalanceLibrary::getId).last("limit 1"));
+                .likeRight(BalanceLibrary::getBalanceLibraryNo, "BL" + today).orderByDesc(BalanceLibrary::getId).last("limit 1"));
         //目前最大的单据编码
         String maxDocNum = null;
         if (ObjectUtil.isNotEmpty(balanceLibrary1)) {
@@ -94,7 +102,7 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
         List<String> procurementNos = new ArrayList<>();
         List<String> materialUse = new ArrayList<>();
         List<String> planner = new ArrayList<>();
-        procurementPlans.forEach(pp->{
+        procurementPlans.forEach(pp -> {
             procurementNos.add(pp.getPlanNumber());
             materialUse.add(pp.getMaterialUse());
             planner.add(pp.getPlanner());
@@ -109,40 +117,40 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
         balanceLibrary.setDemandDepartment(pp.getDemandDepartment());
         balanceLibrary.setPlanClassification(pp.getPlanClassification());
         int flag = this.baseMapper.insert(balanceLibrary);
-        if(flag < 1){
+        if (flag < 1) {
             throw new RuntimeException("创建平衡利库主表失败");
         }
         // 处理明细数据
         List<ProcurementPlanDetails> procurementPlanDetails = procurementPlanDetailsService.list(Wrappers.<ProcurementPlanDetails>lambdaQuery()
-        .in(ProcurementPlanDetails::getPlanNumber,procurementNos));
+                .in(ProcurementPlanDetails::getPlanNumber, procurementNos));
         List<BalanceLibraryDetail> balanceLibraryDetails = new ArrayList<>();
 
         String finalNo = no;
-        procurementPlanDetails.forEach(ppd->{
-            Optional<BalanceLibraryDetail> optionalBalanceLibraryDetail =  balanceLibraryDetails.stream().filter(bld->bld.getMaterialCoding().equals(ppd.getMaterialCoding())).findFirst();
-            if(optionalBalanceLibraryDetail.isPresent()){
+        procurementPlanDetails.forEach(ppd -> {
+            Optional<BalanceLibraryDetail> optionalBalanceLibraryDetail = balanceLibraryDetails.stream().filter(bld -> bld.getMaterialCoding().equals(ppd.getMaterialCoding())).findFirst();
+            if (optionalBalanceLibraryDetail.isPresent()) {
                 BalanceLibraryDetail balanceLibraryDetail = optionalBalanceLibraryDetail.get();
-                balanceLibraryDetail.setApprovedQuantity(NumberUtil.add(balanceLibraryDetail.getApprovedQuantity(),ppd.getApprovedQuantity()));
-                balanceLibraryDetail.setRequiredQuantity(NumberUtil.add(balanceLibraryDetail.getRequiredQuantity(),ppd.getRequiredQuantity()));
-                balanceLibraryDetail.setPlannedPurchaseQuantity(NumberUtil.add(balanceLibraryDetail.getPlannedPurchaseQuantity(),ppd.getPlannedPurchaseQuantity()));
-            }else{
+                balanceLibraryDetail.setApprovedQuantity(NumberUtil.add(balanceLibraryDetail.getApprovedQuantity(), ppd.getApprovedQuantity()));
+                balanceLibraryDetail.setRequiredQuantity(NumberUtil.add(balanceLibraryDetail.getRequiredQuantity(), ppd.getRequiredQuantity()));
+                balanceLibraryDetail.setPlannedPurchaseQuantity(NumberUtil.add(balanceLibraryDetail.getPlannedPurchaseQuantity(), ppd.getPlannedPurchaseQuantity()));
+            } else {
                 BalanceLibraryDetail balanceLibraryDetail = new BalanceLibraryDetail();
-                BeanUtil.copyProperties(ppd,balanceLibraryDetail);
+                BeanUtil.copyProperties(ppd, balanceLibraryDetail);
                 balanceLibraryDetail.setBalanceLibraryNo(finalNo);
                 balanceLibraryDetails.add(balanceLibraryDetail);
             }
 
         });
         boolean b = balanceLibraryDetailService.saveBatch(balanceLibraryDetails);
-        if(!b){
+        if (!b) {
             throw new RuntimeException("平衡利库明细表数据保存失败");
         }
         // 更新采购计划状态为已导入
         ProcurementPlan procurementPlan = new ProcurementPlan();
         procurementPlan.setIsImported(1);
         procurementPlan.setDocumentNumberImported(no);
-        procurementPlanMapper.update(procurementPlan,Wrappers.<ProcurementPlan>lambdaUpdate()
-        .in(ProcurementPlan::getId,procurementPlanIds));
+        procurementPlanMapper.update(procurementPlan, Wrappers.<ProcurementPlan>lambdaUpdate()
+                .in(ProcurementPlan::getId, procurementPlanIds));
         // 返回平衡利库详情
         return detail(balanceLibrary.getId());
     }
@@ -150,61 +158,61 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
     @Override
     public Result detail(Integer id) {
         BalanceLibrary balanceLibrary = this.baseMapper.selectById(id);
-        if(null == balanceLibrary){
+        if (null == balanceLibrary) {
             return Result.failure("该平衡利库不存在或已被删除");
         }
         // 获取其他的仓库
         List<WarehouseManagement> warehouseManagements = warehouseManagementMapper.selectList(Wrappers.<WarehouseManagement>lambdaQuery()
-                .ne(WarehouseManagement::getWarehouseId,balanceLibrary.getTargetWarehouse()));
+                .ne(WarehouseManagement::getWarehouseId, balanceLibrary.getTargetWarehouse()));
 
         BalanceLibraryVo balanceLibraryVo = new BalanceLibraryVo();
-        BeanUtil.copyProperties(balanceLibrary,balanceLibraryVo);
+        BeanUtil.copyProperties(balanceLibrary, balanceLibraryVo);
         List<BalanceLibraryDetail> balanceLibraryDetails = balanceLibraryDetailService.list(Wrappers.<BalanceLibraryDetail>lambdaQuery()
-        .eq(BalanceLibraryDetail::getBalanceLibraryNo,balanceLibrary.getBalanceLibraryNo()));
+                .eq(BalanceLibraryDetail::getBalanceLibraryNo, balanceLibrary.getBalanceLibraryNo()));
         List<BalanceLibraryDetailVo> balanceLibraryDetailVos = new ArrayList<>();
-        balanceLibraryDetails.forEach(bld->{
+        balanceLibraryDetails.forEach(bld -> {
             BalanceLibraryDetailVo balanceLibraryDetailVo = new BalanceLibraryDetailVo();
-            BeanUtil.copyProperties(bld,balanceLibraryDetailVo);
+            BeanUtil.copyProperties(bld, balanceLibraryDetailVo);
             double sumCalibrationQuantity = 0D;
             double sumPreCalibrationQuantity = 0D;
             List<BalanceLibraryRecordVo> recordVos = new ArrayList<>();
             List<BalanceLibraryRecord> rs = balanceLibraryRecordService.list(Wrappers.<BalanceLibraryRecord>lambdaQuery()
-            .eq(BalanceLibraryRecord::getBalanceLibraryDetailId,bld.getId()));
-            if(CollectionUtil.isNotEmpty(rs)){
-               sumCalibrationQuantity  =  rs.stream().map(r->NumberUtil.add(r.getCalibrationQuantity(),r.getCalibrationQuantity2(),r.getCalibrationQuantity3()))
-                        .reduce(new BigDecimal("0"),NumberUtil::add).doubleValue();
-                sumPreCalibrationQuantity  =  rs.stream().map(r->NumberUtil.add(r.getPreCalibrationQuantity(),r.getPreCalibrationQuantity2(),r.getPreCalibrationQuantity3()))
-                        .reduce(new BigDecimal("0"),NumberUtil::add).doubleValue();
+                    .eq(BalanceLibraryRecord::getBalanceLibraryDetailId, bld.getId()));
+            if (CollectionUtil.isNotEmpty(rs)) {
+                sumCalibrationQuantity = rs.stream().map(r -> NumberUtil.add(r.getCalibrationQuantity(), r.getCalibrationQuantity2(), r.getCalibrationQuantity3()))
+                        .reduce(new BigDecimal("0"), NumberUtil::add).doubleValue();
+                sumPreCalibrationQuantity = rs.stream().map(r -> NumberUtil.add(r.getPreCalibrationQuantity(), r.getPreCalibrationQuantity2(), r.getPreCalibrationQuantity3()))
+                        .reduce(new BigDecimal("0"), NumberUtil::add).doubleValue();
                 //已有调拨操作
-                warehouseManagements.forEach(wm->{
+                warehouseManagements.forEach(wm -> {
                     BalanceLibraryRecordVo recordVo = new BalanceLibraryRecordVo();
-                    Optional<BalanceLibraryRecord> optionalBalanceLibraryRecord = rs.stream().filter(r->r.getOutWarehouseId().equals(wm.getWarehouseId()))
+                    Optional<BalanceLibraryRecord> optionalBalanceLibraryRecord = rs.stream().filter(r -> r.getOutWarehouseId().equals(wm.getWarehouseId()))
                             .findFirst();
-                    if(optionalBalanceLibraryRecord.isPresent()){
+                    if (optionalBalanceLibraryRecord.isPresent()) {
                         BalanceLibraryRecord balanceLibraryRecord = optionalBalanceLibraryRecord.get();
-                        BeanUtil.copyProperties(balanceLibraryRecord,recordVo);
+                        BeanUtil.copyProperties(balanceLibraryRecord, recordVo);
                     }
                     recordVo.setOutWarehouseId(wm.getWarehouseId());
                     recordVo.setOutWarehouse(wm.getWarehouseName());
-                    Double inventoryCredit = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(),bld.getMaterialCoding());
+                    Double inventoryCredit = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(), bld.getMaterialCoding());
                     recordVo.setInventoryCredit(inventoryCredit);
                     recordVos.add(recordVo);
                 });
 
-            }else{
-               // 统计每个仓库该物料的库存
-                warehouseManagements.forEach(wm->{
+            } else {
+                // 统计每个仓库该物料的库存
+                warehouseManagements.forEach(wm -> {
                     BalanceLibraryRecordVo recordVo = new BalanceLibraryRecordVo();
                     recordVo.setOutWarehouseId(wm.getWarehouseId());
                     recordVo.setOutWarehouse(wm.getWarehouseName());
-                    Double inventoryCredit = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(),bld.getMaterialCoding());
+                    Double inventoryCredit = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(), bld.getMaterialCoding());
                     recordVo.setInventoryCredit(inventoryCredit);
                     recordVos.add(recordVo);
                 });
             }
             balanceLibraryDetailVo.setSumCalibrationQuantity(sumCalibrationQuantity);
             balanceLibraryDetailVo.setSumPreCalibrationQuantity(sumPreCalibrationQuantity);
-            balanceLibraryDetailVo.setPurchasedQuantity(NumberUtil.sub(bld.getApprovedQuantity().doubleValue(),sumCalibrationQuantity));
+            balanceLibraryDetailVo.setPurchasedQuantity(NumberUtil.sub(Convert.toDouble(bld.getApprovedQuantity(), 0D).doubleValue(), sumCalibrationQuantity));
             balanceLibraryDetailVo.setRecords(recordVos);
             balanceLibraryDetailVos.add(balanceLibraryDetailVo);
         });

@@ -79,18 +79,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = RuntimeException.class)
     public Result<String> runtimeException(HttpServletResponse response, RuntimeException e) {
+        log.error("RuntimeException",e);
         Result<String> result = new Result<>();
         response.setStatus(200);
-        result.setMessage(e.getLocalizedMessage());
+        result.setMessage(e.getMessage());
         result.setStatus(ErrorCode.SYSTEM_ERROR);
         return result;
     }
 
     @ExceptionHandler(value = Exception.class)
     public Result<String> exception(HttpServletResponse response, Exception e) {
+        log.error("Exception",e);
         Result<String> result = new Result<>();
         response.setStatus(200);
-        result.setMessage(e.getLocalizedMessage());
+        result.setMessage(e.getMessage());
         result.setStatus(ErrorCode.SYSTEM_ERROR);
         return result;
     }

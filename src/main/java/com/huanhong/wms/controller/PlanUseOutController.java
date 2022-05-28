@@ -430,7 +430,7 @@ public class PlanUseOutController extends BaseController {
      */
     @ApiOperationSupport(order = 12)
     @ApiOperation(value = "物料编码和物料名称模糊查询信息及库存-区分出库类型")
-    @GetMapping("/pagingFuzzyQueryByMaterialCodingOfrName")
+    @GetMapping("/pagingFuzzyQueryByMaterialCodingOrName")
     public Result page(PdaMaterialVO pdaMaterialVO
     ) {
         try {

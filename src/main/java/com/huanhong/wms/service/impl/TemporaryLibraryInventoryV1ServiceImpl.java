@@ -104,19 +104,19 @@ public class TemporaryLibraryInventoryV1ServiceImpl implements TemporaryLibraryI
         TemporaryLibraryInventory temporaryLibraryInventory = (TemporaryLibraryInventory) resultInventory.getData();
         log.info("新增临时清点主表数据为:{}", JsonUtil.obj2String(temporaryLibraryInventory));
         //查询仓库对应的管理员信息
-        List<WarehouseManager> warehouseManagers = selectWarehouseManager(temporaryLibraryInventory.getWarehouseId());
-        log.info("获取管理对应的库管数据为:{}", JsonUtil.obj2String(warehouseManagers));
+        //List<WarehouseManager> warehouseManagers = selectWarehouseManager(temporaryLibraryInventory.getWarehouseId());
+        //log.info("获取管理对应的库管数据为:{}", JsonUtil.obj2String(warehouseManagers));
         //添加临时清点入库主表信息
-        TemporaryEnterWarehouse temporaryEnterWarehouse = addTemporaryEnterWarehouse(temporaryLibraryInventory, warehouseManagers);
+        //TemporaryEnterWarehouse temporaryEnterWarehouse = addTemporaryEnterWarehouse(temporaryLibraryInventory, warehouseManagers);
         //添加临时入库子表数据
-        addTemporaryEnterWarehouseDetail(addTemporaryLibraryInventoryAndDetailsDTO.getAddTemporaryLibraryInventoryDetailsDTOList(), temporaryEnterWarehouse);
+        //addTemporaryEnterWarehouseDetail(addTemporaryLibraryInventoryAndDetailsDTO.getAddTemporaryLibraryInventoryDetailsDTOList(), temporaryEnterWarehouse);
         //添加临时清点子表信息
         List<AddTemporaryLibraryInventoryDetailsDTO> addTemporaryLibraryInventoryDetailsDTOList = addTemporaryLibraryInventoryAndDetailsDTO.getAddTemporaryLibraryInventoryDetailsDTOList();
         addTemporaryLibraryInventoryDetailsDTOList.forEach(details -> {
             details.setDocumentNumber(temporaryLibraryInventory.getDocumentNumber());
         });
         //新增出入库流水表
-        addTemporaryRecord(data.getPlanNumber(),temporaryEnterWarehouse,addTemporaryLibraryInventoryDetailsDTOList,warehouseManagers);
+        //addTemporaryRecord(data.getPlanNumber(),temporaryEnterWarehouse,addTemporaryLibraryInventoryDetailsDTOList,warehouseManagers);
         return temporaryLibraryInventoryDetailsService.addInventoryDocumentDetailsList(addTemporaryLibraryInventoryDetailsDTOList);
     }
 
@@ -124,10 +124,10 @@ public class TemporaryLibraryInventoryV1ServiceImpl implements TemporaryLibraryI
      * 入库
      * @param planNumber 需求编号
      * @param temporaryEnterWarehouse 入库主表数据
-     * @param addTemporaryLibraryInventoryDetailsDTOList 入库子表数据
+     * @param temporaryLibraryInventoryDetails 入库子表数据
      * @param warehouseManagers 仓库管理数据
      */
-    private void addTemporaryRecord(String planNumber, TemporaryEnterWarehouse temporaryEnterWarehouse, List<AddTemporaryLibraryInventoryDetailsDTO> addTemporaryLibraryInventoryDetailsDTOList,List<WarehouseManager> warehouseManagers) {
+    private void addTemporaryRecord(String planNumber, TemporaryEnterWarehouse temporaryEnterWarehouse, List<TemporaryLibraryInventoryDetails> temporaryLibraryInventoryDetails,List<WarehouseManager> warehouseManagers) {
         TemporaryRecord temporaryRecord = new TemporaryRecord();
         temporaryRecord.setRequirementsPlanningNumber(planNumber);
         temporaryRecord.setNumber(temporaryEnterWarehouse.getEnterNumber());
@@ -144,7 +144,7 @@ public class TemporaryLibraryInventoryV1ServiceImpl implements TemporaryLibraryI
         temporaryRecordMapper.insert(temporaryRecord);
         Integer relevanceId = temporaryRecord.getId();
         //添加子表数据
-        addTemporaryLibraryInventoryDetailsDTOList.forEach(details->{
+        temporaryLibraryInventoryDetails.forEach(details->{
             TemporaryRecordDetails temporaryRecordDetails = new TemporaryRecordDetails();
             temporaryRecordDetails.setRelevanceId(relevanceId);
             temporaryRecordDetails.setWarehouseId(details.getWarehouseId());
@@ -173,17 +173,40 @@ public class TemporaryLibraryInventoryV1ServiceImpl implements TemporaryLibraryI
             throw new BizException("临时清单数据不存在");
         }
         temporaryLibraryInventoryMapper.updateById(temporaryLibraryInventory);
-        //修改临时入库表
-        String enterNumber = updateTemporaryEnterWarehouse(temporaryLibraryInventory);
         List<TemporaryLibraryInventoryDetails> temporaryLibraryInventoryDetails = update.getTemporaryLibraryInventoryDetails();
-        //修改临时入库子表数据
-        updateTemporaryEnterWarehouseDetails(temporaryLibraryInventoryDetails, enterNumber);
-        //修改临时清单子表数据
         temporaryLibraryInventoryDetails.forEach(details -> {
             temporaryLibraryInventoryDetailsMapper.updateById(details);
         });
+        //查询仓库对应的管理员信息
+        List<WarehouseManager> warehouseManagers = selectWarehouseManager(temporaryLibraryInventory.getWarehouseId());
+        log.info("获取管理对应的库管数据为:{}", JsonUtil.obj2String(warehouseManagers));
+        //添加临时清点入库主表信息
+        TemporaryEnterWarehouse temporaryEnterWarehouse = addTemporaryEnterWarehouse(temporaryLibraryInventory, warehouseManagers);
+        //添加临时入库子表数据
+        List<TemporaryEnterWarehouseDetails> temporaryEnterWarehouseDetails = addSublist(update.getTemporaryLibraryInventoryDetails(),temporaryEnterWarehouse);
+        //添加入库记录表主表
+        addTemporaryRecord(temporaryLibraryInventory.getPlanNumber(),temporaryEnterWarehouse,temporaryLibraryInventoryDetails,warehouseManagers);
+        //        //修改临时入库表
+//        String enterNumber = updateTemporaryEnterWarehouse(temporaryLibraryInventory);
+//        List<TemporaryLibraryInventoryDetails> temporaryLibraryInventoryDetails = update.getTemporaryLibraryInventoryDetails();
+//        //修改临时入库子表数据
+//        updateTemporaryEnterWarehouseDetails(temporaryLibraryInventoryDetails, enterNumber);
+//        //修改临时清单子表数据
+//        temporaryLibraryInventoryDetails.forEach(details -> {
+//            temporaryLibraryInventoryDetailsMapper.updateById(details);
+//        });
         return Result.success("修改成功");
     }
+
+    private List<TemporaryEnterWarehouseDetails> addSublist(List<TemporaryLibraryInventoryDetails> temporaryLibraryInventoryDetails, TemporaryEnterWarehouse temporaryEnterWarehouse) {
+        List<TemporaryEnterWarehouseDetails> temporaryEnterWarehouseDetails = BeanUtil.copyToList(temporaryLibraryInventoryDetails, TemporaryEnterWarehouseDetails.class);
+        temporaryEnterWarehouseDetails.forEach(details -> {
+            details.setEnterNumber(temporaryEnterWarehouse.getEnterNumber());
+            temporaryEnterWarehouseDetailsMapper.insert(details);
+        });
+        return temporaryEnterWarehouseDetails;
+    }
+
 
     @Override
     public Result selectById(Long id) {

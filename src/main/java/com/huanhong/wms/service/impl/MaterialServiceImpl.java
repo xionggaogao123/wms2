@@ -107,7 +107,6 @@ public class MaterialServiceImpl extends SuperServiceImpl<MaterialMapper, Materi
             wrapper.eq("material_coding", list.getMaterialCoding());
             wrapper.eq("material_name", list.getMaterialName());
             List<InventoryInformation> inventoryInformation = inventoryInformationMapper.selectList(wrapper);
-            int size = inventoryInformation.size();
             //所有批次总数量
             AtomicDouble atomicDouble = new AtomicDouble();
             AtomicDouble amount = new AtomicDouble();

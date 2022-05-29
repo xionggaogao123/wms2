@@ -73,10 +73,10 @@ public class BalanceLibraryRecordServiceImpl extends SuperServiceImpl<BalanceLib
         }
         // 查询该明细下是否有待审批的调拨，如果有的话不可以再次调拨，需审批通过才可以
         int count = this.baseMapper.selectCount(Wrappers.lambdaQuery(new BalanceLibraryRecord())
-                .eq(BalanceLibraryRecord::getBalanceLibraryDetailId, balanceLibraryDetailId).and(wrapper-> wrapper.ne(BalanceLibraryRecord::getCalibrationStatus, 3).or()
+                .eq(BalanceLibraryRecord::getBalanceLibraryDetailId, balanceLibraryDetailId).and(wrapper -> wrapper.ne(BalanceLibraryRecord::getCalibrationStatus, 3).or()
                         .ne(BalanceLibraryRecord::getCalibrationStatus2, 3).or()
                         .ne(BalanceLibraryRecord::getCalibrationStatus3, 3))
-                );
+        );
         if (count > 0) {
             return Result.failure("存在不是审批生效的调拨计划，请等待审批通过后再操作");
         }
@@ -144,8 +144,8 @@ public class BalanceLibraryRecordServiceImpl extends SuperServiceImpl<BalanceLib
                 balanceLibraryRecord.setPlanNo3(planNo);
                 balanceLibraryRecord.setCalibrationStatus3(1);
             }
-            int flag = this.baseMapper.insert(balanceLibraryRecord);
-            if (flag < 1) {
+            boolean flag = saveOrUpdate(balanceLibraryRecord);
+            if (!flag) {
                 throw new BizException("平衡利库操作记录保存失败，请稍后重试");
             }
             AllocationPlan allocationPlan = (AllocationPlan) r.getData();

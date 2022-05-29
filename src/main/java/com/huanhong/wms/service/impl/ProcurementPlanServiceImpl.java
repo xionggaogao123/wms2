@@ -1,13 +1,12 @@
 package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.huanhong.common.units.StrUtils;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
@@ -159,18 +158,18 @@ public class ProcurementPlanServiceImpl extends SuperServiceImpl<ProcurementPlan
             } else {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "新增失败！");
             }
-        }catch (Exception e){
-            log.error("新增采购计划单异常",e);
-            return Result.failure(ErrorCode.SYSTEM_ERROR,"系统异常！");
+        } catch (Exception e) {
+            log.error("新增采购计划单异常", e);
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常！");
         }
     }
 
     @Override
     public Result updateProcurementPlan(UpdateProcurementPlanDTO updateProcurementPlanDTO) {
         ProcurementPlan procurementPlanOld = getProcurementPlanById(updateProcurementPlanDTO.getId());
-        BeanUtil.copyProperties(updateProcurementPlanDTO,procurementPlanOld);
+        BeanUtil.copyProperties(updateProcurementPlanDTO, procurementPlanOld);
         int update = procurementPlanMapper.updateById(procurementPlanOld);
-        return update>0 ? Result.success():Result.failure("更新失败！");
+        return update > 0 ? Result.success() : Result.failure("更新失败！");
     }
 
     @Override
@@ -181,15 +180,15 @@ public class ProcurementPlanServiceImpl extends SuperServiceImpl<ProcurementPlan
     @Override
     public ProcurementPlan getProcurementPlanByDocNumAndWarehouseId(String DocNum, String warehouseId) {
         QueryWrapper<ProcurementPlan> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("plan_number",DocNum);
-        queryWrapper.eq("warehouse_id",warehouseId);
+        queryWrapper.eq("plan_number", DocNum);
+        queryWrapper.eq("warehouse_id", warehouseId);
         return procurementPlanMapper.selectOne(queryWrapper);
     }
 
     @Override
     public ProcurementPlan getProcurementPlanByProcessInstanceId(String processInstanceId) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq("process_instance_id",processInstanceId);
+        queryWrapper.eq("process_instance_id", processInstanceId);
         ProcurementPlan procurementPlan = procurementPlanMapper.selectOne(queryWrapper);
         return procurementPlan;
     }
@@ -222,7 +221,7 @@ public class ProcurementPlanServiceImpl extends SuperServiceImpl<ProcurementPlan
         ProcurementPlan procurementPlan = (ProcurementPlan) result.getData();
         String docNum = procurementPlan.getPlanNumber();
         String warehouseId = procurementPlan.getWarehouseId();
-        if (ObjectUtil.isNotNull(addProcurementPlanDetailsDTOList)){
+        if (ObjectUtil.isNotNull(addProcurementPlanDetailsDTOList)) {
             for (AddProcurementPlanDetailsDTO addProcurementPlanDetailsDTO : addProcurementPlanDetailsDTOList) {
                 addProcurementPlanDetailsDTO.setPlanNumber(docNum);
                 addProcurementPlanDetailsDTO.setWarehouseId(warehouseId);
@@ -230,5 +229,16 @@ public class ProcurementPlanServiceImpl extends SuperServiceImpl<ProcurementPlan
             procurementPlanDetailsService.addProcurementPlanDetails(addProcurementPlanDetailsDTOList);
         }
         return result;
+    }
+
+    @Override
+    public Result<Integer> updateIsImportedByPlanNumbers(Integer isImported, String documentNumberImported, String[] planNumbers, Integer detailId) {
+        ProcurementPlan procurementPlan = new ProcurementPlan();
+        procurementPlan.setIsImported(isImported);
+        procurementPlan.setDocumentNumberImported(documentNumberImported);
+        procurementPlan.setBalanceLibraryNo(documentNumberImported);
+        procurementPlan.setBalanceLibraryDetailId(detailId);
+        Integer i = this.procurementPlanMapper.update(procurementPlan, Wrappers.<ProcurementPlan>lambdaUpdate().in(ProcurementPlan::getPlanNumber, planNumbers));
+        return Result.success(i);
     }
 }

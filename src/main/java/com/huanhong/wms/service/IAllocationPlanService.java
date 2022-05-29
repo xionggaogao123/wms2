@@ -13,6 +13,7 @@ import com.huanhong.wms.entity.vo.AllocationPlanVO;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  * <p>
@@ -92,4 +93,7 @@ public interface IAllocationPlanService extends SuperService<AllocationPlan> {
 
     Result add(AddAllocationPlanAndDetailsDTO addAllocationPlanAndDetailsDTO);
 
+    Result delete(Integer id);
+
+    Result deleteByPlanNos(List<String> planNos);
 }

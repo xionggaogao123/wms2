@@ -68,7 +68,7 @@ public class BalanceLibraryController extends BaseController {
     @ApiOperation(value = "删除平衡利库表", notes = "生成代码")
     @DeleteMapping("/{id}")
     public Result delete(@PathVariable Integer id) {
-        return render(balanceLibraryService.removeById(id));
+        return balanceLibraryService.delete(id);
     }
 
 

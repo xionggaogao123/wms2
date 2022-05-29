@@ -71,4 +71,6 @@ public interface IProcurementPlanService extends SuperService<ProcurementPlan> {
     Result<Object> getMaterialPurchasingAnalysisOnYearBasis(MaterialYearParam param);
 
     Result add(AddProcurementPlanAndDetailsDTO addProcurementPlanAndDetailsDTO);
+
+    Result<Integer> updateIsImportedByPlanNumbers(Integer isImported, String documentNumberImported, String[] planNumbers, Integer detailId);
 }

@@ -52,8 +52,8 @@ public class AllocationPlanController extends BaseController {
     private IOutboundRecordService outboundRecordService;
 
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "current", value = "当前页码"),
-        @ApiImplicitParam(name = "size", value = "每页行数")
+            @ApiImplicitParam(name = "current", value = "当前页码"),
+            @ApiImplicitParam(name = "size", value = "每页行数")
     })
     @ApiOperationSupport(order = 1)
     @ApiOperation(value = "分页查询调拨计划主表", notes = "生成代码")
@@ -61,7 +61,7 @@ public class AllocationPlanController extends BaseController {
     public Result<Page<AllocationPlan>> page(@RequestParam(defaultValue = "1") Integer current,
                                              @RequestParam(defaultValue = "10") Integer size,
                                              AllocationPlanVO allocationPlanVO
-                                             ) {
+    ) {
         try {
             //调用服务层方法，传入page对象和查询条件对象
             Page<AllocationPlan> pageResult = allocationPlanService.pageFuzzyQuery(new Page<>(current, size), allocationPlanVO);
@@ -73,53 +73,39 @@ public class AllocationPlanController extends BaseController {
             log.error("分页查询异常", e);
             return Result.failure("查询失败--系统异常，请联系管理员");
         }
-        }
+    }
 
-        @ApiOperationSupport(order = 2)
-        @ApiOperation(value = "添加调拨计划主表")
-        @PostMapping("/add")
-        public Result add(@Valid @RequestBody AddAllocationPlanAndDetailsDTO addAllocationPlanAndDetailsDTO) {
-                return allocationPlanService.add(addAllocationPlanAndDetailsDTO);
-        }
+    @ApiOperationSupport(order = 2)
+    @ApiOperation(value = "添加调拨计划主表")
+    @PostMapping("/add")
+    public Result add(@Valid @RequestBody AddAllocationPlanAndDetailsDTO addAllocationPlanAndDetailsDTO) {
+        return allocationPlanService.add(addAllocationPlanAndDetailsDTO);
+    }
 
-        @ApiOperationSupport(order = 3)
-        @ApiOperation(value = "更新调拨计划主表及明细")
-        @PutMapping("/update")
-        public Result update(@Valid @RequestBody UpdateAllocationPlanAndDetailsDTO updateAllocationPlanAndDetailsDTO) {
-            try {
-                UpdateAllocationPlanDTO updateAllocationPlanDTO = updateAllocationPlanAndDetailsDTO.getUpdateAllocationPlanDTO();
-                List<UpdateAllocationPlanDetailDTO> updateAllocationPlanDetailDTOList = updateAllocationPlanAndDetailsDTO.getUpdateAllocationPlanDetailDTOList();
-                Result result = allocationPlanService.updateAllocationPlan(updateAllocationPlanDTO);
-                if (!result.isOk()) {
-                    return Result.failure("更新调拨计划单失败！");
-                }
-                return allocationPlanDetailService.updateAllocationPlanDetails(updateAllocationPlanDetailDTOList);
-            } catch (Exception e) {
-                log.error("更新调拨计划单失败");
-                return Result.failure("系统异常：更新调拨计划失败!");
+    @ApiOperationSupport(order = 3)
+    @ApiOperation(value = "更新调拨计划主表及明细")
+    @PutMapping("/update")
+    public Result update(@Valid @RequestBody UpdateAllocationPlanAndDetailsDTO updateAllocationPlanAndDetailsDTO) {
+        try {
+            UpdateAllocationPlanDTO updateAllocationPlanDTO = updateAllocationPlanAndDetailsDTO.getUpdateAllocationPlanDTO();
+            List<UpdateAllocationPlanDetailDTO> updateAllocationPlanDetailDTOList = updateAllocationPlanAndDetailsDTO.getUpdateAllocationPlanDetailDTOList();
+            Result result = allocationPlanService.updateAllocationPlan(updateAllocationPlanDTO);
+            if (!result.isOk()) {
+                return Result.failure("更新调拨计划单失败！");
             }
+            return allocationPlanDetailService.updateAllocationPlanDetails(updateAllocationPlanDetailDTOList);
+        } catch (Exception e) {
+            log.error("更新调拨计划单失败");
+            return Result.failure("系统异常：更新调拨计划失败!");
         }
+    }
 
-        @ApiOperationSupport(order = 4)
-        @ApiOperation(value = "删除调拨计划主表", notes = "生成代码")
-        @DeleteMapping("/{id}")
-        public Result delete(@PathVariable Integer id) {
-            AllocationPlan allocationPlan = allocationPlanService.getAllocationPlanById(id);
-            if (ObjectUtil.isNull(allocationPlan)){
-                return Result.failure("单据不存在！");
-            }
-            boolean delete = allocationPlanService.removeById(id);
-            //主表删除成功,删除明细
-            if (delete){
-                String docNum = allocationPlan.getAllocationNumber();
-                List<AllocationPlanDetail> allocationPlanDetailsList = allocationPlanDetailService.getAllocationPlanDetailsListByDocNum(docNum);
-                for (AllocationPlanDetail allocationPlanDetail:allocationPlanDetailsList
-                ) {
-                    allocationPlanDetailService.removeById(allocationPlanDetail.getId());
-                }
-            }
-            return Result.success("删除成功");
-        }
+    @ApiOperationSupport(order = 4)
+    @ApiOperation(value = "删除调拨计划主表", notes = "生成代码")
+    @DeleteMapping("/{id}")
+    public Result delete(@PathVariable Integer id) {
+        return allocationPlanService.delete(id);
+    }
 
     @ApiOperationSupport(order = 5)
     @ApiOperation(value = "根据ID获取调拨计划表及其明细")
@@ -184,8 +170,8 @@ public class AllocationPlanController extends BaseController {
                 jsonResult.put("details", entityUtils.jsonField("allocationPlan", new AllocationPlanDetail()));
                 jsonResult.put("mainValue", allocationPlan);
                 jsonResult.put("detailsValue", allocationPlanDetails);
-                jsonResult.put("mainKey","updateAllocationOutDTO");
-                jsonResult.put("detailKey","updateAllocationOutDetailsDTOS");
+                jsonResult.put("mainKey", "updateAllocationOutDTO");
+                jsonResult.put("detailKey", "updateAllocationOutDetailsDTOS");
                 jsonResult.put("mainUpdate", "/wms/api/v1/allocation-plan/update");
                 jsonResult.put("detailsUpdate", "/wms/api/v1/allocation-plan-detail/update");
                 jsonResult.put("missionCompleted", "/wms/api/v1/allocation-plan/missionCompleted");
@@ -289,7 +275,6 @@ public class AllocationPlanController extends BaseController {
     }
 
 
-
     private void updateOutboundRecordAndInventory(AllocationPlan allocationPlan) {
 
     }
@@ -311,7 +296,7 @@ public class AllocationPlanController extends BaseController {
             if (ObjectUtil.isNotEmpty(allocationPlanDetailsList)) {
                 for (AllocationPlanDetail allocationPlanDetail : allocationPlanDetailsList
                 ) {
-                    BigDecimal nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndBatchAndWarehouseId(allocationPlanDetail.getMaterialCoding(),allocationPlanDetail.getBatch(), allocationPlan.getSendWarehouse()));
+                    BigDecimal nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndBatchAndWarehouseId(allocationPlanDetail.getMaterialCoding(), allocationPlanDetail.getBatch(), allocationPlan.getSendWarehouse()));
                     BigDecimal planNum = BigDecimal.valueOf(allocationPlanDetail.getRequestQuantity());
                     int event = nowNum.compareTo(planNum);
                     /**
@@ -321,7 +306,7 @@ public class AllocationPlanController extends BaseController {
                      */
                     if (event >= 0) {
                         BigDecimal tempNum = planNum;
-                        List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndBatchAndWarehouseId(allocationPlanDetail.getMaterialCoding(), allocationPlanDetail.getBatch(),allocationPlan.getSendWarehouse());
+                        List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndBatchAndWarehouseId(allocationPlanDetail.getMaterialCoding(), allocationPlanDetail.getBatch(), allocationPlan.getSendWarehouse());
                         for (InventoryInformation inventoryInformation : inventoryInformationList) {
                             /**
                              * 1.将一条库存的数据（编码、批次、货位）中的库存数量放入出库记录的出库数量中：库存数量更新为零，出库数量新增一条数据
@@ -405,11 +390,6 @@ public class AllocationPlanController extends BaseController {
             return Result.failure("新增出库记录或更新库存异常");
         }
     }
-
-
-
-
-
 
 
 }

@@ -1,10 +1,12 @@
 package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.common.units.DataUtil;
 import com.huanhong.common.units.StrUtils;
@@ -36,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -62,6 +65,7 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
 
     @Autowired
     private OssProperties ossProperties;
+
     @Override
     public Page<AllocationPlan> pageFuzzyQuery(Page<AllocationPlan> allocationPlanPage, AllocationPlanVO allocationPlanVO) {
 
@@ -82,17 +86,17 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
 
         query.like(ObjectUtil.isNotNull(allocationPlanVO.getBusinessType()), "business_type", allocationPlanVO.getBusinessType());
 
-        query.like(ObjectUtil.isNotNull(allocationPlanVO.getPlanStatus()), "plan_status",allocationPlanVO.getPlanStatus());
+        query.like(ObjectUtil.isNotNull(allocationPlanVO.getPlanStatus()), "plan_status", allocationPlanVO.getPlanStatus());
 
-        query.like(StringUtils.isNotBlank(allocationPlanVO.getSendWarehouse()), "send_warehouse",allocationPlanVO.getSendWarehouse());
+        query.like(StringUtils.isNotBlank(allocationPlanVO.getSendWarehouse()), "send_warehouse", allocationPlanVO.getSendWarehouse());
 
-        query.like(StringUtils.isNotBlank(allocationPlanVO.getReceiveWarehouse()), "receive_warehouse",allocationPlanVO.getReceiveWarehouse());
+        query.like(StringUtils.isNotBlank(allocationPlanVO.getReceiveWarehouse()), "receive_warehouse", allocationPlanVO.getReceiveWarehouse());
 
-        query.like(StringUtils.isNotBlank(allocationPlanVO.getApplicant()), "applicant",allocationPlanVO.getApplicant());
+        query.like(StringUtils.isNotBlank(allocationPlanVO.getApplicant()), "applicant", allocationPlanVO.getApplicant());
 
-        query.like(StringUtils.isNotBlank(allocationPlanVO.getSendUser()),"send_user",allocationPlanVO.getSendUser());
+        query.like(StringUtils.isNotBlank(allocationPlanVO.getSendUser()), "send_user", allocationPlanVO.getSendUser());
 
-        query.like(StringUtils.isNotBlank(allocationPlanVO.getReceiveUser()),"receive_user",allocationPlanVO.getReceiveUser());
+        query.like(StringUtils.isNotBlank(allocationPlanVO.getReceiveUser()), "receive_user", allocationPlanVO.getReceiveUser());
 
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -178,18 +182,18 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
             } else {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "新增失败！");
             }
-        }catch (Exception e){
-            log.error("新增调拨计划单异常",e);
-            return Result.failure(ErrorCode.SYSTEM_ERROR,"系统异常！");
+        } catch (Exception e) {
+            log.error("新增调拨计划单异常", e);
+            return Result.failure(ErrorCode.SYSTEM_ERROR, "系统异常！");
         }
     }
 
     @Override
     public Result updateAllocationPlan(UpdateAllocationPlanDTO updateAllocationPlanDTO) {
         AllocationPlan allocationPlanOld = getAllocationPlanById(updateAllocationPlanDTO.getId());
-        BeanUtil.copyProperties(updateAllocationPlanDTO,allocationPlanOld);
+        BeanUtil.copyProperties(updateAllocationPlanDTO, allocationPlanOld);
         int update = allocationPlanMapper.updateById(allocationPlanOld);
-        return update>0 ? Result.success():Result.failure("更新失败！");
+        return update > 0 ? Result.success() : Result.failure("更新失败！");
     }
 
     @Override
@@ -207,7 +211,7 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
     @Override
     public AllocationPlan getAllocationPlanByProcessInstanceId(String processInstanceId) {
         QueryWrapper<AllocationPlan> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("process_instance_id",processInstanceId);
+        queryWrapper.eq("process_instance_id", processInstanceId);
         return allocationPlanMapper.selectOne(queryWrapper);
     }
 
@@ -222,7 +226,7 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
         if (ObjectUtil.isNotEmpty(allocationPlanDetailsList)) {
             for (AllocationPlanDetail allocationPlanDetail : allocationPlanDetailsList
             ) {
-                BigDecimal nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndBatchAndWarehouseId(allocationPlanDetail.getMaterialCoding(),allocationPlanDetail.getBatch(), allocationPlan.getSendWarehouse()));
+                BigDecimal nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndBatchAndWarehouseId(allocationPlanDetail.getMaterialCoding(), allocationPlanDetail.getBatch(), allocationPlan.getSendWarehouse()));
                 BigDecimal planNum = BigDecimal.valueOf(allocationPlanDetail.getRequestQuantity());
                 int event = nowNum.compareTo(planNum);
                 /**
@@ -232,7 +236,7 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
                  */
                 if (event >= 0) {
                     BigDecimal tempNum = planNum;
-                    List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndBatchAndWarehouseId(allocationPlanDetail.getMaterialCoding(), allocationPlanDetail.getBatch(),allocationPlan.getSendWarehouse());
+                    List<InventoryInformation> inventoryInformationList = inventoryInformationService.getInventoryInformationListByMaterialCodingAndBatchAndWarehouseId(allocationPlanDetail.getMaterialCoding(), allocationPlanDetail.getBatch(), allocationPlan.getSendWarehouse());
                     for (InventoryInformation inventoryInformation : inventoryInformationList) {
                         //留存出库记录
                         AddOutboundRecordDTO addOutboundRecordDTO = new AddOutboundRecordDTO();
@@ -331,10 +335,10 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
         List<AllocationPlanDetail> allocationPlanDetailsList = allocationPlanDetailService
                 .getAllocationPlanDetailsListByDocNum(allocationPlan.getAllocationNumber());
         if (ObjectUtil.isEmpty(allocationPlanDetailsList)) {
-            return  Result.failure("未查询到明细单据信息");
+            return Result.failure("未查询到明细单据信息");
         }
         for (AllocationPlanDetail allocationPlanDetail : allocationPlanDetailsList) {
-            BigDecimal nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndBatchAndWarehouseId(allocationPlanDetail.getMaterialCoding(),allocationPlanDetail.getBatch(), allocationPlan.getSendWarehouse()));
+            BigDecimal nowNum = BigDecimal.valueOf(inventoryInformationService.getNumByMaterialCodingAndBatchAndWarehouseId(allocationPlanDetail.getMaterialCoding(), allocationPlanDetail.getBatch(), allocationPlan.getSendWarehouse()));
             BigDecimal planNum = BigDecimal.valueOf(allocationPlanDetail.getRequestQuantity());
             int event = nowNum.compareTo(planNum);
             /**
@@ -369,7 +373,7 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
                 if (requisitionQuantity.compareTo(approvalsQuantity) != 0) {
                     List<OutboundRecord> outboundRecordList = outboundRecordService.getOutboundRecordListByDocNumAndWarehouseId(docNum, warehousId);
                     Result result = handleOutboundRecordAndInventory(outboundRecordList, allocationPlanDetail.getCalibrationQuantity());
-                    if(!result.isOk()){
+                    if (!result.isOk()) {
                         return result;
                     }
                 }
@@ -409,6 +413,7 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
         ExportExcel.exportExcel(templatePath, ossProperties.getPath() + "temp/", "调拨明细汇总表.xlsx", params, request, response);
 
     }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Result add(AddAllocationPlanAndDetailsDTO addAllocationPlanAndDetailsDTO) {
@@ -420,7 +425,7 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
         }
         AllocationPlan allocationPlan = (AllocationPlan) result.getData();
         String docNum = allocationPlan.getAllocationNumber();
-        if (ObjectUtil.isNotNull(addAllocationPlanDetailDTOList)){
+        if (ObjectUtil.isNotNull(addAllocationPlanDetailDTOList)) {
             for (AddAllocationPlanDetailDTO addAllocationPlanDetailDTO : addAllocationPlanDetailDTOList) {
                 addAllocationPlanDetailDTO.setAllocationNumber(docNum);
             }
@@ -429,12 +434,40 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
         return result;
     }
 
+    @Override
+    public Result delete(Integer id) {
+        AllocationPlan allocationPlan = allocationPlanMapper.selectById(id);
+        if (ObjectUtil.isNull(allocationPlan)) {
+            return Result.failure("单据不存在！");
+        }
+        boolean delete = this.removeById(id);
+        //主表删除成功,删除明细
+        if (delete) {
+            allocationPlanDetailService.removeByPlanNos(Collections.singletonList(allocationPlan.getAllocationNumber()));
+        }
+        return Result.success("删除成功");
+    }
+
+    @Override
+    public Result deleteByPlanNos(List<String> planNos) {
+        List<AllocationPlan> allocationPlans = allocationPlanMapper.selectList(Wrappers.<AllocationPlan>lambdaQuery().in(AllocationPlan::getAllocationNumber, planNos));
+        if (CollectionUtil.isNotEmpty(allocationPlans)) {
+            List<Integer> ids = allocationPlans.stream().map(AllocationPlan::getId).collect(Collectors.toList());
+            boolean delete = this.removeByIds(ids);
+            //主表删除成功,删除明细
+            if (delete) {
+                allocationPlanDetailService.removeByPlanNos(planNos);
+            }
+        }
+        return Result.success("删除成功");
+    }
+
     /**
      * 完整审批时-如果请调数量和准调数量不一致--回滚库存
      * 出库明细单据已更新,需要根据批准数量-应出数量=出库数量回滚部分库存并更新出库记录
      *
      * @param outboundRecordList 需要更新的出库记录
-     * @param newOutQuantity 从请调数量改为准调数量
+     * @param newOutQuantity     从请调数量改为准调数量
      * @return
      */
     public Result handleOutboundRecordAndInventory(List<OutboundRecord> outboundRecordList, Double newOutQuantity) {
@@ -459,7 +492,7 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
 
                         //存入新数量
                         InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(outboundRecord.getMaterialCoding(), outboundRecord.getBatch(), outboundRecord.getCargoSpaceId());
-                        if (ObjectUtil.isEmpty(inventoryInformation)){
+                        if (ObjectUtil.isEmpty(inventoryInformation)) {
                             return Result.failure("未找到库存信息");
                         }
                         BeanUtil.copyProperties(inventoryInformation, addInventoryInformationDTO);
@@ -480,7 +513,7 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
                     //当tempNum等于0,剩余的出库记录全部回滚库存--失败无补偿手段
                     AddInventoryInformationDTO addInventoryInformationDTO = new AddInventoryInformationDTO();
                     InventoryInformation inventoryInformation = inventoryInformationService.getInventoryInformation(outboundRecord.getMaterialCoding(), outboundRecord.getBatch(), outboundRecord.getCargoSpaceId());
-                    if (ObjectUtil.isEmpty(inventoryInformation)){
+                    if (ObjectUtil.isEmpty(inventoryInformation)) {
                         return Result.failure("未找到库存信息");
                     }
                     BeanUtil.copyProperties(inventoryInformation, addInventoryInformationDTO);
@@ -491,7 +524,7 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
                     }
                 }
                 //更新明细
-                BeanUtil.copyProperties(outboundRecord,updateOutboundRecordDTO);
+                BeanUtil.copyProperties(outboundRecord, updateOutboundRecordDTO);
                 Result result = outboundRecordService.updateOutboundRecord(updateOutboundRecordDTO);
                 if (result.isOk()) {
                     return Result.success("出库记录处理成功！");

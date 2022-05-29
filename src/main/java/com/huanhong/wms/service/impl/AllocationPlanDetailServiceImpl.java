@@ -1,17 +1,15 @@
 package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.AllocationPlan;
 import com.huanhong.wms.entity.AllocationPlanDetail;
-import com.huanhong.wms.entity.User;
-import com.huanhong.wms.entity.dto.*;
+import com.huanhong.wms.entity.dto.AddAllocationPlanDetailDTO;
+import com.huanhong.wms.entity.dto.UpdateAllocationPlanDetailDTO;
 import com.huanhong.wms.mapper.AllocationPlanDetailMapper;
-import com.huanhong.wms.mapper.UserMapper;
 import com.huanhong.wms.service.IAllocationPlanDetailService;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +17,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -87,5 +86,16 @@ public class AllocationPlanDetailServiceImpl extends SuperServiceImpl<Allocation
         QueryWrapper<AllocationPlanDetail> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("allocation_number", docNum);
         return allocationPlanDetailMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public Result<Integer> removeByPlanNos(List<String> planNos) {
+        List<AllocationPlanDetail> allocationPlanDetailsList = this.baseMapper.selectList(Wrappers.<AllocationPlanDetail>lambdaQuery()
+                .in(AllocationPlanDetail::getAllocationNumber,planNos));
+        if (CollectionUtil.isNotEmpty(allocationPlanDetailsList)) {
+            List<Integer> ids = allocationPlanDetailsList.stream().map(AllocationPlanDetail::getId).collect(Collectors.toList());
+            this.removeByIds(ids);
+        }
+        return Result.success();
     }
 }

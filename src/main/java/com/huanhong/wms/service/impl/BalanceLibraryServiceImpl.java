@@ -23,10 +23,7 @@ import com.huanhong.wms.mapper.BalanceLibraryMapper;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.mapper.ProcurementPlanMapper;
 import com.huanhong.wms.mapper.WarehouseManagementMapper;
-import com.huanhong.wms.service.IBalanceLibraryDetailService;
-import com.huanhong.wms.service.IBalanceLibraryRecordService;
-import com.huanhong.wms.service.IBalanceLibraryService;
-import com.huanhong.wms.service.IProcurementPlanDetailsService;
+import com.huanhong.wms.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +32,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -59,6 +57,10 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
     private WarehouseManagementMapper warehouseManagementMapper;
     @Resource
     private InventoryInformationMapper inventoryInformationMapper;
+    @Resource
+    private IAllocationPlanService allocationPlanService;
+    @Resource
+    private IProcurementPlanService procurementPlanService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -72,7 +74,7 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
         }
         for (ProcurementPlan procurementPlan : procurementPlans) {
             if (procurementPlan.getIsImported() == 1) {
-                throw new BizException( Result.failure(400,StrUtil.format("采购计划单号：{},已被导入，不可重复导入", procurementPlan.getPlanNumber())));
+                throw new BizException(Result.failure(400, StrUtil.format("采购计划单号：{},已被导入，不可重复导入", procurementPlan.getPlanNumber())));
             }
         }
         // 合并采购计划主表数据到平衡利库
@@ -219,5 +221,49 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
         });
         balanceLibraryVo.setDetails(balanceLibraryDetailVos);
         return Result.success(balanceLibraryVo);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Result delete(Integer id) {
+        BalanceLibrary balanceLibrary = this.baseMapper.selectById(id);
+        if (null == balanceLibrary) {
+            return Result.success("该平衡利库已被删除");
+        }
+        List<BalanceLibraryDetail> libraryDetailList = balanceLibraryDetailService.list(Wrappers.lambdaQuery(new BalanceLibraryDetail())
+                .eq(BalanceLibraryDetail::getBalanceLibraryNo, balanceLibrary.getBalanceLibraryNo()));
+        if (CollectionUtil.isNotEmpty(libraryDetailList)) {
+            List<Integer> detailIds = libraryDetailList.stream().map(BalanceLibraryDetail::getId).collect(Collectors.toList());
+            // 判断是否有调拨记录
+            List<BalanceLibraryRecord> records = balanceLibraryRecordService.list(Wrappers.lambdaQuery(new BalanceLibraryRecord())
+                    .in(BalanceLibraryRecord::getBalanceLibraryDetailId, detailIds));
+            if (CollectionUtil.isNotEmpty(records)) {
+                List<String> planNos = new ArrayList<>();
+                for (BalanceLibraryRecord record : records) {
+                    if (StrUtil.isNotBlank(record.getPlanNo())) {
+                        planNos.add(record.getPlanNo());
+                    }
+                    if (StrUtil.isNotBlank(record.getPlanNo2())) {
+                        planNos.add(record.getPlanNo2());
+                    }
+                    if (StrUtil.isNotBlank(record.getPlanNo3())) {
+                        planNos.add(record.getPlanNo3());
+                    }
+                }
+                allocationPlanService.deleteByPlanNos(planNos);
+                List<Integer> recordIds = records.stream().map(BalanceLibraryRecord::getId).collect(Collectors.toList());
+                balanceLibraryRecordService.removeByIds(recordIds);
+            }
+            balanceLibraryDetailService.removeByIds(detailIds);
+        }
+        // 删除创建的采购计划
+        procurementPlanService.remove(Wrappers.<ProcurementPlan>lambdaUpdate().eq(ProcurementPlan::getBalanceLibraryNo, balanceLibrary.getBalanceLibraryNo()));
+        this.baseMapper.deleteById(id);
+
+        // 回滚之前导入的采购计划
+        String originalDocumentNumber = balanceLibrary.getProcurementNos();
+        String[] originalDocumentNumbers = JSON.parseArray(originalDocumentNumber).toArray(new String[]{});
+        procurementPlanService.updateIsImportedByPlanNumbers(0, "", originalDocumentNumbers, 0);
+        return Result.success();
     }
 }

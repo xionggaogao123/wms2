@@ -24,4 +24,6 @@ public interface IBalanceLibraryService extends SuperService<BalanceLibrary> {
      * @return
      */
     Result detail(Integer id);
+
+    Result delete(Integer id);
 }

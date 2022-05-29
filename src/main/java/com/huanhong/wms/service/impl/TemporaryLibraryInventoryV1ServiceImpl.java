@@ -169,7 +169,9 @@ public class TemporaryLibraryInventoryV1ServiceImpl implements TemporaryLibraryI
     @Override
     public Result updateTemporaryMainAndSublistAndWarehouse(UpdateTemporaryLibraryInventoryAndDetailsDTO update) {
         TemporaryLibraryInventory temporaryLibraryInventory = update.getTemporaryLibraryInventory();
-        TemporaryLibraryInventory temporaryLibraryInventory1 = temporaryLibraryInventoryMapper.selectById(temporaryLibraryInventory.getId());
+        QueryWrapper<TemporaryLibraryInventory> inventoryQueryWrapper = new QueryWrapper<>();
+        inventoryQueryWrapper.eq("document_number",temporaryLibraryInventory.getDocumentNumber());
+        TemporaryLibraryInventory temporaryLibraryInventory1 = temporaryLibraryInventoryMapper.selectOne(inventoryQueryWrapper);
         if (temporaryLibraryInventory1 == null) {
             throw new SecurityException("数据不存在");
         }

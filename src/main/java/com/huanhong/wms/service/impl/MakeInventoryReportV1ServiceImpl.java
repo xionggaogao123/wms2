@@ -2,6 +2,7 @@ package com.huanhong.wms.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.huanhong.common.exception.ServiceException;
+import com.huanhong.common.units.JsonUtil;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.dto.request.UpdateMakeInventoryReportRequest;
 import com.huanhong.wms.entity.MakeInventory;
@@ -11,6 +12,7 @@ import com.huanhong.wms.mapper.MakeInventoryMapper;
 import com.huanhong.wms.mapper.MakeInventoryReportDetailsMapper;
 import com.huanhong.wms.mapper.MakeInventoryReportMapper;
 import com.huanhong.wms.service.MakeInventoryReportV1Service;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -22,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @Author wang
  * @date 2022/5/28 19:51
  */
+@Slf4j
 @Service
 public class MakeInventoryReportV1ServiceImpl implements MakeInventoryReportV1Service {
 
@@ -49,6 +52,7 @@ public class MakeInventoryReportV1ServiceImpl implements MakeInventoryReportV1Se
         //判断盘点状态是否 盘点完成
         AtomicInteger number = new AtomicInteger();
         List<MakeInventoryReportDetails> makeInventoryReportDetails = request.getMakeInventoryReportDetails();
+        log.info("参数为:{}", JsonUtil.obj2String(makeInventoryReportDetails));
         makeInventoryReportDetails.forEach(details -> {
             //盘点是否全部盘点完成 盘点状态: 0-待盘点，1-一致 ，2-盘盈 ，3-盘亏
             if (details.getCheckStatusDetails() == 0) {

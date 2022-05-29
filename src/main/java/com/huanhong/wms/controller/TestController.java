@@ -9,14 +9,15 @@ import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.dto.request.TestRequest;
 import com.huanhong.wms.entity.InventoryInformation;
 import com.huanhong.wms.entity.Material;
-import com.huanhong.wms.entity.User;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.mapper.MaterialMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -69,6 +70,6 @@ public class TestController extends BaseController {
             material.setIntRate(1.1);
             materialMapper.updateById(material);
         });
-        return null;
+        return Result.success("ok");
     }
 }

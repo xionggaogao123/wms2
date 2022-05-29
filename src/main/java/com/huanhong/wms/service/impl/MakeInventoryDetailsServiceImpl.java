@@ -41,6 +41,7 @@ public class MakeInventoryDetailsServiceImpl extends SuperServiceImpl<MakeInvent
         for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList) {
             MakeInventoryDetails makeInventoryDetails = new MakeInventoryDetails();
             BeanUtil.copyProperties(addMakeInventoryDetailsDTO, makeInventoryDetails);
+            makeInventoryDetails.setUnitPrice(addMakeInventoryDetailsDTO.getUnitPrice());
             int add = makeInventoryDetailsMapper.insert(makeInventoryDetails);
             if (add > 0) {
                 listSuccess.add(addMakeInventoryDetailsDTO);

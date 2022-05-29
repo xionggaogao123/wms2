@@ -102,30 +102,30 @@ public class MaterialServiceImpl extends SuperServiceImpl<MaterialMapper, Materi
         queryWrapper.like(StringUtils.isNotBlank(pdaMaterialVO.getMaterialCoding()), "material_coding", pdaMaterialVO.getMaterialCoding());
         queryWrapper.like(StringUtils.isNotBlank(pdaMaterialVO.getMaterialName()), "material_name", pdaMaterialVO.getMaterialName());
         List<Material> materialslist = materialMapper.selectList(queryWrapper);
-        materialslist.forEach(list -> {
-            QueryWrapper<InventoryInformation> wrapper = new QueryWrapper<>();
-            wrapper.eq("material_coding", list.getMaterialCoding());
-            wrapper.eq("material_name", list.getMaterialName());
-            List<InventoryInformation> inventoryInformation = inventoryInformationMapper.selectList(wrapper);
-            //所有批次总数量
-            AtomicDouble atomicDouble = new AtomicDouble();
-            AtomicDouble amount = new AtomicDouble();
-            for (InventoryInformation inventory : inventoryInformation) {
-                BigDecimal unitPrice = inventory.getUnitPrice();
-                Double inventoryCredit = inventory.getInventoryCredit();
-                //求 库存表中的某种物料每个批次的单价*对应批次的数量
-                BigDecimal multiply = unitPrice.multiply(new BigDecimal(inventoryCredit));
-                amount.getAndSet(multiply.doubleValue());
-                atomicDouble.getAndAdd(inventoryCredit);
-            }
-            double avgBuyPrice =  amount.get() / atomicDouble.get();
-            materialslist.forEach(material -> {
-                material.setAvgBuyPrice(avgBuyPrice);
-                material.setAvgSellPrice(avgBuyPrice*1.1);
-                material.setIntRate(1.1);
-                materialMapper.updateById(material);
-            });
-        });
+//        materialslist.forEach(list -> {
+//            QueryWrapper<InventoryInformation> wrapper = new QueryWrapper<>();
+//            wrapper.eq("material_coding", list.getMaterialCoding());
+//            wrapper.eq("material_name", list.getMaterialName());
+//            List<InventoryInformation> inventoryInformation = inventoryInformationMapper.selectList(wrapper);
+//            //所有批次总数量
+//            AtomicDouble atomicDouble = new AtomicDouble();
+//            AtomicDouble amount = new AtomicDouble();
+//            for (InventoryInformation inventory : inventoryInformation) {
+//                BigDecimal unitPrice = inventory.getUnitPrice();
+//                Double inventoryCredit = inventory.getInventoryCredit();
+//                //求 库存表中的某种物料每个批次的单价*对应批次的数量
+//                BigDecimal multiply = unitPrice.multiply(new BigDecimal(inventoryCredit));
+//                amount.getAndSet(multiply.doubleValue());
+//                atomicDouble.getAndAdd(inventoryCredit);
+//            }
+//            double avgBuyPrice =  amount.get() / atomicDouble.get();
+//            materialslist.forEach(material -> {
+//                material.setAvgBuyPrice(avgBuyPrice);
+//                material.setAvgSellPrice(avgBuyPrice*1.1);
+//                material.setIntRate(1.1);
+//                materialMapper.updateById(material);
+//            });
+//        });
         return materialslist;
     }
 

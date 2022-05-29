@@ -40,9 +40,12 @@ public class MakeInventoryReportV1ServiceImpl implements MakeInventoryReportV1Se
 
     @Override
     public Result update(UpdateMakeInventoryReportRequest request) {
+        log.info("PDA传入的数据为:{}",JsonUtil.obj2String(request));
         MakeInventoryReport makeInventoryReport1 = request.getMakeInventoryReport();
+        QueryWrapper<MakeInventoryReport> reportQueryWrapper = new QueryWrapper<>();
+        reportQueryWrapper.eq("report_number",makeInventoryReport1.getReportNumber());
         //盘点报告是否存在
-        MakeInventoryReport makeInventoryReport = makeInventoryReportMapper.selectById(request.getMakeInventoryReport().getId());
+        MakeInventoryReport makeInventoryReport = makeInventoryReportMapper.selectOne(reportQueryWrapper);
         if (makeInventoryReport == null) {
             throw new ServiceException(500, "盘点报告不存在");
         }

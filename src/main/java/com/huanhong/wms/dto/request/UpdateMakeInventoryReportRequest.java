@@ -17,6 +17,7 @@ public class UpdateMakeInventoryReportRequest {
     @Valid
     @ApiModelProperty(value = "盘点单主表")
     private MakeInventoryReport makeInventoryReport;
+
     @Valid
     @ApiModelProperty(value = "盘点单主表")
     private List<MakeInventoryReportDetails> makeInventoryReportDetails;

@@ -75,6 +75,18 @@ public class Material extends SuperEntity {
     private Double materialLength;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "平均采购价格")
+    private Double avgBuyPrice;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "平均销售价格")
+    private Double avgSellPrice;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
+    @ApiModelProperty(value = "销售利率")
+    private Double intRate;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "物料单位宽-米/M")
     private Double  materialWidth;
 

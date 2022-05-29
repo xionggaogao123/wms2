@@ -63,7 +63,6 @@ public class MakeInventoryReportV1ServiceImpl implements MakeInventoryReportV1Se
             details.setFinalCredit(subtract.doubleValue());
             //更新盘点数据
             makeInventoryReportDetailsMapper.updateById(details);
-
         });
         if (number.get() == 0) {
             makeInventoryReport1.setCheckStatus(1);

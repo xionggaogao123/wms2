@@ -2,22 +2,21 @@ package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.NumberUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.huanhong.common.exception.BizException;
 import com.huanhong.common.units.user.CurrentUserUtil;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.LoginUser;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.AllocationPlan;
-import com.huanhong.wms.entity.BalanceLibrary;
-import com.huanhong.wms.entity.BalanceLibraryDetail;
-import com.huanhong.wms.entity.BalanceLibraryRecord;
+import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.AddAllocationPlanAndDetailsDTO;
 import com.huanhong.wms.entity.dto.AddAllocationPlanDTO;
 import com.huanhong.wms.entity.dto.AddAllocationPlanDetailDTO;
 import com.huanhong.wms.mapper.BalanceLibraryDetailMapper;
 import com.huanhong.wms.mapper.BalanceLibraryMapper;
 import com.huanhong.wms.mapper.BalanceLibraryRecordMapper;
+import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.service.IAllocationPlanService;
 import com.huanhong.wms.service.IBalanceLibraryRecordService;
 import com.huanhong.wms.service.IProcurementPlanService;
@@ -50,6 +49,8 @@ public class BalanceLibraryRecordServiceImpl extends SuperServiceImpl<BalanceLib
     private BalanceLibraryDetailMapper balanceLibraryDetailMapper;
     @Resource
     private BalanceLibraryMapper balanceLibraryMapper;
+    @Resource
+    private InventoryInformationMapper inventoryInformationMapper;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -120,14 +121,31 @@ public class BalanceLibraryRecordServiceImpl extends SuperServiceImpl<BalanceLib
             addAllocationPlanDTO.setBalanceLibraryNo(balanceLibrary.getBalanceLibraryNo());
             addAllocationPlanDTO.setBalanceLibraryDetailId(balanceLibraryDetailId);
             addAllocationPlanAndDetailsDTO.setAddAllocationPlanDTO(addAllocationPlanDTO);
-
+            // 查询该库区下的该物料的批次信息
+            List<InventoryInformation> inventoryInformations = inventoryInformationMapper.selectList(Wrappers.<InventoryInformation>lambdaQuery().eq(InventoryInformation::getMaterialCoding, balanceLibraryDetail.getMaterialCoding())
+                    .likeRight(InventoryInformation::getCargoSpaceId, balanceLibraryRecord.getOutWarehouseId()).gt(InventoryInformation::getInventoryCredit, 0));
+            if (CollectionUtil.isEmpty(inventoryInformations)) {
+                throw new BizException(Result.failure(1001, StrUtil.format("仓库：{},物料：{},库存不足", balanceLibraryRecord.getOutWarehouse(), balanceLibraryDetail.getMaterialCoding())));
+            }
             List<AddAllocationPlanDetailDTO> addAllocationPlanDetailDTOList = new ArrayList<>();
-            AddAllocationPlanDetailDTO addAllocationPlanDetailDTO = new AddAllocationPlanDetailDTO();
-            addAllocationPlanDetailDTO.setConsignor(0);
-            addAllocationPlanDetailDTO.setMaterialCoding(balanceLibraryDetail.getMaterialCoding());
-            addAllocationPlanDetailDTO.setCalibrationQuantity(preCalibrationQuantity);
-            addAllocationPlanDetailDTO.setRequestQuantity(preCalibrationQuantity);
-            addAllocationPlanDetailDTOList.add(addAllocationPlanDetailDTO);
+            double preCalibrationQuantityTemp = preCalibrationQuantity;
+            for (InventoryInformation inventoryInformation : inventoryInformations) {
+                AddAllocationPlanDetailDTO addAllocationPlanDetailDTO = new AddAllocationPlanDetailDTO();
+                addAllocationPlanDetailDTO.setConsignor(0);
+                addAllocationPlanDetailDTO.setBatch(inventoryInformation.getBatch());
+                addAllocationPlanDetailDTO.setMaterialCoding(balanceLibraryDetail.getMaterialCoding());
+                if (preCalibrationQuantityTemp <= inventoryInformation.getInventoryCredit()) {
+                    addAllocationPlanDetailDTO.setCalibrationQuantity(preCalibrationQuantityTemp);
+                    addAllocationPlanDetailDTO.setRequestQuantity(preCalibrationQuantityTemp);
+                    addAllocationPlanDetailDTOList.add(addAllocationPlanDetailDTO);
+                    break;
+                } else {
+                    preCalibrationQuantityTemp -= inventoryInformation.getInventoryCredit();
+                    addAllocationPlanDetailDTO.setCalibrationQuantity(inventoryInformation.getInventoryCredit());
+                    addAllocationPlanDetailDTO.setRequestQuantity(inventoryInformation.getInventoryCredit());
+                    addAllocationPlanDetailDTOList.add(addAllocationPlanDetailDTO);
+                }
+            }
             addAllocationPlanAndDetailsDTO.setAddAllocationPlanDetailDTOList(addAllocationPlanDetailDTOList);
             Result r = allocationPlanService.add(addAllocationPlanAndDetailsDTO);
             if (!r.isOk()) {

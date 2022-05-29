@@ -9,9 +9,7 @@ import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.InventoryInformation;
-import com.huanhong.wms.entity.Material;
-import com.huanhong.wms.entity.TemporaryLibraryInventoryDetails;
+import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.AddTemporaryLibraryDTO;
 import com.huanhong.wms.entity.dto.UpdateTemporaryLibraryDTO;
 import com.huanhong.wms.entity.vo.TemporaryLibraryVO;
@@ -23,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RestController;
 import com.huanhong.wms.BaseController;
-import com.huanhong.wms.entity.TemporaryLibrary;
 import com.huanhong.wms.mapper.TemporaryLibraryMapper;
 import com.huanhong.wms.service.ITemporaryLibraryService;
 import javax.annotation.Resource;
@@ -48,13 +45,13 @@ public class TemporaryLibraryController extends BaseController {
     @ApiOperationSupport(order = 1)
     @ApiOperation(value = "分页查询临库库存表", notes = "生成代码")
     @GetMapping("/page")
-    public Result<Page<TemporaryLibraryInventoryDetails>> page(@RequestParam(defaultValue = "1") Integer current,
-                                                               @RequestParam(defaultValue = "10") Integer size,
-                                                               TemporaryLibraryVO temporaryLibraryVO
+    public Result<Page<TemporaryEnterWarehouseDetails>> page(@RequestParam(defaultValue = "1") Integer current,
+                                                      @RequestParam(defaultValue = "10") Integer size,
+                                                      TemporaryLibraryVO temporaryLibraryVO
                                                ) {
         try {
             //调用服务层方法，传入page对象和查询条件对象
-            Page<TemporaryLibraryInventoryDetails> pageResult = temporaryLibraryService.pageFuzzyQuery(new Page<>(current, size), temporaryLibraryVO);
+            Page<TemporaryEnterWarehouseDetails> pageResult = temporaryLibraryService.pageFuzzyQuery(new Page<>(current, size), temporaryLibraryVO);
             if (ObjectUtil.isEmpty(pageResult.getRecords())) {
                 return Result.success(pageResult, "未查询到库存信息");
             }

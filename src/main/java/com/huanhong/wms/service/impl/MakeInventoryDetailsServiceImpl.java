@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.EnterWarehouseDetails;
+import com.huanhong.wms.entity.InventoryInformation;
 import com.huanhong.wms.entity.MakeInventoryDetails;
 import com.huanhong.wms.entity.dto.AddMakeInventoryDetailsDTO;
 import com.huanhong.wms.entity.dto.UpdateEnterWarehouseDetailsDTO;
@@ -39,9 +40,12 @@ public class MakeInventoryDetailsServiceImpl extends SuperServiceImpl<MakeInvent
         List<AddMakeInventoryDetailsDTO> listFalse = new ArrayList<>();
         JSONObject jsonObject = new JSONObject();
         for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList) {
+            List<InventoryInformation> inventoryList = addMakeInventoryDetailsDTO.getInventoryList();
+            inventoryList.forEach(list -> {
+                addMakeInventoryDetailsDTO.setUnitPrice(list.getUnitPrice());
+            });
             MakeInventoryDetails makeInventoryDetails = new MakeInventoryDetails();
             BeanUtil.copyProperties(addMakeInventoryDetailsDTO, makeInventoryDetails);
-            makeInventoryDetails.setUnitPrice(addMakeInventoryDetailsDTO.getUnitPrice());
             int add = makeInventoryDetailsMapper.insert(makeInventoryDetails);
             if (add > 0) {
                 listSuccess.add(addMakeInventoryDetailsDTO);

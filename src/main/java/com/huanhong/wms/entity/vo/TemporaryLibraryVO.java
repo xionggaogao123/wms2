@@ -12,16 +12,13 @@ import java.time.LocalDateTime;
 public class TemporaryLibraryVO {
 
     @ApiModelProperty(value = "临库出入库单编号")
-    private String documentNumber;
+    private String enterNumber;
 
     @ApiModelProperty(value = "物料编码")
     private String materialCoding;
 
     @ApiModelProperty(value = "物料名称")
     private String materialName;
-    
-    @ApiModelProperty(value = "货位编码")
-    private String cargoSpaceId;
 
     @ApiModelProperty(value = "库房编号")
     private String warehouseId;

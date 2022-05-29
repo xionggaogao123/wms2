@@ -11,14 +11,12 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
-import com.huanhong.wms.entity.CargoSpaceManagement;
-import com.huanhong.wms.entity.InventoryInformation;
-import com.huanhong.wms.entity.TemporaryLibrary;
-import com.huanhong.wms.entity.TemporaryLibraryInventoryDetails;
+import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.AddTemporaryLibraryDTO;
 import com.huanhong.wms.entity.dto.UpdateTemporaryLibraryDTO;
 import com.huanhong.wms.entity.vo.TemporaryLibraryVO;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
+import com.huanhong.wms.mapper.TemporaryEnterWarehouseDetailsMapper;
 import com.huanhong.wms.mapper.TemporaryLibraryInventoryDetailsMapper;
 import com.huanhong.wms.mapper.TemporaryLibraryMapper;
 import com.huanhong.wms.properties.OssProperties;
@@ -56,32 +54,33 @@ public class TemporaryLibraryServiceImpl extends SuperServiceImpl<TemporaryLibra
     @Resource
     private ICargoSpaceManagementService cargoSpaceManagementService;
 
+    @Resource
+    private TemporaryEnterWarehouseDetailsMapper temporaryEnterWarehouseDetailsMapper;
+
     @Override
-    public Page<TemporaryLibraryInventoryDetails> pageFuzzyQuery(Page<TemporaryLibraryInventoryDetails> temporaryLibraryPage, TemporaryLibraryVO temporaryLibraryVO) {
+    public Page<TemporaryEnterWarehouseDetails> pageFuzzyQuery(Page<TemporaryEnterWarehouseDetails> temporaryLibraryPage, TemporaryLibraryVO temporaryLibraryVO) {
 
         //新建QueryWrapper对象
-        QueryWrapper<TemporaryLibraryInventoryDetails> query = new QueryWrapper<>();
+        QueryWrapper<TemporaryEnterWarehouseDetails> query = new QueryWrapper<>();
         //根据id排序
         query.orderByDesc("id");
         //判断此时的条件对象Vo是否等于空，若等于空，
         //直接进行selectPage查询
         if (ObjectUtil.isEmpty(temporaryLibraryVO)) {
-            return temporaryLibraryInventoryDetailsMapper.selectPage(temporaryLibraryPage, query);
+            return temporaryEnterWarehouseDetailsMapper.selectPage(temporaryLibraryPage,query);
         }
         //若Vo对象不为空，分别获取其中的字段，
         //并对其进行判断是否为空，这一步类似动态SQL的拼装
-        query.like(StringUtils.isNotBlank(temporaryLibraryVO.getDocumentNumber()), "document_number", temporaryLibraryVO.getDocumentNumber());
+        query.like(StringUtils.isNotBlank(temporaryLibraryVO.getEnterNumber()), "enter_number", temporaryLibraryVO.getEnterNumber());
 
         query.like(StringUtils.isNotBlank(temporaryLibraryVO.getMaterialCoding()), "material_coding", temporaryLibraryVO.getMaterialCoding());
 
         query.like(StringUtils.isNotBlank(temporaryLibraryVO.getMaterialName()),"material_name",temporaryLibraryVO.getMaterialName());
 
-        query.like(StringUtils.isNotBlank(temporaryLibraryVO.getCargoSpaceId()),"cargo_space_id",temporaryLibraryVO.getCargoSpaceId());
-
         query.like(StringUtils.isNotBlank(temporaryLibraryVO.getWarehouseId()),"warehouse_id",temporaryLibraryVO.getWarehouseId());
 
 
-        return temporaryLibraryInventoryDetailsMapper.selectPage(temporaryLibraryPage, query);
+        return temporaryEnterWarehouseDetailsMapper.selectPage(temporaryLibraryPage,query);
 
     }
 

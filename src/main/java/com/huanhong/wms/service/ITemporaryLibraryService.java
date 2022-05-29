@@ -3,6 +3,7 @@ package com.huanhong.wms.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.InventoryInformation;
+import com.huanhong.wms.entity.TemporaryEnterWarehouseDetails;
 import com.huanhong.wms.entity.TemporaryLibrary;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.entity.TemporaryLibraryInventoryDetails;
@@ -29,7 +30,7 @@ public interface ITemporaryLibraryService extends SuperService<TemporaryLibrary>
     /**
      * 分页查询
      */
-    Page<TemporaryLibraryInventoryDetails> pageFuzzyQuery(Page<TemporaryLibraryInventoryDetails> temporaryLibraryPage, TemporaryLibraryVO temporaryLibraryVO);
+    Page<TemporaryEnterWarehouseDetails> pageFuzzyQuery(Page<TemporaryEnterWarehouseDetails> temporaryLibraryPage, TemporaryLibraryVO temporaryLibraryVO);
 
     /**
      * 库存信息更新

@@ -3,6 +3,7 @@ package com.huanhong.wms.entity.dto;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.huanhong.wms.entity.InventoryInformation;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -13,6 +14,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @ApiModel("新增盘点单明细DTO")
@@ -91,5 +93,8 @@ public class AddMakeInventoryDetailsDTO {
 
     @ApiModelProperty(value = "供应商")
     private String supplier;
+
+    List<InventoryInformation> inventoryList;
+
 
 }

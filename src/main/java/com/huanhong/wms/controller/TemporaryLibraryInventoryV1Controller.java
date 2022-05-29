@@ -57,7 +57,7 @@ public class TemporaryLibraryInventoryV1Controller extends BaseController {
 
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "更新", notes = "生成代码")
-    @PostMapping("/update")
+    @PutMapping("/update")
     public Result update(@Valid @RequestBody UpdateTemporaryLibraryInventoryAndDetailsDTO update) {
         log.info("新增临时清点的数据为:{}", JsonUtil.obj2String(update));
         try {

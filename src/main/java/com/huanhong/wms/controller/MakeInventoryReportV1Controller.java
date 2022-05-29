@@ -10,13 +10,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.Map;
 
 /**
  * @Author wang
@@ -41,6 +39,19 @@ public class MakeInventoryReportV1Controller {
            return makeInventoryReportService.update(request);
         } catch (Exception e) {
             log.error("系统异常：更新盘点报告主表及明细失败！",e);
+            return Result.failure("系统异常，更新失败");
+        }
+    }
+
+    @ApiOperationSupport(order = 2)
+    @ApiOperation(value = "更新", notes = "生成代码")
+    @PutMapping("/selectById/{id}")
+    public Result selectById(@PathVariable("id") Integer id) {
+        try {
+            Map map = makeInventoryReportService.selectById(id);
+            return Result.success(map);
+        } catch (Exception e) {
+            log.error("系统异常：更新盘点报告主表及明细失败！:{}",e.getMessage());
             return Result.failure("系统异常，更新失败");
         }
     }

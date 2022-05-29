@@ -8,6 +8,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
@@ -72,11 +73,14 @@ public class MakeInventoryController extends BaseController {
     private ITemporaryLibraryService temporaryLibraryService;
 
     @Resource
+    private MakeInventoryReportService makeInventoryReportService;
+
+    @Resource
     private InventoryInformationMapper inventoryInformationMapper;
 
 
     @Resource
-    private IMakeInventoryReportService makeInventoryReportService;
+    private IMakeInventoryReportService makeInventoryReportServiceV1;
 
     @Resource
     private IMakeInventoryReportDetailsService makeInventoryReportDetailsService;
@@ -829,10 +833,10 @@ public class MakeInventoryController extends BaseController {
             /**
              * 如果盘点报告单已生成则同步更新盘点报告
              */
-            if (ObjectUtil.isNotNull(makeInventoryReportService.getMakeInventoryReportByDocNumAndWarehouse(makeInventory.getDocumentNumber(), makeInventory.getWarehouseId()))){
-                Result resultUpdateReport = updateMakeInventoryReport(resultDetails);
-                log.info("同步更新报告单{}",resultUpdateReport);
-            }
+//            if (ObjectUtil.isNotNull(makeInventoryReportService.getMakeInventoryReportByDocNumAndWarehouse(makeInventory.getDocumentNumber(), makeInventory.getWarehouseId()))){
+//                Result resultUpdateReport = updateMakeInventoryReport(resultDetails);
+//                log.info("同步更新报告单{}",resultUpdateReport);
+//            }
 
             return result;
         } catch (Exception e) {
@@ -1120,20 +1124,41 @@ public class MakeInventoryController extends BaseController {
             /**
              *
              */
-            if (countReport==0){
-                UpdateMakeInventoryReportDTO updateMakeInventoryReportDTO = new UpdateMakeInventoryReportDTO();
-                MakeInventoryReport makeInventoryReport = makeInventoryReportService.getMakeInventoryReportByReportNumAndWarehouse(makeInventoryReportDetails.getReportNumber(),makeInventoryReportDetails.getWarehouseId());
-                updateMakeInventoryReportDTO.setId(makeInventoryReport.getId());
-                updateMakeInventoryReportDTO.setCheckStatus(1);
-                Result resultReport = makeInventoryReportService.updateMakeInventoryReport(updateMakeInventoryReportDTO);
-                log.info("更新盘点报告主表{}",resultReport);
-                return resultReport;
-            }
+//            if (countReport==0){
+//                UpdateMakeInventoryReportDTO updateMakeInventoryReportDTO = new UpdateMakeInventoryReportDTO();
+//                MakeInventoryReport makeInventoryReport = makeInventoryReportService.getMakeInventoryReportByReportNumAndWarehouse(makeInventoryReportDetails.getReportNumber(),makeInventoryReportDetails.getWarehouseId());
+//                updateMakeInventoryReportDTO.setId(makeInventoryReport.getId());
+//                updateMakeInventoryReportDTO.setCheckStatus(1);
+//                Result resultReport = makeInventoryReportService.updateMakeInventoryReport(updateMakeInventoryReportDTO);
+//                log.info("更新盘点报告主表{}",resultReport);
+//                return resultReport;
+//            }
             return resultUpdateReport;
         }catch (Exception e){
             log.error("同步更新盘点报告失败,",e);
             return Result.failure("同步更新盘点报告失败！");
         }
+    }
+
+
+    @ApiOperationSupport(order = 11)
+    @ApiOperation(value = "分页查询", notes = "生成代码")
+    @GetMapping("/pageV1")
+    public Result<Page<MakeInventoryReport>> pageV1(@RequestParam(defaultValue = "1") Integer current,
+                                            @RequestParam(defaultValue = "10") Integer size,
+                                            MakeInventoryVO makeInventoryVO){
+
+        try {
+            Page<MakeInventoryReport> makeInventoryReportPage = makeInventoryReportService.pageV1(new Page<MakeInventoryReport>(current, size), makeInventoryVO);
+            if (ObjectUtil.isEmpty(makeInventoryReportPage.getRecords())) {
+                return Result.success(makeInventoryReportPage, "未查询到盘点单据信息");
+            }
+            return Result.success(makeInventoryReportPage);
+        } catch (Exception e) {
+            log.error("PDA查询盘点报告异常:{}",e.getMessage());
+            return Result.failure("查询失败--系统异常，请联系管理员");
+        }
+
     }
 
 }

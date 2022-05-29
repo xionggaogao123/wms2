@@ -17,7 +17,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -40,13 +42,13 @@ public class MakeInventoryReportV1ServiceImpl implements MakeInventoryReportV1Se
 
     @Override
     public Result update(UpdateMakeInventoryReportRequest request) {
-        log.info("PDA传入的数据为:{}",JsonUtil.obj2String(request));
         MakeInventoryReport makeInventoryReport1 = request.getMakeInventoryReport();
         QueryWrapper<MakeInventoryReport> reportQueryWrapper = new QueryWrapper<>();
         reportQueryWrapper.eq("report_number",makeInventoryReport1.getReportNumber());
         //盘点报告是否存在
         MakeInventoryReport makeInventoryReport = makeInventoryReportMapper.selectOne(reportQueryWrapper);
         if (makeInventoryReport == null) {
+            log.error("PDA传入的数据为:{}",JsonUtil.obj2String(request));
             throw new ServiceException(500, "盘点报告不存在");
         }
         if (makeInventoryReport.getCheckStatus() == 1) {
@@ -82,5 +84,21 @@ public class MakeInventoryReportV1ServiceImpl implements MakeInventoryReportV1Se
             makeInventoryMapper.updateById(makeInventory);
         }
         return Result.success("盘点报告更新成功");
+    }
+
+    @Override
+    public Map selectById(Integer id) {
+
+        MakeInventoryReport makeInventoryReport = makeInventoryReportMapper.selectById(id);
+        if(makeInventoryReport == null){
+            throw new ServiceException(500,"盘点报告不存在");
+        }
+        QueryWrapper<MakeInventoryReportDetails> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("report_number",makeInventoryReport.getReportNumber());
+        List<MakeInventoryReportDetails> makeInventoryReportDetails = makeInventoryReportDetailsMapper.selectList(queryWrapper);
+        Map map = new HashMap();
+        map.put("doc", makeInventoryReport);
+        map.put("details", makeInventoryReportDetails);
+        return map;
     }
 }

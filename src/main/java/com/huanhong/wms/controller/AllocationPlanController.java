@@ -86,18 +86,14 @@ public class AllocationPlanController extends BaseController {
     @ApiOperation(value = "更新调拨计划主表及明细")
     @PutMapping("/update")
     public Result update(@Valid @RequestBody UpdateAllocationPlanAndDetailsDTO updateAllocationPlanAndDetailsDTO) {
-        try {
-            UpdateAllocationPlanDTO updateAllocationPlanDTO = updateAllocationPlanAndDetailsDTO.getUpdateAllocationPlanDTO();
-            List<UpdateAllocationPlanDetailDTO> updateAllocationPlanDetailDTOList = updateAllocationPlanAndDetailsDTO.getUpdateAllocationPlanDetailDTOList();
-            Result result = allocationPlanService.updateAllocationPlan(updateAllocationPlanDTO);
-            if (!result.isOk()) {
-                return Result.failure("更新调拨计划单失败！");
-            }
-            return allocationPlanDetailService.updateAllocationPlanDetails(updateAllocationPlanDetailDTOList);
-        } catch (Exception e) {
-            log.error("更新调拨计划单失败");
-            return Result.failure("系统异常：更新调拨计划失败!");
+        UpdateAllocationPlanDTO updateAllocationPlanDTO = updateAllocationPlanAndDetailsDTO.getUpdateAllocationPlanDTO();
+        List<UpdateAllocationPlanDetailDTO> updateAllocationPlanDetailDTOList = updateAllocationPlanAndDetailsDTO.getUpdateAllocationPlanDetailDTOList();
+        Result result = allocationPlanService.updateAllocationPlan(updateAllocationPlanDTO);
+        if (!result.isOk()) {
+            return Result.failure("更新调拨计划单失败！");
         }
+        return allocationPlanDetailService.updateAllocationPlanDetails(updateAllocationPlanDetailDTOList);
+
     }
 
     @ApiOperationSupport(order = 4)
@@ -142,7 +138,7 @@ public class AllocationPlanController extends BaseController {
             @ApiImplicitParam(name = "id", value = "单据Id"),
     })
     @ApiOperationSupport(order = 7)
-    @ApiOperation(value = "流程引擎-到货检验-查询")
+    @ApiOperation(value = "流程引擎-调拨计划-查询")
     @GetMapping("getParameterById/{id}")
     public Result getParameterById(@PathVariable Integer id) {
 
@@ -170,8 +166,8 @@ public class AllocationPlanController extends BaseController {
                 jsonResult.put("details", entityUtils.jsonField("allocationPlan", new AllocationPlanDetail()));
                 jsonResult.put("mainValue", allocationPlan);
                 jsonResult.put("detailsValue", allocationPlanDetails);
-                jsonResult.put("mainKey", "updateAllocationOutDTO");
-                jsonResult.put("detailKey", "updateAllocationOutDetailsDTOS");
+                jsonResult.put("mainKey", "updateAllocationPlanDTO");
+                jsonResult.put("detailKey", "updateAllocationPlanDetailDTOList");
                 jsonResult.put("mainUpdate", "/wms/api/v1/allocation-plan/update");
                 jsonResult.put("detailsUpdate", "/wms/api/v1/allocation-plan-detail/update");
                 jsonResult.put("missionCompleted", "/wms/api/v1/allocation-plan/missionCompleted");

@@ -90,6 +90,10 @@ public class MakeInventory extends SuperEntity {
     private String warehouseId;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "库房编号V1")
+    private String warehouse;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "子库编号")
     private String sublibraryId;
 

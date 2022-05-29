@@ -185,6 +185,7 @@ public class MakeInventoryServiceImpl extends SuperServiceImpl<MakeInventoryMapp
             MakeInventory makeInventory = new MakeInventory();
             BeanUtil.copyProperties(addMakeInventoryDTO, makeInventory);
             makeInventory.setDocumentNumber("PD" + String.valueOf(System.currentTimeMillis()));
+            makeInventory.setWarehouse(addMakeInventoryDTO.getWarehouseId());
             int i = makeInventoryMapper.insert(makeInventory);
             if (i > 0) {
                 return Result.success(getMakeInventoryByDocNumAndWarehouse(makeInventory.getDocumentNumber(), addMakeInventoryDTO.getSublibraryId().substring(0, 4)), "新增成功");

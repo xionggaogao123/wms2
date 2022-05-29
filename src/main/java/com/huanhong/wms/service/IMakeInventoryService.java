@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperService;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.MakeInventory;
+import com.huanhong.wms.entity.MakeInventoryReport;
 import com.huanhong.wms.entity.dto.AddMakeInventoryDTO;
 import com.huanhong.wms.entity.dto.UpdateMakeInventoryDTO;
 import com.huanhong.wms.entity.param.InventorySurplusLossPage;
@@ -64,7 +65,7 @@ public interface IMakeInventoryService extends SuperService<MakeInventory> {
      * @param warehouse
      * @return
      */
-    MakeInventory getMakeInventoryByDocNumAndWarehouse(String docNum,String warehouse);
+    MakeInventory getMakeInventoryByDocNumAndWarehouse(String docNum, String warehouse);
 
     /**
      * 盘点盈亏表分页查询

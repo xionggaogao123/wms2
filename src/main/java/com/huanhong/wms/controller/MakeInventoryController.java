@@ -20,6 +20,8 @@ import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.MakeInventoryVO;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.mapper.MakeInventoryMapper;
+import com.huanhong.wms.mapper.MakeInventoryReportDetailsMapper;
+import com.huanhong.wms.mapper.MakeInventoryReportMapper;
 import com.huanhong.wms.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -53,6 +55,12 @@ public class MakeInventoryController extends BaseController {
 
     @Resource
     private MakeInventoryMapper makeInventoryMapper;
+
+    @Resource
+    private MakeInventoryReportMapper makeInventoryReportMapper;
+
+    @Resource
+    private MakeInventoryReportDetailsMapper makeInventoryReportDetailsMapper;
 
     @Resource
     private IMaterialService materialService;
@@ -920,13 +928,20 @@ public class MakeInventoryController extends BaseController {
                                                                 @RequestParam String sublibraryId
     ) {
         String warehouseId = sublibraryId.substring(0, 4);
-        MakeInventory makeInventory = makeInventoryService.getMakeInventoryByDocNumAndWarehouse(docNum, warehouseId);
-        if (ObjectUtil.isEmpty(makeInventory)) {
+        QueryWrapper<MakeInventoryReport> reportQueryWrapper = new QueryWrapper<>();
+        reportQueryWrapper.eq("document_number",docNum);
+        reportQueryWrapper.likeRight("sublibrary_id", warehouseId);
+        MakeInventoryReport makeInventoryReport = makeInventoryReportMapper.selectOne(reportQueryWrapper);
+//        MakeInventory makeInventory = makeInventoryService.getMakeInventoryByDocNumAndWarehouse(docNum, warehouseId);
+        if (ObjectUtil.isEmpty(makeInventoryReport)) {
             return Result.success("未查到相关数据！");
         }
-        List<MakeInventoryDetails> makeInventoryDetailsList = makeInventoryDetailsService.getMakeInventoryDetailsByDocNumAndWarehouseId(docNum,warehouseId);
+        QueryWrapper<MakeInventoryReportDetails> detailsQueryWrapper = new QueryWrapper<>();
+        detailsQueryWrapper.eq("report_number",makeInventoryReport.getReportNumber());
+        List<MakeInventoryReportDetails> makeInventoryReportDetails = makeInventoryReportDetailsMapper.selectList(detailsQueryWrapper);
+//        List<MakeInventoryDetails> makeInventoryDetailsList = makeInventoryDetailsService.getMakeInventoryDetailsByDocNumAndWarehouseId(docNum,warehouseId);
         JSONArray jsonArray = new JSONArray();
-        for (MakeInventoryDetails makeInventoryDetails:makeInventoryDetailsList
+        for (MakeInventoryReportDetails makeInventoryDetails:makeInventoryReportDetails
              ) {
             JSONObject jsonObject = new JSONObject();
             Material material = materialService.getMeterialByMeterialCode(makeInventoryDetails.getMaterialCoding());
@@ -936,7 +951,7 @@ public class MakeInventoryController extends BaseController {
         }
 
         JSONObject jsonObjectResult = new JSONObject();
-        jsonObjectResult.put("doc",makeInventory);
+        jsonObjectResult.put("doc",makeInventoryReport);
         jsonObjectResult.put("details",jsonArray);
         return Result.success(jsonObjectResult);
     }

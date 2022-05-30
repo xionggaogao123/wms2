@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Data
-@ApiModel(description="调拨计划主表新增DTO")
+@ApiModel(description = "调拨计划主表新增DTO")
 public class AddAllocationPlanDTO {
 
     private static final long serialVersionUID = 1L;
@@ -56,13 +56,6 @@ public class AddAllocationPlanDTO {
     @ApiModelProperty(value = "计划类别-1-正常、2-加急、3-补计划、请选择（默认）")
     private Integer planClassification;
 
-
-    @ApiModelProperty(value = "平衡利库记录id")
-    private Integer balanceLibraryRecordId;
-    @ApiModelProperty(value = "平衡利库明细 id")
-    private Integer balanceLibraryDetailId;
-    @ApiModelProperty(value = "平衡利库记录第几次调拨")
-    private Integer balanceLibraryRecordNum;
     @ApiModelProperty(value = "平衡利库单号")
     private String balanceLibraryNo;
 }

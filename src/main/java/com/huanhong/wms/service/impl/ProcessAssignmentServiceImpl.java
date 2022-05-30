@@ -121,6 +121,8 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
     private BalanceLibraryDetailMapper balanceLibraryDetailMapper;
     @Resource
     private ProcurementPlanDetailsMapper procurementPlanDetailsMapper;
+    @Resource
+    private BalanceLibraryMapper balanceLibraryMapper;
 
     @Resource
     private MaterialPriceService materialPriceService;
@@ -750,29 +752,42 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                             // 调拨入库
                             allocationEnterService.allocationPlanToAllocationEnter(allocationPlan);
                             // 判断是否属于平衡利库生成的
-                            if (null != allocationPlan.getBalanceLibraryRecordId() && allocationPlan.getBalanceLibraryRecordId() > 0) {
-                                BalanceLibraryRecord balanceLibraryRecord = balanceLibraryRecordMapper.selectById(allocationPlan.getBalanceLibraryRecordId());
-                                if (null != balanceLibraryRecord) {
+                            if (StrUtil.isNotBlank(allocationPlan.getBalanceLibraryNo())) {
+                                int countBalanceLibrary = balanceLibraryMapper.selectCount(Wrappers.<BalanceLibrary>lambdaQuery().eq(BalanceLibrary::getBalanceLibraryNo, allocationPlan.getBalanceLibraryNo()));
+                                if (countBalanceLibrary > 0) {
+                                    // 查询调拨记录明细
                                     //更新平衡利库记录
                                     List<AllocationPlanDetail> allocationPlanDetails = allocationPlanDetailService.getAllocationPlanDetailsListByDocNum(allocationPlan.getAllocationNumber());
                                     if (CollectionUtil.isNotEmpty(allocationPlanDetails)) {
-                                        BalanceLibraryRecord temp = new BalanceLibraryRecord();
-                                        temp.setId(balanceLibraryRecord.getId());
-                                        AllocationPlanDetail allocationPlanDetail = allocationPlanDetails.get(0);
-                                        if (allocationPlan.getBalanceLibraryRecordNum() == 1) {
-                                            temp.setCalibrationQuantity(allocationPlanDetail.getCalibrationQuantity());
-                                            temp.setCalibrationStatus(3);
-                                        } else if (allocationPlan.getBalanceLibraryRecordNum() == 2) {
-                                            temp.setCalibrationQuantity2(allocationPlanDetail.getCalibrationQuantity());
-                                            temp.setCalibrationStatus2(3);
-                                        } else if (allocationPlan.getBalanceLibraryRecordNum() == 3) {
-                                            temp.setCalibrationQuantity3(allocationPlanDetail.getCalibrationQuantity());
-                                            temp.setCalibrationStatus3(3);
+
+                                        for (AllocationPlanDetail allocationPlanDetail : allocationPlanDetails) {
+                                            // 根据物料编码、仓库、货主、调拨编号查询记录
+                                            BalanceLibraryRecord balanceLibraryRecord = balanceLibraryRecordMapper.selectOne(Wrappers.<BalanceLibraryRecord>lambdaQuery()
+                                                    .eq(BalanceLibraryRecord::getOutWarehouseId, allocationPlan.getSendWarehouse())
+                                                    .eq(BalanceLibraryRecord::getConsignor, allocationPlanDetail.getConsignor())
+                                                    .eq(BalanceLibraryRecord::getMaterialCoding, allocationPlanDetail.getMaterialCoding())
+                                                    .and(wrapper -> wrapper.eq(BalanceLibraryRecord::getPlanNo, allocationPlan.getAllocationNumber())
+                                                            .or().eq(BalanceLibraryRecord::getPlanNo2, allocationPlan.getAllocationNumber())
+                                                            .or().eq(BalanceLibraryRecord::getPlanNo3, allocationPlan.getAllocationNumber())).last("limit 1"));
+                                            if(null != balanceLibraryRecord){
+                                                BalanceLibraryRecord temp = new BalanceLibraryRecord();
+                                                temp.setId(balanceLibraryRecord.getId());
+                                                if (allocationPlan.getAllocationNumber().equals(balanceLibraryRecord.getPlanNo())) {
+                                                    temp.setCalibrationQuantity(allocationPlanDetail.getCalibrationQuantity());
+                                                    temp.setCalibrationStatus(3);
+                                                } else if (allocationPlan.getAllocationNumber().equals(balanceLibraryRecord.getPlanNo2())) {
+                                                    temp.setCalibrationQuantity2(allocationPlanDetail.getCalibrationQuantity());
+                                                    temp.setCalibrationStatus2(3);
+                                                } else if (allocationPlan.getAllocationNumber().equals(balanceLibraryRecord.getPlanNo3())) {
+                                                    temp.setCalibrationQuantity3(allocationPlanDetail.getCalibrationQuantity());
+                                                    temp.setCalibrationStatus3(3);
+                                                }
+                                                balanceLibraryRecordMapper.updateById(temp);
+                                            }
                                         }
-                                        balanceLibraryRecordMapper.updateById(temp);
+
                                     }
                                 }
-
                             }
                             break;
                         //    采购计划

@@ -75,4 +75,6 @@ public class BalanceLibraryRecord extends SuperEntity {
     @ApiModelProperty(value = "第3次调拨状态 1草拟 2审批中 3审批生效 4作废 5.驳回")
     private Integer calibrationStatus3;
 
+    @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
+    private Integer consignor;
 }

@@ -11,7 +11,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -108,5 +107,8 @@ public class MakeInventory extends SuperEntity {
     @TableField(value = "last_update",fill = FieldFill.INSERT_UPDATE)
     @ApiModelProperty(value = "最后更新时间")
     private LocalDateTime lastUpdate;
+
+    @ApiModelProperty(value = "计划类别-1-正常、2-加急、3-补计划、请选择（默认）")
+    private Integer planClassification;
 
 }

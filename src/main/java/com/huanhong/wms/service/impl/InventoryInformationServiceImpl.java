@@ -28,6 +28,7 @@ import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.properties.OssProperties;
 import com.huanhong.wms.service.ICargoSpaceManagementService;
 import com.huanhong.wms.service.IInventoryInformationService;
+import com.huanhong.wms.service.MaterialPriceService;
 import org.apache.poi.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,8 @@ import java.util.stream.Stream;
 @Service
 public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryInformationMapper, InventoryInformation> implements IInventoryInformationService {
 
+    @Resource
+    private MaterialPriceService materialPrice;
 
     @Resource
     private InventoryInformationMapper inventoryInformationMapper;
@@ -234,6 +237,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
             String resultString = StringUtil.join(strings, ",");
             inventoryInformationUpdate.setPriorityStorageLocation(resultString);
             int result = inventoryInformationMapper.update(inventoryInformationUpdate, updateWrapper);
+            materialPrice.addMaterialPrice(inventoryInformationUpdate.getMaterialCoding(),inventoryInformationUpdate.getMaterialName());
             return Result.success("新增库存成功");
         } else {
             return Result.failure(ErrorCode.SYSTEM_ERROR, "新增库存失败！");

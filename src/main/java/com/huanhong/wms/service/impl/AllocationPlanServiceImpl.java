@@ -473,6 +473,7 @@ public class AllocationPlanServiceImpl extends SuperServiceImpl<AllocationPlanMa
     public Result handleOutboundRecordAndInventory(List<OutboundRecord> outboundRecordList, Double newOutQuantity) {
 
         try {
+            //TODO 调拨入库
             /**
              * 根据出库记录list和新的数量(批准数量)
              */

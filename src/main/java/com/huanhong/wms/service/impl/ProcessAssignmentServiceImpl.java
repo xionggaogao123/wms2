@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -706,6 +707,19 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                                         inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
                                         //TODO 计算价格入库
                                         materialPriceService.addMaterialPrice(inventoryInformation.getMaterialCoding(),inventoryInformation.getMaterialName(),inventoryInformation.getWarehouseId());
+                                        Record record = new Record();
+                                        record.setMaterialCoding(inventoryInformation.getMaterialCoding());
+                                        record.setMaterialName(inventoryInformation.getMaterialName());
+                                        record.setBatch(inventoryInformation.getBatch());
+                                        record.setCargoSpaceId(inventoryInformation.getCargoSpaceId());
+                                        record.setConsignor(inventoryInformation.getConsignor());
+                                        record.setInventoryCredit(inventoryInformation.getInventoryCredit());
+                                        record.setType(2);
+                                        record.setInventoryType(1);
+                                        record.setInventoryCredit(inventoryInformation.getInventoryCredit());
+                                        record.setInventoryAlteration(enterWarehouseDetails.getActualQuantity());
+                                        record.setChangeTime(LocalDateTime.now());
+                                        record.setCreateTime(LocalDateTime.now());
                                     }
                                 }
                             }
@@ -1039,7 +1053,7 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                         log.info("盘点报告审批完成,更新库存{}", resultUpdateInventory);
                     }
                     break;
-                //    入库
+                //    入库 TODO
                 case "enter_warehouse":
                     EnterWarehouse enterWarehouse = enterWarehouseMapper.selectById(id);
 

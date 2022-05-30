@@ -186,7 +186,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 //            inventoryInformationIsExist.setVersion(12);
             //将查出的ID存入updateDTO
             int i = inventoryInformationMapper.updateById(inventoryInformationIsExist);
-            materialPrice.addMaterialPrice(inventoryInformationIsExist.getMaterialCoding(),inventoryInformationIsExist.getMaterialName(),inventoryInformationIsExist.getWarehouseId());
+//            materialPrice.addMaterialPrice(inventoryInformationIsExist.getMaterialCoding(),inventoryInformationIsExist.getMaterialName(),inventoryInformationIsExist.getWarehouseId());
 
             if (i > 0) {
                 return Result.success("此货位存在同批次的同种物料,已合并数量");
@@ -210,7 +210,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         InventoryInformation inventoryInformation = new InventoryInformation();
         BeanUtil.copyProperties(addInventoryInformationDTO, inventoryInformation);
         int insert = inventoryInformationMapper.insert(inventoryInformation);
-        materialPrice.addMaterialPrice(inventoryInformation.getMaterialCoding(),inventoryInformation.getMaterialName(),inventoryInformation.getWarehouseId());
+//        materialPrice.addMaterialPrice(inventoryInformation.getMaterialCoding(),inventoryInformation.getMaterialName(),inventoryInformation.getWarehouseId());
 
 
         //将同一库、同一物料所有的推荐存放位置放入list
@@ -241,7 +241,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
             String resultString = StringUtil.join(strings, ",");
             inventoryInformationUpdate.setPriorityStorageLocation(resultString);
             int result = inventoryInformationMapper.update(inventoryInformationUpdate, updateWrapper);
-            materialPrice.addMaterialPrice(inventoryInformationUpdate.getMaterialCoding(),inventoryInformationUpdate.getMaterialName(),inventoryInformationUpdate.getWarehouseId());
+//            materialPrice.addMaterialPrice(inventoryInformationUpdate.getMaterialCoding(),inventoryInformationUpdate.getMaterialName(),inventoryInformationUpdate.getWarehouseId());
             return Result.success("新增库存成功");
         } else {
             return Result.failure(ErrorCode.SYSTEM_ERROR, "新增库存失败！");

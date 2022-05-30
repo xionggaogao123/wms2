@@ -61,7 +61,7 @@ public class PlanUseOutDetailsServiceImpl extends SuperServiceImpl<PlanUseOutDet
                 record.setType(2);
                 record.setInventoryType(1);
                 record.setInventoryCredit(add.getInventoryCredit());
-                record.setInventoryAlteration(add.getApprovalsQuantity());
+                record.setInventoryCredit(add.getApprovalsQuantity());
                 record.setChangeTime(LocalDateTime.now());
                 record.setCreateTime(LocalDateTime.now());
                 recordService.addRecord(record);

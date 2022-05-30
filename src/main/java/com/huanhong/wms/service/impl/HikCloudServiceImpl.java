@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.Device;
@@ -110,7 +111,13 @@ public class HikCloudServiceImpl implements HikCloudService {
         }
         String response = HttpUtil.createPost(url).header("Authorization", "bearer " + token).form(params).execute().body();
         log.debug("消费消息 ,url:{},params:{},response:{}", url, params, response);
-        return getResult(response);
+        JSONObject jsonObject = JSONObject.parseObject(response);
+        Result<List<HikMqMessage>> result = new Result();
+        result.setOk(jsonObject.getBoolean("success"));
+        result.setMessage(jsonObject.getString("message"));
+        result.setStatus(jsonObject.getInteger("code"));
+        result.setData(JSON.parseArray(jsonObject.getString("data"), HikMqMessage.class));
+        return result;
     }
 
     @Override

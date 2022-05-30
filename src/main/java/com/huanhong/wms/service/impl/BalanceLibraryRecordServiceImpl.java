@@ -1,6 +1,7 @@
 package com.huanhong.wms.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -13,10 +14,7 @@ import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.AddAllocationPlanAndDetailsDTO;
 import com.huanhong.wms.entity.dto.AddAllocationPlanDTO;
 import com.huanhong.wms.entity.dto.AddAllocationPlanDetailDTO;
-import com.huanhong.wms.mapper.BalanceLibraryDetailMapper;
-import com.huanhong.wms.mapper.BalanceLibraryMapper;
-import com.huanhong.wms.mapper.BalanceLibraryRecordMapper;
-import com.huanhong.wms.mapper.InventoryInformationMapper;
+import com.huanhong.wms.mapper.*;
 import com.huanhong.wms.service.IAllocationPlanService;
 import com.huanhong.wms.service.IBalanceLibraryRecordService;
 import com.huanhong.wms.service.IProcurementPlanService;
@@ -53,6 +51,8 @@ public class BalanceLibraryRecordServiceImpl extends SuperServiceImpl<BalanceLib
     private BalanceLibraryMapper balanceLibraryMapper;
     @Resource
     private InventoryInformationMapper inventoryInformationMapper;
+    @Resource
+    private VariableMapper variableMapper;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -112,9 +112,23 @@ public class BalanceLibraryRecordServiceImpl extends SuperServiceImpl<BalanceLib
                 recordList = new ArrayList<>();
                 balanceLibraryRecordMap.put(balanceLibraryRecord.getOutWarehouseId(), recordList);
             }
-            BalanceLibraryRecord tempRecord = new BalanceLibraryRecord();
-            tempRecord.setId(balanceLibraryRecord.getId());
-            recordList.add(tempRecord);
+            if (null == balanceLibraryRecord.getConsignor()) {
+                if (null == balanceLibraryRecord.getIsOwn()) {
+                    throw new BizException(Result.failure(400, "isOwn 不可为空"));
+                }
+                if (balanceLibraryRecord.getIsOwn() == 1) {
+                    balanceLibraryRecord.setConsignor(0);
+                } else {
+                    String warehouseId = balanceLibraryRecord.getOutWarehouseId();
+                    Variable variable = variableMapper.selectOne(Wrappers.<Variable>lambdaQuery()
+                            .eq(Variable::getKey, "consignor")
+                            .eq(Variable::getParentValue, warehouseId).last("limit 1"));
+                    if (null != variable) {
+                        balanceLibraryRecord.setConsignor(Convert.toInt(variable.getValue()));
+                    }
+                }
+            }
+            recordList.add(balanceLibraryRecord);
             // 创建调拨计划
             AddAllocationPlanAndDetailsDTO addAllocationPlanAndDetailsDTO;
             AddAllocationPlanDTO addAllocationPlanDTO;
@@ -182,22 +196,25 @@ public class BalanceLibraryRecordServiceImpl extends SuperServiceImpl<BalanceLib
             String planNo;
             planNo = ((AllocationPlan) r.getData()).getAllocationNumber();
             List<BalanceLibraryRecord> balanceLibraryRecordList = balanceLibraryRecordMap.get(s);
-            for (BalanceLibraryRecord balanceLibraryRecord : balanceLibraryRecordList) {
-                if (null != balanceLibraryRecord.getPreCalibrationQuantity() && 0 != balanceLibraryRecord.getPreCalibrationQuantity()) {
-                    balanceLibraryRecord.setPlanNo(planNo);
-                    balanceLibraryRecord.setCalibrationStatus(1);
-                } else if (null != balanceLibraryRecord.getPreCalibrationQuantity2() && 0 != balanceLibraryRecord.getPreCalibrationQuantity2()) {
-                    balanceLibraryRecord.setPlanNo2(planNo);
-                    balanceLibraryRecord.setCalibrationStatus2(1);
-                } else if (null != balanceLibraryRecord.getPreCalibrationQuantity3() && 0 != balanceLibraryRecord.getPreCalibrationQuantity3()) {
-                    balanceLibraryRecord.setPlanNo3(planNo);
-                    balanceLibraryRecord.setCalibrationStatus3(1);
+            if (CollectionUtil.isNotEmpty(balanceLibraryRecordList)) {
+                for (BalanceLibraryRecord balanceLibraryRecord : balanceLibraryRecordList) {
+                    if (null != balanceLibraryRecord.getPreCalibrationQuantity() && 0 != balanceLibraryRecord.getPreCalibrationQuantity()) {
+                        balanceLibraryRecord.setPlanNo(planNo);
+                        balanceLibraryRecord.setCalibrationStatus(1);
+                    } else if (null != balanceLibraryRecord.getPreCalibrationQuantity2() && 0 != balanceLibraryRecord.getPreCalibrationQuantity2()) {
+                        balanceLibraryRecord.setPlanNo2(planNo);
+                        balanceLibraryRecord.setCalibrationStatus2(1);
+                    } else if (null != balanceLibraryRecord.getPreCalibrationQuantity3() && 0 != balanceLibraryRecord.getPreCalibrationQuantity3()) {
+                        balanceLibraryRecord.setPlanNo3(planNo);
+                        balanceLibraryRecord.setCalibrationStatus3(1);
+                    }
+                }
+                boolean flag = saveOrUpdateBatch(balanceLibraryRecordList);
+                if (!flag) {
+                    throw new BizException("平衡利库操作记录保存失败，请稍后重试");
                 }
             }
-            boolean flag = saveOrUpdateBatch(balanceLibraryRecordList);
-            if (!flag) {
-                throw new BizException("平衡利库操作记录保存失败，请稍后重试");
-            }
+
         });
 
         return Result.success();

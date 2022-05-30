@@ -1,5 +1,6 @@
 package com.huanhong.wms.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.Version;
 import com.huanhong.wms.SuperEntity;
 import io.swagger.annotations.ApiModel;
@@ -77,4 +78,7 @@ public class BalanceLibraryRecord extends SuperEntity {
 
     @ApiModelProperty(value = "货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤")
     private Integer consignor;
+    @TableField(exist = false)
+    @ApiModelProperty("是否自有 1是0否")
+    private Integer isOwn;
 }

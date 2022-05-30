@@ -10,7 +10,6 @@ import com.huanhong.wms.entity.vo.PreExpirationInventoryInfoVo;
 import com.huanhong.wms.entity.vo.SafeInventoryInfoVo;
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 import java.util.Map;
@@ -38,7 +37,6 @@ public interface InventoryInformationMapper extends BaseMapper<InventoryInformat
     List<SafeInventoryInfoVo> getBelowSafetyStockMaterialWarningByParam(@Param("warehouseId") String warehouseId);
 
     List<PreExpirationInventoryInfoVo> getPreExpirationWarningByParam(@Param("warehouseId") String warehouseId, @Param("days") Integer days);
-    @Select("select COALESCE(sum(inventory_credit),0) from inventory_information where del = 0 and warehouse_id=#{warehouseId} and material_coding=#{materialCoding}")
-    Double sumInventoryCreditByWarehouseMaterialCoding(@Param("warehouseId") String warehouseId, @Param("materialCoding") String materialCoding);
+    Double sumInventoryCreditByWarehouseMaterialCoding(@Param("warehouseId") String warehouseId, @Param("materialCoding") String materialCoding, @Param("isOwn") String isOwn);
 
 }

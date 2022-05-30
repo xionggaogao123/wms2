@@ -4,7 +4,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.TimeInterval;
 import com.huanhong.wms.service.HikCloudService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -20,12 +19,17 @@ public class HikMqTask {
     /**
      * 每5秒消费消息
      */
-    @Scheduled(fixedDelay = 5*1000)
+    @Scheduled(fixedDelay = 5 * 1000)
     public void consumerMessage() {
         TimeInterval timer = DateUtil.timer();
-        log.info("***** 检查当前任务开始 *****");
-        hikCloudService.consumerMessage();
-        log.info("***** 检查当前任务结束，耗时:{}ms *****", timer.interval());
+        log.info("*****海康订阅消息任务开始 *****");
+        try {
+            hikCloudService.consumerMessage();
+        } catch (Exception e) {
+            log.error("海康订阅消息异常", e);
+        }
+
+        log.info("***** 海康订阅消息任务结束，耗时:{}ms *****", timer.interval());
     }
 
 }

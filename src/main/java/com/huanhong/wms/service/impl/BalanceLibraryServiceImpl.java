@@ -19,10 +19,7 @@ import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.vo.BalanceLibraryDetailVo;
 import com.huanhong.wms.entity.vo.BalanceLibraryRecordVo;
 import com.huanhong.wms.entity.vo.BalanceLibraryVo;
-import com.huanhong.wms.mapper.BalanceLibraryMapper;
-import com.huanhong.wms.mapper.InventoryInformationMapper;
-import com.huanhong.wms.mapper.ProcurementPlanMapper;
-import com.huanhong.wms.mapper.WarehouseManagementMapper;
+import com.huanhong.wms.mapper.*;
 import com.huanhong.wms.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,6 +58,8 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
     private IAllocationPlanService allocationPlanService;
     @Resource
     private IProcurementPlanService procurementPlanService;
+    @Resource
+    private VariableMapper variableMapper;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -164,6 +163,8 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
         if (null == balanceLibrary) {
             return Result.failure("该平衡利库不存在或已被删除");
         }
+        List<Variable> variables = variableMapper.selectList(Wrappers.<Variable>lambdaQuery()
+                .eq(Variable::getKey, "consignor"));
         // 获取其他的仓库
         List<WarehouseManagement> warehouseManagements = warehouseManagementMapper.selectList(Wrappers.<WarehouseManagement>lambdaQuery()
                 .ne(WarehouseManagement::getWarehouseId, balanceLibrary.getTargetWarehouse()));
@@ -188,18 +189,74 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
                         .reduce(new BigDecimal("0"), NumberUtil::add).doubleValue();
                 //已有调拨操作
                 warehouseManagements.forEach(wm -> {
-                    BalanceLibraryRecordVo recordVo = new BalanceLibraryRecordVo();
-                    Optional<BalanceLibraryRecord> optionalBalanceLibraryRecord = rs.stream().filter(r -> r.getOutWarehouseId().equals(wm.getWarehouseId()))
-                            .findFirst();
-                    if (optionalBalanceLibraryRecord.isPresent()) {
-                        BalanceLibraryRecord balanceLibraryRecord = optionalBalanceLibraryRecord.get();
-                        BeanUtil.copyProperties(balanceLibraryRecord, recordVo);
+                    List<BalanceLibraryRecord> balanceLibraryRecordList = rs.stream().filter(r -> r.getOutWarehouseId().equals(wm.getWarehouseId()))
+                            .collect(Collectors.toList());
+                    if (CollectionUtil.isNotEmpty(balanceLibraryRecordList)) {
+
+                        for (BalanceLibraryRecord balanceLibraryRecord : balanceLibraryRecordList) {
+                            BalanceLibraryRecordVo recordVo = new BalanceLibraryRecordVo();
+                            BeanUtil.copyProperties(balanceLibraryRecord, recordVo);
+                            if (balanceLibraryRecord.getConsignor() == 0) {
+                                //自有
+                                recordVo.setOutWarehouseId(wm.getWarehouseId());
+                                recordVo.setOutWarehouse(wm.getWarehouseName());
+                                Double inventoryCredit = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(), bld.getMaterialCoding(), String.valueOf(1));
+                                recordVo.setInventoryCredit(inventoryCredit);
+                                recordVo.setIsOwn(1);
+                                recordVo.setConsignor(0);
+                                recordVos.add(recordVo);
+                                if (balanceLibraryRecordList.size() == 1) {
+                                    BalanceLibraryRecordVo recordVo2 = new BalanceLibraryRecordVo();
+                                    recordVo2.setOutWarehouseId(wm.getWarehouseId());
+                                    recordVo2.setOutWarehouse(wm.getWarehouseName());
+                                    Double inventoryCredit2 = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(), bld.getMaterialCoding(), String.valueOf(0));
+                                    recordVo2.setInventoryCredit(inventoryCredit2);
+                                    recordVo2.setIsOwn(0);
+                                    Integer consignor = variables.stream().filter(v -> v.getParentValue().equals(wm.getWarehouseId())).mapToInt(v -> Convert.toInt(v.getValue())).findFirst().getAsInt();
+                                    recordVo2.setConsignor(consignor);
+                                    recordVos.add(recordVo2);
+                                }
+                            } else {
+                                //代管
+                                BalanceLibraryRecordVo recordVo2 = new BalanceLibraryRecordVo();
+                                BeanUtil.copyProperties(balanceLibraryRecord, recordVo2);
+                                Double inventoryCredit2 = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(), bld.getMaterialCoding(), String.valueOf(0));
+                                recordVo2.setInventoryCredit(inventoryCredit2);
+                                recordVo2.setIsOwn(0);
+                                Integer consignor = variables.stream().filter(v -> v.getParentValue().equals(wm.getWarehouseId())).mapToInt(v -> Convert.toInt(v.getValue())).findFirst().getAsInt();
+                                recordVo2.setConsignor(consignor);
+                                recordVos.add(recordVo2);
+                                if (balanceLibraryRecordList.size() == 1) {
+                                    BalanceLibraryRecordVo recordVo3 = new BalanceLibraryRecordVo();
+                                    recordVo3.setOutWarehouseId(wm.getWarehouseId());
+                                    recordVo3.setOutWarehouse(wm.getWarehouseName());
+                                    Double inventoryCredit = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(), bld.getMaterialCoding(), String.valueOf(1));
+                                    recordVo3.setInventoryCredit(inventoryCredit);
+                                    recordVo3.setIsOwn(1);
+                                    recordVo3.setConsignor(0);
+                                    recordVos.add(recordVo3);
+                                }
+                            }
+                        }
+
+                    } else {
+                        BalanceLibraryRecordVo recordVo = new BalanceLibraryRecordVo();
+                        recordVo.setOutWarehouseId(wm.getWarehouseId());
+                        recordVo.setOutWarehouse(wm.getWarehouseName());
+                        Double inventoryCredit = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(), bld.getMaterialCoding(), String.valueOf(1));
+                        recordVo.setInventoryCredit(inventoryCredit);
+                        recordVo.setIsOwn(1);
+                        recordVo.setConsignor(0);
+                        recordVos.add(recordVo);
+                        BalanceLibraryRecordVo recordVo2 = new BalanceLibraryRecordVo();
+                        BeanUtil.copyProperties(recordVo, recordVo2);
+                        Double inventoryCredit2 = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(), bld.getMaterialCoding(), String.valueOf(0));
+                        recordVo2.setInventoryCredit(inventoryCredit2);
+                        recordVo2.setIsOwn(0);
+                        Integer consignor = variables.stream().filter(v -> v.getParentValue().equals(wm.getWarehouseId())).mapToInt(v -> Convert.toInt(v.getValue())).findFirst().getAsInt();
+                        recordVo2.setConsignor(consignor);
+                        recordVos.add(recordVo2);
                     }
-                    recordVo.setOutWarehouseId(wm.getWarehouseId());
-                    recordVo.setOutWarehouse(wm.getWarehouseName());
-                    Double inventoryCredit = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(), bld.getMaterialCoding());
-                    recordVo.setInventoryCredit(inventoryCredit);
-                    recordVos.add(recordVo);
                 });
 
             } else {
@@ -208,9 +265,19 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
                     BalanceLibraryRecordVo recordVo = new BalanceLibraryRecordVo();
                     recordVo.setOutWarehouseId(wm.getWarehouseId());
                     recordVo.setOutWarehouse(wm.getWarehouseName());
-                    Double inventoryCredit = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(), bld.getMaterialCoding());
+                    Double inventoryCredit = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(), bld.getMaterialCoding(), String.valueOf(1));
                     recordVo.setInventoryCredit(inventoryCredit);
+                    recordVo.setIsOwn(1);
+                    recordVo.setConsignor(0);
                     recordVos.add(recordVo);
+                    BalanceLibraryRecordVo recordVo2 = new BalanceLibraryRecordVo();
+                    BeanUtil.copyProperties(recordVo, recordVo2);
+                    Double inventoryCredit2 = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(), bld.getMaterialCoding(), String.valueOf(0));
+                    recordVo2.setInventoryCredit(inventoryCredit2);
+                    recordVo2.setIsOwn(0);
+                    Integer consignor = variables.stream().filter(v -> v.getParentValue().equals(wm.getWarehouseId())).mapToInt(v -> Convert.toInt(v.getValue())).findFirst().getAsInt();
+                    recordVo2.setConsignor(consignor);
+                    recordVos.add(recordVo2);
                 });
             }
             balanceLibraryDetailVo.setSumCalibrationQuantity(sumCalibrationQuantity);

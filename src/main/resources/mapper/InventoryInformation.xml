@@ -212,22 +212,22 @@
     <select id="getBelowSafetyStockMaterialWarningByParam"
             resultType="com.huanhong.wms.entity.vo.SafeInventoryInfoVo">
         SELECT
-            i.material_coding ,
-            i.material_name ,
-            i.inventory_credit ,
-            i.safe_quantity ,
-            m.specification_model
+        i.material_coding ,
+        i.material_name ,
+        i.inventory_credit ,
+        i.safe_quantity ,
+        m.specification_model
         FROM
-            inventory_information i
-                LEFT JOIN material m ON m.material_coding = i.material_coding
+        inventory_information i
+        LEFT JOIN material m ON m.material_coding = i.material_coding
         WHERE
-            i.del = 0
+        i.del = 0
         AND i.safe_quantity > i.inventory_credit
         <if test="warehouseId != null">
             and i.warehouse_id = #{warehouseId}
         </if>
         ORDER BY
-            i.material_coding
+        i.material_coding
     </select>
     <select id="getPreExpirationWarningByParam"
             resultType="com.huanhong.wms.entity.vo.PreExpirationInventoryInfoVo">
@@ -253,5 +253,22 @@
         </if>
         ORDER BY
         i.effective_date
+    </select>
+    <select id="sumInventoryCreditByWarehouseMaterialCoding" resultType="java.lang.Double">
+        select COALESCE(sum(inventory_credit), 0)
+        from inventory_information
+        where del = 0
+        <if test="warehouseId != null">
+            and warehouse_id = #{warehouseId}
+        </if>
+        <if test="materialCoding != null">
+            and material_coding = #{materialCoding}
+        </if>
+        <if test='isOwn != null and isOwn == "1"'>
+            and consignor = 0
+        </if>
+        <if test='isOwn != null and isOwn != "1"'>
+            and consignor != 0
+        </if>
     </select>
 </mapper>

@@ -1,19 +1,13 @@
 package com.huanhong.wms.entity.dto;
 
 
-import com.baomidou.mybatisplus.annotation.FieldStrategy;
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @ApiModel("新增盘点单DTO")
@@ -78,5 +72,8 @@ public class AddMakeInventoryDTO {
 
     @ApiModelProperty(value = "盘点结束时间")
     private LocalDateTime endTime;
+
+    @ApiModelProperty(value = "计划类别-1-正常、2-加急、3-补计划、请选择（默认）")
+    private Integer planClassification;
 
 }

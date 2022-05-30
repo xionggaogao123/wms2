@@ -19,7 +19,6 @@ import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.*;
-import com.huanhong.wms.entity.dto.AddAllocationOutDetailsDTO;
 import com.huanhong.wms.entity.dto.UpPaStatus;
 import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
 import com.huanhong.wms.entity.param.ApproveParam;
@@ -247,6 +246,36 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                         continue;
                     }
                     break;
+                //    盘点计划
+                case "make_inventory":
+                    List<MakeInventory> makeInventories = makeInventoryMapper.selectList(new QueryWrapper<MakeInventory>().eq("process_instance_id", processInstanceId));
+                    if (makeInventories.size() > 0) {
+                        MakeInventory makeInventory = makeInventories.get(0);
+                        p.setDocumentNumber(makeInventory.getDocumentNumber());
+                        p.setName("盘点计划");
+                        p.setPlanClassification(makeInventory.getPlanClassification());
+                        p.setObjectId(makeInventory.getId());
+                        p.setObjectType(7);
+                    } else {
+                        processingData(listMap, processInstanceId, taskId);
+                        continue;
+                    }
+                    break;
+                //    盘点报告
+                case "make_inventory_report":
+                    List<MakeInventoryReport> makeInventoryReports = makeInventoryReportMapper.selectList(new QueryWrapper<MakeInventoryReport>().eq("process_instance_id", processInstanceId));
+                    if (makeInventoryReports.size() > 0) {
+                        MakeInventoryReport makeInventoryReport = makeInventoryReports.get(0);
+                        p.setDocumentNumber(makeInventoryReport.getReportNumber());
+                        p.setName("盘点报告");
+                        p.setPlanClassification(makeInventoryReport.getPlanClassification());
+                        p.setObjectId(makeInventoryReport.getId());
+                        p.setObjectType(8);
+                    } else {
+                        processingData(listMap, processInstanceId, taskId);
+                        continue;
+                    }
+                    break;
                 default:
                     log.warn("暂未处理的流程：{}", type);
                     break;
@@ -373,7 +402,6 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                 return Result.failure(complete.getMessage());
             }
             update = processAssignmentMapper.updateById(pa);
-
         }
         //驳回
         if (param.getType() == 2) {
@@ -556,6 +584,22 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                         //单据状态由审批中改为驳回
                         tempMakeInventory.setPlanStatus(5);
                         f = makeInventoryMapper.updateById(tempMakeInventory);
+                        if (f <= 0) {
+                            return Result.failure("数据未更新，操作失败");
+                        }
+                        break;
+                    //    盘点报告
+                    case "make_inventory_report":
+                        MakeInventoryReport makeInventoryReport = makeInventoryReportMapper.selectById(id);
+                        if (!ObjectUtil.isNotEmpty(makeInventoryReport)) {
+                            return Result.failure("盘点报告不存在或已被删除,无法完成");
+                        }
+                        MakeInventoryReport tempMakeInventoryReport = new MakeInventoryReport();
+                        tempMakeInventoryReport.setId(id);
+                        tempMakeInventoryReport.setRejectReason(param.getMessage());
+                        //单据状态由审批中改为驳回
+                        tempMakeInventoryReport.setPlanStatus(5);
+                        f = makeInventoryReportMapper.updateById(tempMakeInventoryReport);
                         if (f <= 0) {
                             return Result.failure("数据未更新，操作失败");
                         }
@@ -820,6 +864,24 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                             //单据状态由草拟转为审批中
                             tempMakeInventory.setPlanStatus(3);
                             f = makeInventoryMapper.updateById(tempMakeInventory);
+                            if (f <= 0) {
+                                return Result.failure("数据未更新，流程完成失败");
+                            }
+                            break;
+                        //    盘点报告
+                        case "make_inventory_report":
+                            MakeInventoryReport makeInventoryReport = makeInventoryReportMapper.selectById(id);
+
+                            if (!ObjectUtil.isNotEmpty(makeInventoryReport)) {
+                                return Result.failure("盘点报告不存在或已被删除,无法完成");
+                            }
+
+                            MakeInventoryReport tempMakeInventoryReport = new MakeInventoryReport();
+                            tempMakeInventoryReport.setId(id);
+                            tempMakeInventoryReport.setProcessInstanceId(processInstanceId);
+                            //单据状态由草拟转为审批中
+                            tempMakeInventoryReport.setPlanStatus(3);
+                            f = makeInventoryReportMapper.updateById(tempMakeInventoryReport);
                             if (f <= 0) {
                                 return Result.failure("数据未更新，流程完成失败");
                             }

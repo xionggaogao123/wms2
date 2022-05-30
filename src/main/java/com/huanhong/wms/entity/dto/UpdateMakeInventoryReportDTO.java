@@ -64,5 +64,7 @@ public class UpdateMakeInventoryReportDTO {
     @ApiModelProperty(value = "备注")
     private String remark;
 
+    @ApiModelProperty(value = "计划类别-1-正常、2-加急、3-补计划、请选择（默认）")
+    private Integer planClassification;
 
 }

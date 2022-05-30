@@ -93,8 +93,4 @@ public class AddMakeInventoryDetailsDTO {
 
     @ApiModelProperty(value = "供应商")
     private String supplier;
-
-    List<InventoryInformation> inventoryList;
-
-
 }

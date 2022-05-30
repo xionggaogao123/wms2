@@ -40,10 +40,10 @@ public class MakeInventoryDetailsServiceImpl extends SuperServiceImpl<MakeInvent
         List<AddMakeInventoryDetailsDTO> listFalse = new ArrayList<>();
         JSONObject jsonObject = new JSONObject();
         for (AddMakeInventoryDetailsDTO addMakeInventoryDetailsDTO : addMakeInventoryDetailsDTOList) {
-            List<InventoryInformation> inventoryList = addMakeInventoryDetailsDTO.getInventoryList();
-            inventoryList.forEach(list -> {
-                addMakeInventoryDetailsDTO.setUnitPrice(list.getUnitPrice());
-            });
+//            List<InventoryInformation> inventoryList = addMakeInventoryDetailsDTO.getInventoryList();
+//            inventoryList.forEach(list -> {
+//                addMakeInventoryDetailsDTO.setUnitPrice(list.getUnitPrice());
+//            });
             MakeInventoryDetails makeInventoryDetails = new MakeInventoryDetails();
             BeanUtil.copyProperties(addMakeInventoryDetailsDTO, makeInventoryDetails);
             int add = makeInventoryDetailsMapper.insert(makeInventoryDetails);

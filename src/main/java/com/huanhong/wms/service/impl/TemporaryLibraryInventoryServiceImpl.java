@@ -102,40 +102,40 @@ public class TemporaryLibraryInventoryServiceImpl extends SuperServiceImpl<Tempo
             /**
              * 当前日期
              */
-            String today = StrUtils.HandleData(DateUtil.today());
-            queryTemporaryLibraryInventory.likeRight("document_number", "LKQD" + today);
-            /**
-             * likeRigh: LKQD+XXXXXXXX(当前年月日)
-             */
-            TemporaryLibraryInventory maxTemporaryLibraryInventory = temporaryLibraryInventoryMapper.selectOne(queryTemporaryLibraryInventory.orderByDesc("id").last("limit 1"));
-            //目前最大的单据编码
-            String maxDocNum = null;
-            if (ObjectUtil.isNotEmpty(maxTemporaryLibraryInventory)) {
-                maxDocNum = maxTemporaryLibraryInventory.getDocumentNumber();
-            }
-            String orderNo = null;
-            //单据编码前缀-QD+年月日
-            String code_pfix = "LKQD" + today;
-            if (maxDocNum != null && maxTemporaryLibraryInventory.getDocumentNumber().contains(code_pfix)) {
-                String code_end = maxTemporaryLibraryInventory.getDocumentNumber().substring(12, 16);
-                int endNum = Integer.parseInt(code_end);
-                int tmpNum = 10000 + endNum + 1;
-                orderNo = code_pfix + StrUtils.subStr("" + tmpNum, 1);
-            } else {
-                orderNo = code_pfix + "0001";
-            }
+//            String today = StrUtils.HandleData(DateUtil.today());
+//            queryTemporaryLibraryInventory.likeRight("document_number", "LKQD" + today);
+//            /**
+//             * likeRigh: LKQD+XXXXXXXX(当前年月日)
+//             */
+//            TemporaryLibraryInventory maxTemporaryLibraryInventory = temporaryLibraryInventoryMapper.selectOne(queryTemporaryLibraryInventory.orderByDesc("id").last("limit 1"));
+//            //目前最大的单据编码
+//            String maxDocNum = null;
+//            if (ObjectUtil.isNotEmpty(maxTemporaryLibraryInventory)) {
+//                maxDocNum = maxTemporaryLibraryInventory.getDocumentNumber();
+//            }
+//            String orderNo = null;
+//            //单据编码前缀-QD+年月日
+//            String code_pfix = "LKQD" + today;
+//            if (maxDocNum != null && maxTemporaryLibraryInventory.getDocumentNumber().contains(code_pfix)) {
+//                String code_end = maxTemporaryLibraryInventory.getDocumentNumber().substring(12, 16);
+//                int endNum = Integer.parseInt(code_end);
+//                int tmpNum = 10000 + endNum + 1;
+//                orderNo = code_pfix + StrUtils.subStr("" + tmpNum, 1);
+//            } else {
+//                orderNo = code_pfix + "0001";
+//            }
 
             /**
              * 新增单据
              */
             TemporaryLibraryInventory temporaryLibraryInventory = new TemporaryLibraryInventory();
             BeanUtil.copyProperties(addTemporaryLibraryInventoryDTO, temporaryLibraryInventory);
-            temporaryLibraryInventory.setDocumentNumber(orderNo);
+            temporaryLibraryInventory.setDocumentNumber("LKQD"+String.valueOf(System.currentTimeMillis()));
             log.info("添加临时清点的数据为:{}", JsonUtil.obj2String(temporaryLibraryInventory));
             temporaryLibraryInventory.setComplete(0);
             int i = temporaryLibraryInventoryMapper.insert(temporaryLibraryInventory);
             if (i > 0) {
-                return Result.success(getTemporaryLibraryInventoryByDocumentNumberAndWarehouseId(orderNo, addTemporaryLibraryInventoryDTO.getWarehouseId()), "新增成功");
+                return Result.success(getTemporaryLibraryInventoryByDocumentNumberAndWarehouseId(temporaryLibraryInventory.getDocumentNumber(), addTemporaryLibraryInventoryDTO.getWarehouseId()), "新增成功");
             } else {
                 return Result.failure(ErrorCode.SYSTEM_ERROR, "新增失败！");
             }

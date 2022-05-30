@@ -181,7 +181,7 @@ public class TemporaryLibraryInventoryV1ServiceImpl implements TemporaryLibraryI
         AtomicInteger number = new AtomicInteger();
         List<TemporaryLibraryInventoryDetails> temporaryLibraryInventoryDetails = update.getTemporaryLibraryInventoryDetails();
         temporaryLibraryInventoryDetails.forEach(details2->{
-            if(details2.getComplete() == 1){
+            if(details2.getComplete() == 0){
                 number.getAndIncrement();
             }
         });
@@ -216,6 +216,7 @@ public class TemporaryLibraryInventoryV1ServiceImpl implements TemporaryLibraryI
     private List<TemporaryEnterWarehouseDetails> addSublist(List<TemporaryLibraryInventoryDetails> temporaryLibraryInventoryDetails, TemporaryEnterWarehouse temporaryEnterWarehouse) {
         List<TemporaryEnterWarehouseDetails> temporaryEnterWarehouseDetails = BeanUtil.copyToList(temporaryLibraryInventoryDetails, TemporaryEnterWarehouseDetails.class);
         temporaryEnterWarehouseDetails.forEach(details -> {
+            details.setEffectiveTime(LocalDateTime.now());
             details.setEnterNumber(temporaryEnterWarehouse.getEnterNumber());
             temporaryEnterWarehouseDetailsMapper.insert(details);
         });

@@ -59,10 +59,10 @@ public class TemporaryLibraryInventoryV1Controller extends BaseController {
     @ApiOperation(value = "更新", notes = "生成代码")
     @PutMapping("/update")
     public Result update(@Valid @RequestBody UpdateTemporaryLibraryInventoryAndDetailsDTO update) {
-        log.info("新增临时清点的数据为:{}", JsonUtil.obj2String(update));
         try {
             return temporaryLibraryInventoryV1Service.updateTemporaryMainAndSublistAndWarehouse(update);
         } catch (Exception e) {
+            log.error("失败原因:{},参数信息:{}",JsonUtil.obj2String(e.getMessage()),JsonUtil.obj2String(update));
             return Result.failure("更新失败");
         }
     }

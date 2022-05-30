@@ -83,6 +83,9 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
     private IEnterWarehouseDetailsService enterWarehouseDetailsService;
 
     @Resource
+    private PlanUseOutDetailsMapper planUseOutDetailsMapper;
+
+    @Resource
     private IInventoryInformationService inventoryInformationService;
 
     @Resource
@@ -117,6 +120,9 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
     private BalanceLibraryDetailMapper balanceLibraryDetailMapper;
     @Resource
     private ProcurementPlanDetailsMapper procurementPlanDetailsMapper;
+
+    @Resource
+    private MaterialPriceService materialPriceService;
 
     @Override
     public Result<Integer> syncProcessAssignment() {
@@ -651,6 +657,13 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                             if (f <= 0) {
                                 return Result.failure("数据未更新，流程完成失败");
                             }
+                            //TODO 计算价格出库
+                            QueryWrapper<PlanUseOutDetails> queryWrapper = new QueryWrapper<PlanUseOutDetails>();
+                            queryWrapper.eq("use_planning_document_number",planUseOut.getDocumentNumber());
+                            List<PlanUseOutDetails> planUseOutDetails = planUseOutDetailsMapper.selectList(queryWrapper);
+                            planUseOutDetails.forEach(p->{
+                                materialPriceService.addMaterialPrice(p.getMaterialCoding(),p.getMaterialName(),p.getWarehouseId());
+                            });
 
                             break;
                         //    入库
@@ -689,7 +702,10 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                                         updateInventoryInformationDTO.setInDate(DateUtil.date());
                                         //入库单单据编号
                                         updateInventoryInformationDTO.setDocumentNumber(enterWarehouse.getDocumentNumber());
+
                                         inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
+                                        //TODO 计算价格入库
+                                        materialPriceService.addMaterialPrice(inventoryInformation.getMaterialCoding(),inventoryInformation.getMaterialName(),inventoryInformation.getWarehouseId());
                                     }
                                 }
                             }

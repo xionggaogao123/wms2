@@ -7,13 +7,16 @@ import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.PlanUseOutDetails;
+import com.huanhong.wms.entity.Record;
 import com.huanhong.wms.entity.dto.AddPlanUseOutDetailsDTO;
 import com.huanhong.wms.entity.dto.UpdatePlanUseOutDetailsDTO;
 import com.huanhong.wms.mapper.PlanUseOutDetailsMapper;
 import com.huanhong.wms.service.IPlanUseOutDetailsService;
+import com.huanhong.wms.service.RecordService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +34,9 @@ public class PlanUseOutDetailsServiceImpl extends SuperServiceImpl<PlanUseOutDet
     @Resource
     private PlanUseOutDetailsMapper planUseOutDetailsMapper;
 
+    @Resource
+    private RecordService recordService;
+
     /**
      * 添加领料出库明细
      * @param listAddDto
@@ -40,10 +46,26 @@ public class PlanUseOutDetailsServiceImpl extends SuperServiceImpl<PlanUseOutDet
     public Result addPlanUseOutDetails(List<AddPlanUseOutDetailsDTO> listAddDto) {
         PlanUseOutDetails planUseOutDetails = new PlanUseOutDetails();
         try {
-            for (int i = 0; i<listAddDto.size(); i++){
-                BeanUtil.copyProperties(listAddDto.get(i),planUseOutDetails);
+
+            listAddDto.forEach(add->{
+                BeanUtil.copyProperties(add,planUseOutDetails);
                 planUseOutDetailsMapper.insert(planUseOutDetails);
-            }
+                //添加出入库明细
+                Record record = new Record();
+                record.setMaterialCoding(add.getMaterialCoding());
+                record.setMaterialName(add.getMaterialName());
+                record.setBatch(add.getBatch());
+                record.setCargoSpaceId(add.getCargoSpaceId());
+                record.setConsignor(add.getConsignor());
+                record.setInventoryAlteration(add.getRequisitionQuantity());
+                record.setType(2);
+                record.setInventoryType(1);
+                record.setInventoryCredit(add.getInventoryCredit());
+                record.setInventoryAlteration(add.getApprovalsQuantity());
+                record.setChangeTime(LocalDateTime.now());
+                record.setCreateTime(LocalDateTime.now());
+                recordService.addRecord(record);
+            });
             return Result.success();
         }catch (Exception e){
             log.error("明细插入失败！异常：",e);

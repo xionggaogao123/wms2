@@ -133,3 +133,21 @@ CREATE TABLE `temporary_record_details`
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ROW_FORMAT=DYNAMIC COMMENT='出入库清单子表';
 
+CREATE TABLE `record`
+(
+    `id`                           bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `material_coding`   varchar(255) NOT NULL COMMENT '物料编码',
+    `material_name`     varchar(255) DEFAULT NULL COMMENT '物料名称',
+    `batch`             varchar(255) DEFAULT NULL COMMENT '批次',
+    `cargo_space_id`    varchar(255) DEFAULT NULL COMMENT '货位编码',
+    `inventory_type`    varchar(255) DEFAULT NULL COMMENT '库存类型',
+    `type` tinyint DEFAULT NULL COMMENT '出入库变动类型：0-暂存库出库 1-正式库出库',
+    `inventory_credit` double NOT NULL DEFAULT '0' COMMENT '库存数量',
+    `inventory_alteration` double NOT NULL DEFAULT '0' COMMENT '库存变动数量',
+    `consignor` int NOT NULL DEFAULT '0' COMMENT '货主 0-泰丰盛和  1-润中，2-雅店，3-蒋家河，4-下沟，5-精煤',
+    `change_time`                  timestamp    NOT NULL COMMENT '库存变动时间',
+    `create_time`                  timestamp    NOT NULL COMMENT '创建时间',
+    `last_update`                  timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
+    `del`                          tinyint unsigned NOT NULL DEFAULT '0' COMMENT '是否删除',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ROW_FORMAT=DYNAMIC COMMENT='出入库清单主表';

@@ -54,6 +54,10 @@ public class TemporaryLibraryInventoryDetails extends SuperEntity {
     @ApiModelProperty(value = "备注")
     private String remark;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "金额")
+    private String money;
+
     @ApiModelProperty(value = "版本-乐观锁")
     private Integer version;
 

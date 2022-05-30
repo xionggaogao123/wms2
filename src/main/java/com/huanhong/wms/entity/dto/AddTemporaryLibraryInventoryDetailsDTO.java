@@ -57,4 +57,7 @@ public class AddTemporaryLibraryInventoryDetailsDTO {
 
     @ApiModelProperty(value = "备注")
     private String remark;
+
+    @ApiModelProperty(value = "金额")
+    private Double money;
 }

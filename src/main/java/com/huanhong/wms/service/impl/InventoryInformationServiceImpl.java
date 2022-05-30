@@ -187,6 +187,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
             //将查出的ID存入updateDTO
             int i = inventoryInformationMapper.updateById(inventoryInformationIsExist);
             materialPrice.addMaterialPrice(inventoryInformationIsExist.getMaterialCoding(),inventoryInformationIsExist.getMaterialName(),inventoryInformationIsExist.getWarehouseId());
+
             if (i > 0) {
                 return Result.success("此货位存在同批次的同种物料,已合并数量");
             } else {

@@ -11,5 +11,5 @@ public interface MaterialPriceService {
      * @param materialCoding
      * @param materialName
      */
-    void addMaterialPrice(String materialCoding,String materialName);
+    void addMaterialPrice(String materialCoding,String materialName,String warehouseId);
 }

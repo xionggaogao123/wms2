@@ -43,8 +43,8 @@ public class TestController extends BaseController {
     @ApiOperationSupport(order = 1)
     @ApiOperation("价格补填")
     @PostMapping("")
-    public Result get(@RequestParam("materialCoding")String materialCoding,@RequestParam("materialName")String materialName) {
-        materialPriceService.addMaterialPrice(materialCoding,materialName);
+    public Result get(@RequestParam("materialCoding")String materialCoding,@RequestParam("materialName")String materialName,@RequestParam("warehouseId")String warehouseId) {
+        materialPriceService.addMaterialPrice(materialCoding,materialName,warehouseId);
         return Result.success();
     }
 }

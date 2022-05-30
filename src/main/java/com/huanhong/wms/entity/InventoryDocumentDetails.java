@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -41,6 +42,10 @@ public class InventoryDocumentDetails extends SuperEntity {
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "仓库")
     private String warehouse;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "单价")
+    private BigDecimal unitPrice;
 
     @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     @ApiModelProperty(value = "是否完成清点（0-未清点 1-已清点）")

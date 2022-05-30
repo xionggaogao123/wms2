@@ -20,6 +20,9 @@ public class AddInventoryDocumentDetailsDTO {
     @ApiModelProperty(value = "清点单编号")
     private String documentNumber;
 
+    @ApiModelProperty(value = "单价")
+    private String unitPrice;
+
     @NotBlank
     @ApiModelProperty(value = "物料编码")
     private String materialCoding;

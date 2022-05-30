@@ -11,12 +11,14 @@ import com.huanhong.wms.entity.InventoryInformation;
 import com.huanhong.wms.entity.Material;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.mapper.MaterialMapper;
+import com.huanhong.wms.service.MaterialPriceService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -36,40 +38,13 @@ import java.util.List;
 public class TestController extends BaseController {
 
     @Resource
-    private MaterialMapper materialMapper;
-
-    @Resource
-    private InventoryInformationMapper inventoryInformationMapper;
+    private MaterialPriceService materialPriceService;
 
     @ApiOperationSupport(order = 1)
     @ApiOperation("价格补填")
     @PostMapping("")
-    public Result get(TestRequest request) {
-        AtomicDouble atomicDouble = new AtomicDouble();
-        AtomicDouble amount = new AtomicDouble();
-        QueryWrapper<Material> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("material_coding",request.getMaterialCoding());
-        queryWrapper.eq("material_name",request.getMaterialName());
-        List<Material> materialslist = materialMapper.selectList(queryWrapper);
-        QueryWrapper<InventoryInformation> informationQueryWrapper = new QueryWrapper<>();
-        informationQueryWrapper.eq("material_coding",request.getMaterialCoding());
-        informationQueryWrapper.eq("material_name",request.getMaterialName());
-        List<InventoryInformation> inventoryInformation = inventoryInformationMapper.selectList(informationQueryWrapper);
-        for (InventoryInformation inventory : inventoryInformation) {
-            BigDecimal unitPrice = inventory.getUnitPrice();
-            Double inventoryCredit = inventory.getInventoryCredit();
-            //求 库存表中的某种物料每个批次的单价*对应批次的数量
-            BigDecimal multiply = unitPrice.multiply(new BigDecimal(inventoryCredit));
-            amount.getAndSet(multiply.doubleValue());
-            atomicDouble.getAndAdd(inventoryCredit);
-        }
-        double avgBuyPrice =  amount.get() / atomicDouble.get();
-        materialslist.forEach(material -> {
-            material.setAvgBuyPrice(avgBuyPrice);
-            material.setAvgSellPrice(avgBuyPrice*1.1);
-            material.setIntRate(1.1);
-            materialMapper.updateById(material);
-        });
-        return Result.success("ok");
+    public Result get(@RequestParam("materialCoding")String materialCoding,@RequestParam("materialName")String materialName) {
+        materialPriceService.addMaterialPrice(materialCoding,materialName);
+        return Result.success();
     }
 }

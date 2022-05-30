@@ -99,4 +99,9 @@ public class MaterialPriceServiceImpl implements MaterialPriceService {
 
         });
     }
+
+    @Override
+    public void selectMaterialPrice(String materialCoding, String warehouseId) {
+
+    }
 }

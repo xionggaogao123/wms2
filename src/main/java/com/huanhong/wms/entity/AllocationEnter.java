@@ -58,4 +58,8 @@ public class AllocationEnter extends SuperEntity {
     @ApiModelProperty(value = "调入单位")
     private String receiveCompany;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "货主")
+    private String consignor;
+
 }

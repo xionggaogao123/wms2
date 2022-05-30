@@ -43,4 +43,7 @@ public class AddAllocationEnterDTO {
 
     @ApiModelProperty(value = "备注")
     private String remark;
+
+    @ApiModelProperty(value = "货主")
+    private String consignor;
 }

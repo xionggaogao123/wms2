@@ -10,6 +10,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 @Data
 @ApiModel(description = "新增点验单明细DTO")
@@ -45,4 +46,7 @@ public class AddInventoryDocumentDetailsDTO {
 
     @ApiModelProperty(value = "备注")
     private String remark;
+
+    @ApiModelProperty(value = "单价")
+    private BigDecimal unitPrice;
 }

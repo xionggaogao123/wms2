@@ -45,7 +45,7 @@ public class MakeInventoryReportV1Controller {
 
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "查询", notes = "生成代码")
-    @PostMapping("/selectById/{id}")
+    @GetMapping("/selectById/{id}")
     public Result selectById(@PathVariable("id") Integer id) {
         try {
             Map map = makeInventoryReportService.selectById(id);

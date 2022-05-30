@@ -51,4 +51,7 @@ public class AddTemporaryLibraryInventoryDTO {
     @ApiModelProperty(value = "单据编号（需求计划）")
     private String planNumber;
 
+    @ApiModelProperty(value = "货主")
+    private Integer consignor;
+
 }

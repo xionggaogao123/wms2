@@ -69,4 +69,8 @@ public class TemporaryLibraryInventory extends SuperEntity {
     @ApiModelProperty(value = "单据编号（需求计划）")
     private String planNumber;
 
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "货主")
+    private Integer consignor;
+
 }

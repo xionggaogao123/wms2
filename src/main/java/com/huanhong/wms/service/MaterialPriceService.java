@@ -12,4 +12,11 @@ public interface MaterialPriceService {
      * @param materialName
      */
     void addMaterialPrice(String materialCoding,String materialName,String warehouseId);
+
+    /**
+     * 返回数据
+     * @param materialCoding
+     * @param warehouseId
+     */
+    void selectMaterialPrice(String materialCoding, String warehouseId);
 }

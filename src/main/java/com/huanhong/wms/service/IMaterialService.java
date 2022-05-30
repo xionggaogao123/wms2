@@ -2,6 +2,7 @@ package com.huanhong.wms.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huanhong.wms.SuperService;
+import com.huanhong.wms.dto.request.MaterialRequest;
 import com.huanhong.wms.entity.Material;
 import com.huanhong.wms.entity.vo.MaterialVO;
 import com.huanhong.wms.entity.vo.PdaMaterialVO;
@@ -29,15 +30,19 @@ public interface IMaterialService extends SuperService<Material> {
 
     /**
      * 查询某物料是否停用  0-使用中  1-停用
+     *
      * @param materialCode
      * @return
      */
-   int isStopUsing(String materialCode);
+    int isStopUsing(String materialCode);
 
     /**
      * 根据物料编码或物料名称模糊查询物料
+     *
      * @return
      */
-   List<Material> getMaterialListByKey(PdaMaterialVO pdaMaterialVO);
+    List<Material> getMaterialListByKey(PdaMaterialVO pdaMaterialVO);
+
+    MaterialRequest getMaterialListByKeyV1(PdaMaterialVO pdaMaterialVO);
 
 }

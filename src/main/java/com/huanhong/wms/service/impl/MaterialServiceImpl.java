@@ -6,12 +6,15 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.huanhong.wms.SuperServiceImpl;
+import com.huanhong.wms.dto.request.MaterialRequest;
 import com.huanhong.wms.entity.InventoryInformation;
 import com.huanhong.wms.entity.Material;
+import com.huanhong.wms.entity.MaterialPrice;
 import com.huanhong.wms.entity.vo.MaterialVO;
 import com.huanhong.wms.entity.vo.PdaMaterialVO;
 import com.huanhong.wms.mapper.InventoryInformationMapper;
 import com.huanhong.wms.mapper.MaterialMapper;
+import com.huanhong.wms.mapper.MaterialPriceMapper;
 import com.huanhong.wms.service.IMaterialService;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +36,9 @@ public class MaterialServiceImpl extends SuperServiceImpl<MaterialMapper, Materi
 
     @Resource
     private MaterialMapper materialMapper;
+
+    @Resource
+    private MaterialPriceMapper materialPriceMapper;
 
     @Resource
     private InventoryInformationMapper inventoryInformationMapper;
@@ -102,6 +108,10 @@ public class MaterialServiceImpl extends SuperServiceImpl<MaterialMapper, Materi
         queryWrapper.like(StringUtils.isNotBlank(pdaMaterialVO.getMaterialCoding()), "material_coding", pdaMaterialVO.getMaterialCoding());
         queryWrapper.like(StringUtils.isNotBlank(pdaMaterialVO.getMaterialName()), "material_name", pdaMaterialVO.getMaterialName());
         List<Material> materialslist = materialMapper.selectList(queryWrapper);
+        QueryWrapper<MaterialPrice> priceQueryWrapper = new QueryWrapper<>();
+        priceQueryWrapper.like(StringUtils.isNotBlank(pdaMaterialVO.getMaterialCoding()), "material_coding", pdaMaterialVO.getMaterialCoding());
+        priceQueryWrapper.like(StringUtils.isNotBlank(pdaMaterialVO.getMaterialName()), "material_name", pdaMaterialVO.getMaterialName());
+        List<MaterialPrice> materialPrices = materialPriceMapper.selectList(priceQueryWrapper);
 //        materialslist.forEach(list -> {
 //            QueryWrapper<InventoryInformation> wrapper = new QueryWrapper<>();
 //            wrapper.eq("material_coding", list.getMaterialCoding());
@@ -127,6 +137,21 @@ public class MaterialServiceImpl extends SuperServiceImpl<MaterialMapper, Materi
 //            });
 //        });
         return materialslist;
+    }
+    @Override
+    public MaterialRequest getMaterialListByKeyV1(PdaMaterialVO pdaMaterialVO){
+        QueryWrapper<Material> queryWrapper = new QueryWrapper<>();
+        queryWrapper.like(StringUtils.isNotBlank(pdaMaterialVO.getMaterialCoding()), "material_coding", pdaMaterialVO.getMaterialCoding());
+        queryWrapper.like(StringUtils.isNotBlank(pdaMaterialVO.getMaterialName()), "material_name", pdaMaterialVO.getMaterialName());
+        List<Material> materialslist = materialMapper.selectList(queryWrapper);
+        QueryWrapper<MaterialPrice> priceQueryWrapper = new QueryWrapper<>();
+        priceQueryWrapper.like(StringUtils.isNotBlank(pdaMaterialVO.getMaterialCoding()), "material_coding", pdaMaterialVO.getMaterialCoding());
+        priceQueryWrapper.like(StringUtils.isNotBlank(pdaMaterialVO.getMaterialName()), "material_name", pdaMaterialVO.getMaterialName());
+        List<MaterialPrice> materialPrices = materialPriceMapper.selectList(priceQueryWrapper);
+        MaterialRequest materialRequest = new MaterialRequest();
+        materialRequest.setMaterialPrices(materialPrices);
+        materialRequest.setMaterialslist(materialslist);
+        return materialRequest;
     }
 
 

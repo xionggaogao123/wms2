@@ -14,6 +14,7 @@ import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.common.units.EntityUtils;
 import com.huanhong.wms.BaseController;
 import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.dto.request.MaterialRequest;
 import com.huanhong.wms.entity.*;
 import com.huanhong.wms.entity.dto.*;
 import com.huanhong.wms.entity.vo.*;
@@ -793,8 +794,8 @@ public class PlanUseOutController extends BaseController {
     @GetMapping("/pagingFuzzyQueryByMaterialCodingOrNameV1")
     public Result pageV1(PdaMaterialVO pdaMaterialVO){
         try {
-             List<Material> materialListByKey = materialService.getMaterialListByKey(pdaMaterialVO);
-            return Result.success(materialListByKey);
+            MaterialRequest materialListByKeyV1 = materialService.getMaterialListByKeyV1(pdaMaterialVO);
+            return Result.success(materialListByKeyV1);
         } catch (Exception e) {
             Result.failure(9999,e.getMessage());
         }

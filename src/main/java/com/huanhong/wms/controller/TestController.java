@@ -47,4 +47,12 @@ public class TestController extends BaseController {
         materialPriceService.addMaterialPrice(materialCoding,materialName,warehouseId);
         return Result.success();
     }
+
+    @ApiOperationSupport(order = 1)
+    @ApiOperation("价格补填")
+    @PostMapping("")
+    public Result get(@RequestParam("materialCoding")String materialCoding,@RequestParam("warehouseId")String warehouseId) {
+        materialPriceService.selectMaterialPrice(materialCoding,warehouseId);
+        return Result.success();
+    }
 }

@@ -44,7 +44,7 @@ public class MakeInventoryReportV1ServiceImpl implements MakeInventoryReportV1Se
     public Result update(UpdateMakeInventoryReportRequest request) {
         MakeInventoryReport makeInventoryReport1 = request.getMakeInventoryReport();
         QueryWrapper<MakeInventoryReport> reportQueryWrapper = new QueryWrapper<>();
-        reportQueryWrapper.eq("report_number",makeInventoryReport1.getReportNumber());
+        reportQueryWrapper.eq("document_number",makeInventoryReport1.getDocumentNumber());
         //盘点报告是否存在
         MakeInventoryReport makeInventoryReport = makeInventoryReportMapper.selectOne(reportQueryWrapper);
         if (makeInventoryReport == null) {

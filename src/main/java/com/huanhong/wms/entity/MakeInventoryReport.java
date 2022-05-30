@@ -62,6 +62,10 @@ public class MakeInventoryReport extends SuperEntity {
     private String checkerIds;
 
     @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
+    @ApiModelProperty(value = "稽核人名称")
+    private String auditName;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_EMPTY)
     @ApiModelProperty(value = "稽核人Id")
     private Integer auditId;
 

@@ -138,6 +138,7 @@ public class MakeInventoryReportServiceImpl extends SuperServiceImpl<MakeInvento
              */
             MakeInventoryReport makeInventoryReport = new MakeInventoryReport();
             BeanUtil.copyProperties(addMakeInventoryReportDTO, makeInventoryReport);
+            makeInventoryReport.setAuditName(addMakeInventoryReportDTO.getAuditName());
             makeInventoryReport.setReportNumber(orderNo);
             int i = makeInventoryReportMapper.insert(makeInventoryReport);
             if (i > 0) {

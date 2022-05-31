@@ -72,6 +72,9 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     @Autowired
     private OssProperties ossProperties;
 
+    @Resource
+    private MaterialPriceService materialPriceService;
+
     /**
      * 分页查询
      *
@@ -152,6 +155,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         }
 
         int i = inventoryInformationMapper.updateById(inventoryInformationOld);
+        materialPriceService.addMaterialPrice(inventoryInformationOld.getMaterialCoding(),inventoryInformationOld.getMaterialName(),inventoryInformationOld.getWarehouseId());
         if (i > 0) {
             return Result.success("更新成功！");
         }
@@ -191,23 +195,24 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 //            inventoryInformationIsExist.setVersion(12);
             //将查出的ID存入updateDTO
             int i = inventoryInformationMapper.updateById(inventoryInformationIsExist);
-            materialPrice.addMaterialPrice(inventoryInformationIsExist.getMaterialCoding(), inventoryInformationIsExist.getMaterialName(), inventoryInformationIsExist.getWarehouseId());
-            //新增出库记录
-            Record record = new Record();
-            record.setMaterialName(inventoryInformationIsExist.getMaterialName());
-            record.setMaterialCoding(inventoryInformationIsExist.getMaterialCoding());
-            record.setBatch(inventoryInformationIsExist.getBatch());
-            record.setCargoSpaceId(inventoryInformationIsExist.getCargoSpaceId());
-            record.setInventoryType(1);
-            record.setType(1);
-            record.setInventoryCredit(inventoryCreditOld);
-            record.setInventoryAlteration(inventoryCreditNew);
-            record.setConsignor(addInventoryInformationDTO.getConsignor());
-            record.setChangeTime(LocalDateTime.now());
-            record.setCreateTime(LocalDateTime.now());
-            //TODO
-            recordService.addRecord(record);
+
             if (i > 0) {
+                materialPrice.addMaterialPrice(inventoryInformationIsExist.getMaterialCoding(), inventoryInformationIsExist.getMaterialName(), inventoryInformationIsExist.getWarehouseId());
+                //新增出库记录
+                Record record = new Record();
+                record.setMaterialName(inventoryInformationIsExist.getMaterialName());
+                record.setMaterialCoding(inventoryInformationIsExist.getMaterialCoding());
+                record.setBatch(inventoryInformationIsExist.getBatch());
+                record.setCargoSpaceId(inventoryInformationIsExist.getCargoSpaceId());
+                record.setInventoryType(1);
+                record.setType(1);
+                record.setInventoryCredit(inventoryCreditOld);
+                record.setInventoryAlteration(inventoryCreditNew);
+                record.setConsignor(addInventoryInformationDTO.getConsignor());
+                record.setChangeTime(LocalDateTime.now());
+                record.setCreateTime(LocalDateTime.now());
+                //TODO
+                recordService.addRecord(record);
                 return Result.success("此货位存在同批次的同种物料,已合并数量");
             } else {
                 return Result.failure("此货位存在同批次的同种物料,合并数量失败(库存信息或被其他人改动,请重试)");
@@ -229,22 +234,23 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         InventoryInformation inventoryInformation = new InventoryInformation();
         BeanUtil.copyProperties(addInventoryInformationDTO, inventoryInformation);
         int insert = inventoryInformationMapper.insert(inventoryInformation);
-        materialPrice.addMaterialPrice(inventoryInformation.getMaterialCoding(), inventoryInformation.getMaterialName(), inventoryInformation.getWarehouseId());
-        Record recordV2 = new Record();
-        recordV2.setMaterialName(inventoryInformationIsExist.getMaterialName());
-        recordV2.setMaterialCoding(inventoryInformationIsExist.getMaterialCoding());
-        recordV2.setBatch(inventoryInformationIsExist.getBatch());
-        recordV2.setCargoSpaceId(inventoryInformationIsExist.getCargoSpaceId());
-        recordV2.setInventoryType(1);
-        recordV2.setType(1);
-        recordV2.setInventoryCredit(inventoryInformationIsExist.getInventoryCredit());
-        recordV2.setInventoryAlteration(inventoryInformation.getInventoryCredit());
-        recordV2.setConsignor(addInventoryInformationDTO.getConsignor());
-        recordV2.setChangeTime(LocalDateTime.now());
-        recordV2.setCreateTime(LocalDateTime.now());
-        //TODO
-        recordService.addRecord(recordV2);
-
+        if(insert > 0){
+            materialPrice.addMaterialPrice(inventoryInformation.getMaterialCoding(), inventoryInformation.getMaterialName(), inventoryInformation.getWarehouseId());
+            Record recordV2 = new Record();
+            recordV2.setMaterialName(inventoryInformationIsExist.getMaterialName());
+            recordV2.setMaterialCoding(inventoryInformationIsExist.getMaterialCoding());
+            recordV2.setBatch(inventoryInformationIsExist.getBatch());
+            recordV2.setCargoSpaceId(inventoryInformationIsExist.getCargoSpaceId());
+            recordV2.setInventoryType(1);
+            recordV2.setType(1);
+            recordV2.setInventoryCredit(inventoryInformationIsExist.getInventoryCredit());
+            recordV2.setInventoryAlteration(inventoryInformation.getInventoryCredit());
+            recordV2.setConsignor(addInventoryInformationDTO.getConsignor());
+            recordV2.setChangeTime(LocalDateTime.now());
+            recordV2.setCreateTime(LocalDateTime.now());
+            //TODO
+            recordService.addRecord(recordV2);
+        }
         //将同一库、同一物料所有的推荐存放位置放入list
         List<Map<String, Object>> maplist = inventoryInformationMapper.selectMaps(queryWrapper);
 
@@ -273,21 +279,24 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
             String resultString = StringUtil.join(strings, ",");
             inventoryInformationUpdate.setPriorityStorageLocation(resultString);
             int result = inventoryInformationMapper.update(inventoryInformationUpdate, updateWrapper);
-            materialPrice.addMaterialPrice(inventoryInformationUpdate.getMaterialCoding(), inventoryInformationUpdate.getMaterialName(), inventoryInformationUpdate.getWarehouseId());
-            Record recordV3 = new Record();
-            recordV3.setMaterialName(inventoryInformationIsExist.getMaterialName());
-            recordV3.setMaterialCoding(inventoryInformationIsExist.getMaterialCoding());
-            recordV3.setBatch(inventoryInformationIsExist.getBatch());
-            recordV3.setCargoSpaceId(inventoryInformationIsExist.getCargoSpaceId());
-            recordV3.setInventoryType(1);
-            recordV3.setType(1);
-            recordV3.setInventoryCredit(inventoryInformationIsExist.getInventoryCredit());
-            recordV3.setInventoryAlteration(inventoryInformation.getInventoryCredit());
-            recordV3.setConsignor(addInventoryInformationDTO.getConsignor());
-            recordV3.setChangeTime(LocalDateTime.now());
-            recordV3.setCreateTime(LocalDateTime.now());
-            //TODO
-            recordService.addRecord(recordV3);
+            if(result>0){
+                materialPrice.addMaterialPrice(inventoryInformationUpdate.getMaterialCoding(), inventoryInformationUpdate.getMaterialName(), inventoryInformationUpdate.getWarehouseId());
+                Record recordV3 = new Record();
+                recordV3.setMaterialName(inventoryInformationIsExist.getMaterialName());
+                recordV3.setMaterialCoding(inventoryInformationIsExist.getMaterialCoding());
+                recordV3.setBatch(inventoryInformationIsExist.getBatch());
+                recordV3.setCargoSpaceId(inventoryInformationIsExist.getCargoSpaceId());
+                recordV3.setInventoryType(1);
+                recordV3.setType(1);
+                recordV3.setInventoryCredit(inventoryInformationIsExist.getInventoryCredit());
+                recordV3.setInventoryAlteration(inventoryInformation.getInventoryCredit());
+                recordV3.setConsignor(addInventoryInformationDTO.getConsignor());
+                recordV3.setChangeTime(LocalDateTime.now());
+                recordV3.setCreateTime(LocalDateTime.now());
+                //TODO
+                recordService.addRecord(recordV3);
+            }
+
             return Result.success("新增库存成功");
         } else {
             return Result.failure(ErrorCode.SYSTEM_ERROR, "新增库存失败！");

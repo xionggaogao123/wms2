@@ -196,6 +196,7 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
                         for (BalanceLibraryRecord balanceLibraryRecord : balanceLibraryRecordList) {
                             BalanceLibraryRecordVo recordVo = new BalanceLibraryRecordVo();
                             BeanUtil.copyProperties(balanceLibraryRecord, recordVo);
+                            recordVo.setBalanceLibraryDetailId(bld.getId());
                             if (balanceLibraryRecord.getConsignor() == 0) {
                                 //自有
                                 recordVo.setOutWarehouseId(wm.getWarehouseId());

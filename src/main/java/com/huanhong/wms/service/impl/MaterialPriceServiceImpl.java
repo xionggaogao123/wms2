@@ -88,6 +88,16 @@ public class MaterialPriceServiceImpl implements MaterialPriceService {
                         materialPrice.setCreateTime(LocalDateTime.now());
                         materialPriceMapper.insert(materialPrice);
                     }else{
+                        BigDecimal unitPrice = list.getUnitPrice();
+                        Double inventoryCredit = list.getInventoryCredit();
+                        materialPrice.setWarehouseName(list.getWarehouseId());
+                        materialPrice.setWarehouseId(list.getWarehouseId());
+                        //求 库存表中的某种物料每个批次的单价*对应批次的数量
+                        BigDecimal multiply = unitPrice.multiply(new BigDecimal(inventoryCredit));
+                        log.info("数据为:{}",inventoryCredit+"====="+multiply);
+                        managementFeeRate.getAndSet(list.getManagementFeeRate());
+                        amount.addAndGet(multiply.doubleValue());
+                        atomicDouble.addAndGet(inventoryCredit);
                         BigDecimal bigDecimal = new BigDecimal(atomicDouble.get());
                         BigDecimal bigDecimal1 = new BigDecimal(amount.get());
                         BigDecimal avgBuyPrice = bigDecimal1.divide(bigDecimal,15,BigDecimal.ROUND_HALF_UP);

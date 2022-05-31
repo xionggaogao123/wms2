@@ -16,6 +16,7 @@ import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
 import com.huanhong.wms.entity.CargoSpaceManagement;
 import com.huanhong.wms.entity.InventoryInformation;
+import com.huanhong.wms.entity.Record;
 import com.huanhong.wms.entity.dto.AddInventoryInformationDTO;
 import com.huanhong.wms.entity.dto.UpdateInventoryInformationDTO;
 import com.huanhong.wms.entity.param.InventoryInfoPage;
@@ -29,6 +30,7 @@ import com.huanhong.wms.properties.OssProperties;
 import com.huanhong.wms.service.ICargoSpaceManagementService;
 import com.huanhong.wms.service.IInventoryInformationService;
 import com.huanhong.wms.service.MaterialPriceService;
+import com.huanhong.wms.service.RecordService;
 import org.apache.poi.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,6 +59,9 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 
     @Resource
     private MaterialPriceService materialPrice;
+
+    @Resource
+    private RecordService recordService;
 
     @Resource
     private InventoryInformationMapper inventoryInformationMapper;
@@ -94,11 +99,11 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 
 //      query.like(StringUtils.isNotBlank(inventoryInformationVO.getCargoSpaceId()), "cargo_space_id", inventoryInformationVO.getCargoSpaceId());
 
-        query.like(StringUtils.isNotBlank(inventoryInformationVO.getWarehouseId()),"warehouse_id",inventoryInformationVO.getWarehouseId());
+        query.like(StringUtils.isNotBlank(inventoryInformationVO.getWarehouseId()), "warehouse_id", inventoryInformationVO.getWarehouseId());
 
-        query.like(StringUtils.isNotBlank(inventoryInformationVO.getWarehouseAreaId()),"warehouse_area_id",inventoryInformationVO.getWarehouseAreaId());
+        query.like(StringUtils.isNotBlank(inventoryInformationVO.getWarehouseAreaId()), "warehouse_area_id", inventoryInformationVO.getWarehouseAreaId());
 
-        query.like(StringUtils.isNotBlank(inventoryInformationVO.getWarehouseName()),"warehouse_name",inventoryInformationVO.getWarehouseName());
+        query.like(StringUtils.isNotBlank(inventoryInformationVO.getWarehouseName()), "warehouse_name", inventoryInformationVO.getWarehouseName());
 
         query.like(StringUtils.isNotBlank(inventoryInformationVO.getCargoSpaceId()), "cargo_space_id", inventoryInformationVO.getCargoSpaceId());
 
@@ -108,11 +113,11 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 
         query.like(StringUtils.isNotBlank(inventoryInformationVO.getSupplier()), "supplier", inventoryInformationVO.getSupplier());
 
-        query.like(ObjectUtil.isNotNull(inventoryInformationVO.getIsVerification()),"is_verification",inventoryInformationVO.getIsVerification());
+        query.like(ObjectUtil.isNotNull(inventoryInformationVO.getIsVerification()), "is_verification", inventoryInformationVO.getIsVerification());
 
-        query.like(ObjectUtil.isNotNull(inventoryInformationVO.getIsEnter()),"is_enter",inventoryInformationVO.getIsEnter());
+        query.like(ObjectUtil.isNotNull(inventoryInformationVO.getIsEnter()), "is_enter", inventoryInformationVO.getIsEnter());
 
-        query.like(ObjectUtil.isNotNull(inventoryInformationVO.getIsOnshelf()),"is_onshelf",inventoryInformationVO.getIsOnshelf());
+        query.like(ObjectUtil.isNotNull(inventoryInformationVO.getIsOnshelf()), "is_onshelf", inventoryInformationVO.getIsOnshelf());
 
         return baseMapper.selectPage(inventoryInformationPage, query);
     }
@@ -136,13 +141,13 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         /**
          * vesion 对比veision 如果一致则更新并加一  不一致则不更新
          */
-        BeanUtil.copyProperties(updateInventoryInformationDTO,inventoryInformationOld);
+        BeanUtil.copyProperties(updateInventoryInformationDTO, inventoryInformationOld);
 
         /**
          * 比对前后库存数量是否相同，若不同则更新 最近一次库存数量更新时间字段
          */
-        int event = NumberUtil.compare(inventoryInformationOld.getInventoryCredit(),updateInventoryInformationDTO.getInventoryCredit());
-        if (event!=0){
+        int event = NumberUtil.compare(inventoryInformationOld.getInventoryCredit(), updateInventoryInformationDTO.getInventoryCredit());
+        if (event != 0) {
             inventoryInformationOld.setLastUpdateInventoryCredit(LocalDateTime.parse(DateUtil.now()));
         }
 
@@ -186,8 +191,22 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
 //            inventoryInformationIsExist.setVersion(12);
             //将查出的ID存入updateDTO
             int i = inventoryInformationMapper.updateById(inventoryInformationIsExist);
-//            materialPrice.addMaterialPrice(inventoryInformationIsExist.getMaterialCoding(),inventoryInformationIsExist.getMaterialName(),inventoryInformationIsExist.getWarehouseId());
-
+            materialPrice.addMaterialPrice(inventoryInformationIsExist.getMaterialCoding(), inventoryInformationIsExist.getMaterialName(), inventoryInformationIsExist.getWarehouseId());
+            //新增出库记录
+            Record record = new Record();
+            record.setMaterialName(inventoryInformationIsExist.getMaterialName());
+            record.setMaterialCoding(inventoryInformationIsExist.getMaterialCoding());
+            record.setBatch(inventoryInformationIsExist.getBatch());
+            record.setCargoSpaceId(inventoryInformationIsExist.getCargoSpaceId());
+            record.setInventoryType(1);
+            record.setType(1);
+            record.setInventoryCredit(inventoryCreditOld);
+            record.setInventoryAlteration(inventoryCreditNew);
+            record.setConsignor(addInventoryInformationDTO.getConsignor());
+            record.setChangeTime(LocalDateTime.now());
+            record.setCreateTime(LocalDateTime.now());
+            //TODO
+            recordService.addRecord(record);
             if (i > 0) {
                 return Result.success("此货位存在同批次的同种物料,已合并数量");
             } else {
@@ -210,8 +229,21 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         InventoryInformation inventoryInformation = new InventoryInformation();
         BeanUtil.copyProperties(addInventoryInformationDTO, inventoryInformation);
         int insert = inventoryInformationMapper.insert(inventoryInformation);
-//        materialPrice.addMaterialPrice(inventoryInformation.getMaterialCoding(),inventoryInformation.getMaterialName(),inventoryInformation.getWarehouseId());
-
+        materialPrice.addMaterialPrice(inventoryInformation.getMaterialCoding(), inventoryInformation.getMaterialName(), inventoryInformation.getWarehouseId());
+        Record recordV2 = new Record();
+        recordV2.setMaterialName(inventoryInformationIsExist.getMaterialName());
+        recordV2.setMaterialCoding(inventoryInformationIsExist.getMaterialCoding());
+        recordV2.setBatch(inventoryInformationIsExist.getBatch());
+        recordV2.setCargoSpaceId(inventoryInformationIsExist.getCargoSpaceId());
+        recordV2.setInventoryType(1);
+        recordV2.setType(1);
+        recordV2.setInventoryCredit(inventoryInformationIsExist.getInventoryCredit());
+        recordV2.setInventoryAlteration(inventoryInformation.getInventoryCredit());
+        recordV2.setConsignor(addInventoryInformationDTO.getConsignor());
+        recordV2.setChangeTime(LocalDateTime.now());
+        recordV2.setCreateTime(LocalDateTime.now());
+        //TODO
+        recordService.addRecord(recordV2);
 
         //将同一库、同一物料所有的推荐存放位置放入list
         List<Map<String, Object>> maplist = inventoryInformationMapper.selectMaps(queryWrapper);
@@ -241,7 +273,21 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
             String resultString = StringUtil.join(strings, ",");
             inventoryInformationUpdate.setPriorityStorageLocation(resultString);
             int result = inventoryInformationMapper.update(inventoryInformationUpdate, updateWrapper);
-//            materialPrice.addMaterialPrice(inventoryInformationUpdate.getMaterialCoding(),inventoryInformationUpdate.getMaterialName(),inventoryInformationUpdate.getWarehouseId());
+            materialPrice.addMaterialPrice(inventoryInformationUpdate.getMaterialCoding(), inventoryInformationUpdate.getMaterialName(), inventoryInformationUpdate.getWarehouseId());
+            Record recordV3 = new Record();
+            recordV3.setMaterialName(inventoryInformationIsExist.getMaterialName());
+            recordV3.setMaterialCoding(inventoryInformationIsExist.getMaterialCoding());
+            recordV3.setBatch(inventoryInformationIsExist.getBatch());
+            recordV3.setCargoSpaceId(inventoryInformationIsExist.getCargoSpaceId());
+            recordV3.setInventoryType(1);
+            recordV3.setType(1);
+            recordV3.setInventoryCredit(inventoryInformationIsExist.getInventoryCredit());
+            recordV3.setInventoryAlteration(inventoryInformation.getInventoryCredit());
+            recordV3.setConsignor(addInventoryInformationDTO.getConsignor());
+            recordV3.setChangeTime(LocalDateTime.now());
+            recordV3.setCreateTime(LocalDateTime.now());
+            //TODO
+            recordService.addRecord(recordV3);
             return Result.success("新增库存成功");
         } else {
             return Result.failure(ErrorCode.SYSTEM_ERROR, "新增库存失败！");
@@ -290,7 +336,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         queryWrapper.select("IFNULL(SUM(Inventory_credit),0) AS num");
         queryWrapper.eq("material_coding", materialCoding);
         queryWrapper.likeRight("cargo_space_id", warehouseId)
-                .and(wrapper->wrapper.eq("is_verification", 0).or().eq("is_enter", 0));
+                .and(wrapper -> wrapper.eq("is_verification", 0).or().eq("is_enter", 0));
         Map map = this.getMap(queryWrapper);
         Double num = (Double) map.get("num");
         return num;
@@ -302,8 +348,8 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         queryWrapper.select("IFNULL(SUM(Inventory_credit),0) AS num");
         queryWrapper.eq("material_coding", materialCoding);
         queryWrapper.likeRight("cargo_space_id", warehouseId);
-        queryWrapper.eq("is_verification",1);
-        queryWrapper.eq("is_enter",1);
+        queryWrapper.eq("is_verification", 1);
+        queryWrapper.eq("is_enter", 1);
         Map map = this.getMap(queryWrapper);
         Double num = (Double) map.get("num");
         return num;
@@ -325,7 +371,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     public List<InventoryInformation> getInventoryInformationListByMaterialCodingAndWarehouseId(String materialCoding, String warehouseId) {
         QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("material_coding", materialCoding);
-        queryWrapper.ne("inventory_credit",0);
+        queryWrapper.ne("inventory_credit", 0);
         queryWrapper.likeRight("cargo_space_id", warehouseId);
         return inventoryInformationMapper.selectList(queryWrapper);
     }
@@ -334,9 +380,9 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     public List<InventoryInformation> getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeZero(String materialCoding, String warehouseId) {
         QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("material_coding", materialCoding);
-        queryWrapper.ne("inventory_credit",0);
+        queryWrapper.ne("inventory_credit", 0);
         queryWrapper.likeRight("cargo_space_id", warehouseId)
-                .and(wrapper->wrapper.eq("is_verification", 0).or().eq("is_enter", 0));
+                .and(wrapper -> wrapper.eq("is_verification", 0).or().eq("is_enter", 0));
         return inventoryInformationMapper.selectList(queryWrapper);
     }
 
@@ -344,45 +390,45 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     public List<InventoryInformation> getInventoryInformationListByMaterialCodingAndWarehouseIdOutTypeOne(String materialCoding, String warehouseId) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("material_coding", materialCoding);
-        queryWrapper.ne("inventory_credit",0);
+        queryWrapper.ne("inventory_credit", 0);
         queryWrapper.likeRight("cargo_space_id", warehouseId);
-        queryWrapper.eq("is_verification",1);
-        queryWrapper.eq("is_enter",1);
+        queryWrapper.eq("is_verification", 1);
+        queryWrapper.eq("is_enter", 1);
         return inventoryInformationMapper.selectList(queryWrapper);
     }
 
     @Override
     public List<InventoryInformation> getInventoryInformationListByWarehouseId(String warehouseId) {
         QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
-        queryWrapper.ne("inventory_credit",0);
-        queryWrapper.eq("warehouse_id",warehouseId);
+        queryWrapper.ne("inventory_credit", 0);
+        queryWrapper.eq("warehouse_id", warehouseId);
         return inventoryInformationMapper.selectList(queryWrapper);
     }
 
     @Override
     public List<InventoryInformation> getInventoryInformationListByWarehouseIdAndInventoryType(String warehouseId, Integer InventoryType) {
         QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
-        queryWrapper.ne("inventory_credit",0);
-        queryWrapper.eq("warehouse_id",warehouseId);
+        queryWrapper.ne("inventory_credit", 0);
+        queryWrapper.eq("warehouse_id", warehouseId);
         queryWrapper.likeRight("cargo_space_id", warehouseId);
-        if (InventoryType==0){
-                    queryWrapper.and(wrapper->wrapper.eq("is_verification", 0).or().eq("is_enter", 0));
+        if (InventoryType == 0) {
+            queryWrapper.and(wrapper -> wrapper.eq("is_verification", 0).or().eq("is_enter", 0));
         }
-        queryWrapper.eq("is_verification",1);
-        queryWrapper.eq("is_enter",1);
+        queryWrapper.eq("is_verification", 1);
+        queryWrapper.eq("is_enter", 1);
         return inventoryInformationMapper.selectList(queryWrapper);
     }
 
     @Override
     public List<InventoryInformation> getInventoryInformationListByWarehouseIdAndConsignor(String warehouseId, Integer consignor) {
         QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
-        queryWrapper.ne("inventory_credit",0);
-        queryWrapper.eq("warehouse_id",warehouseId);
+        queryWrapper.ne("inventory_credit", 0);
+        queryWrapper.eq("warehouse_id", warehouseId);
         queryWrapper.likeRight("cargo_space_id", warehouseId);
-        if (consignor==0){
-            queryWrapper.eq("consignor",consignor);
-        }else {
-            queryWrapper.ne("consignor",0);
+        if (consignor == 0) {
+            queryWrapper.eq("consignor", consignor);
+        } else {
+            queryWrapper.ne("consignor", 0);
         }
         return inventoryInformationMapper.selectList(queryWrapper);
     }
@@ -390,19 +436,19 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     @Override
     public List<InventoryInformation> getInventoryInformationListByWarehouseIdAndInventoryTypeAndConsignor(String warehouseId, Integer InventoryType, Integer consignor) {
         QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
-        queryWrapper.ne("inventory_credit",0);
-        queryWrapper.eq("warehouse_id",warehouseId);
+        queryWrapper.ne("inventory_credit", 0);
+        queryWrapper.eq("warehouse_id", warehouseId);
         queryWrapper.likeRight("cargo_space_id", warehouseId);
-        if (InventoryType==0){
-            queryWrapper.and(wrapper->wrapper.eq("is_verification", 0).or().eq("is_enter", 0));
-        }else {
-            queryWrapper.eq("is_verification",1);
-            queryWrapper.eq("is_enter",1);
+        if (InventoryType == 0) {
+            queryWrapper.and(wrapper -> wrapper.eq("is_verification", 0).or().eq("is_enter", 0));
+        } else {
+            queryWrapper.eq("is_verification", 1);
+            queryWrapper.eq("is_enter", 1);
         }
-        if (consignor==0){
-            queryWrapper.eq("consignor",consignor);
-        }else {
-            queryWrapper.ne("consignor",0);
+        if (consignor == 0) {
+            queryWrapper.eq("consignor", consignor);
+        } else {
+            queryWrapper.ne("consignor", 0);
         }
         return inventoryInformationMapper.selectList(queryWrapper);
     }
@@ -422,7 +468,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         HashMap hashMap = new HashMap();
 
         QueryWrapper<InventoryInformation> queryWrapper = new QueryWrapper<>();
-        queryWrapper.select("unit_price","sales_unit_price");
+        queryWrapper.select("unit_price", "sales_unit_price");
         queryWrapper.eq("material_coding", materialCoding);
 
         DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -434,25 +480,25 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         String createDateStart = dtf1.format(previousDate);
         String createDateEnd = dtf1.format(nowDate);
         queryWrapper.apply("UNIX_TIMESTAMP(create_time) >= UNIX_TIMESTAMP('" + createDateStart + "')")
-                    .apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + createDateEnd + "')");
+                .apply("UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP('" + createDateEnd + "')");
         List<InventoryInformation> inventoryInformationList = inventoryInformationMapper.selectList(queryWrapper);
-        if (ObjectUtil.isAllEmpty(inventoryInformationList)){
-            hashMap.put("unit_price",BigDecimal.valueOf(0));
-            hashMap.put("sales_unit_price",BigDecimal.valueOf(0));
+        if (ObjectUtil.isAllEmpty(inventoryInformationList)) {
+            hashMap.put("unit_price", BigDecimal.valueOf(0));
+            hashMap.put("sales_unit_price", BigDecimal.valueOf(0));
             return hashMap;
         }
 
         BigDecimal uniPriceSum = BigDecimal.valueOf(0);
         BigDecimal salesPriceSum = BigDecimal.valueOf(0);
-        for (InventoryInformation inventoryInformation:inventoryInformationList
-             ) {
+        for (InventoryInformation inventoryInformation : inventoryInformationList
+        ) {
             //单价(泰丰盛和)
-            uniPriceSum = NumberUtil.add(uniPriceSum,inventoryInformation.getUnitPrice());
+            uniPriceSum = NumberUtil.add(uniPriceSum, inventoryInformation.getUnitPrice());
             //单价(使用单位)
-            salesPriceSum = NumberUtil.add(salesPriceSum,inventoryInformation.getSalesUnitPrice());
+            salesPriceSum = NumberUtil.add(salesPriceSum, inventoryInformation.getSalesUnitPrice());
         }
-        hashMap.put("unit_price",NumberUtil.div(uniPriceSum,inventoryInformationList.size()));
-        hashMap.put("sales_unit_price",NumberUtil.div(salesPriceSum,inventoryInformationList.size()));
+        hashMap.put("unit_price", NumberUtil.div(uniPriceSum, inventoryInformationList.size()));
+        hashMap.put("sales_unit_price", NumberUtil.div(salesPriceSum, inventoryInformationList.size()));
         return hashMap;
     }
 
@@ -463,7 +509,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         for (InventoryInfoVo ii : pageData.getRecords()) {
             ii.setIndex(i);
             ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
-            if(null != ii.getInDate()){
+            if (null != ii.getInDate()) {
                 ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
             }
             i++;
@@ -478,7 +524,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         for (InventoryInfoVo ii : pageData.getRecords()) {
             ii.setIndex(i);
             ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
-            if(null != ii.getInDate()){
+            if (null != ii.getInDate()) {
                 ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
             }
             i++;
@@ -498,7 +544,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         for (InventoryInfoVo ii : pageData.getRecords()) {
             ii.setIndex(i);
             ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
-            if(null != ii.getInDate()){
+            if (null != ii.getInDate()) {
                 ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
             }
             i++;
@@ -513,7 +559,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         for (InventoryInfoVo ii : pageData.getRecords()) {
             ii.setIndex(i);
             ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
-            if(null != ii.getInDate()){
+            if (null != ii.getInDate()) {
                 ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
             }
             i++;
@@ -534,7 +580,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         for (InventoryInfoVo ii : pageData.getRecords()) {
             ii.setIndex(i);
             ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
-            if(null != ii.getInDate()){
+            if (null != ii.getInDate()) {
                 ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
             }
             i++;
@@ -549,7 +595,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         for (InventoryInfoVo ii : pageData.getRecords()) {
             ii.setIndex(i);
             ii.setConsignorStr(DataUtil.getConsignor(ii.getConsignor()));
-            if(null != ii.getInDate()){
+            if (null != ii.getInDate()) {
                 ii.setInDay(DateUtil.betweenDay(ii.getInDate(), new Date(), true));
             }
             i++;
@@ -583,10 +629,10 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
     @Override
     public Result<Object> getPreExpirationWarning(String warehouseId, Integer days) {
         Map<String, Object> map = new HashMap<>();
-        if (days == null || days ==0 ){
+        if (days == null || days == 0) {
             days = 30;
         }
-        List<PreExpirationInventoryInfoVo> vos = inventoryInformationMapper.getPreExpirationWarningByParam(warehouseId,days);
+        List<PreExpirationInventoryInfoVo> vos = inventoryInformationMapper.getPreExpirationWarningByParam(warehouseId, days);
         map.put("material", vos);
         return Result.success(map);
     }

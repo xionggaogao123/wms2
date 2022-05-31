@@ -6,12 +6,14 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.huanhong.wms.SuperServiceImpl;
 import com.huanhong.wms.bean.ErrorCode;
 import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.entity.MaterialPrice;
 import com.huanhong.wms.entity.PlanUseOutDetails;
 import com.huanhong.wms.entity.Record;
 import com.huanhong.wms.entity.dto.AddPlanUseOutDetailsDTO;
 import com.huanhong.wms.entity.dto.UpdatePlanUseOutDetailsDTO;
 import com.huanhong.wms.mapper.PlanUseOutDetailsMapper;
 import com.huanhong.wms.service.IPlanUseOutDetailsService;
+import com.huanhong.wms.service.MaterialPriceService;
 import com.huanhong.wms.service.RecordService;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +37,9 @@ public class PlanUseOutDetailsServiceImpl extends SuperServiceImpl<PlanUseOutDet
     private PlanUseOutDetailsMapper planUseOutDetailsMapper;
 
     @Resource
+    private MaterialPriceService materialPriceService;
+
+    @Resource
     private RecordService recordService;
 
     /**
@@ -50,6 +55,8 @@ public class PlanUseOutDetailsServiceImpl extends SuperServiceImpl<PlanUseOutDet
             listAddDto.forEach(add->{
                 BeanUtil.copyProperties(add,planUseOutDetails);
                 planUseOutDetailsMapper.insert(planUseOutDetails);
+                //TODO 金额计算
+                materialPriceService.addMaterialPrice(add.getMaterialCoding(), add.getMaterialName(), add.getWarehouseId());
                 //添加出入库明细
                 Record record = new Record();
                 record.setMaterialCoding(add.getMaterialCoding());

@@ -3,6 +3,7 @@ package com.huanhong.wms.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.entity.AllocationEnter;
 import com.huanhong.wms.entity.AllocationEnterDetails;
 import com.huanhong.wms.entity.AllocationOutDetails;
 import com.huanhong.wms.entity.dto.AddAllocationEnterDetailsDTO;
@@ -10,8 +11,10 @@ import com.huanhong.wms.entity.dto.AddAllocationOutDetailsDTO;
 import com.huanhong.wms.entity.dto.UpdateAllocationEnterDetailsDTO;
 import com.huanhong.wms.entity.dto.UpdateAllocationOutDetailsDTO;
 import com.huanhong.wms.mapper.AllocationEnterDetailsMapper;
+import com.huanhong.wms.mapper.AllocationEnterMapper;
 import com.huanhong.wms.service.IAllocationEnterDetailsService;
 import com.huanhong.wms.SuperServiceImpl;
+import com.huanhong.wms.service.MaterialPriceService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -32,6 +35,12 @@ public class AllocationEnterDetailsServiceImpl extends SuperServiceImpl<Allocati
 
     @Resource
     private AllocationEnterDetailsMapper allocationEnterDetailsMapper;
+
+    @Resource
+    private AllocationEnterMapper allocationEnterMapper;
+
+    @Resource
+    private MaterialPriceService materialPriceService;
 
 
     @Override
@@ -66,6 +75,12 @@ public class AllocationEnterDetailsServiceImpl extends SuperServiceImpl<Allocati
             allocationEnterDetailsOld = getAllocationEnterDetailsById(updateAllocationEnterDetailsDTO.getId());
             BeanUtil.copyProperties(updateAllocationEnterDetailsDTO, allocationEnterDetailsOld);
             int update = allocationEnterDetailsMapper.updateById(allocationEnterDetailsOld);
+//            //TODO 计算金额 && 添加入库记录
+//            //查询调拨主表数据
+//            QueryWrapper<AllocationEnter> queryWrapper = new QueryWrapper<>();
+//            queryWrapper.eq("allocation_enter_number",updateAllocationEnterDetailsDTO.get);
+//            allocationEnterMapper.selectOne();
+////            materialPriceService.addMaterialPrice(allocationEnterDetailsOld.getMaterialCoding(),allocationEnterDetailsOld.getWarehouseId());
             if (update > 0) {
                 listSuccess.add(updateAllocationEnterDetailsDTO);
             } else {

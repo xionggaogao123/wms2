@@ -1540,6 +1540,7 @@ public class EntityUtils {
                 jsonObject.put("name", "最后更新时间");
                 jsonObject.put("type", "text");
                 jsonObject.put("class", "readOnly");
+                jsonObject.put("sort",24);
                 return jsonObject;
             case "warehouseAreaId":
                 jsonObject.put("name", "库区编号");

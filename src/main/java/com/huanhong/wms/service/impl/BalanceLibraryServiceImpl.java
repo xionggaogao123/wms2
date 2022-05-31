@@ -204,6 +204,7 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
                                 Double inventoryCredit = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(), bld.getMaterialCoding(), String.valueOf(1));
                                 recordVo.setInventoryCredit(inventoryCredit);
                                 recordVo.setIsOwn(1);
+                                recordVo.setBalanceLibraryDetailId(bld.getId());
                                 recordVo.setConsignor(0);
                                 recordVos.add(recordVo);
                                 if (balanceLibraryRecordList.size() == 1) {
@@ -213,6 +214,7 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
                                     Double inventoryCredit2 = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(), bld.getMaterialCoding(), String.valueOf(0));
                                     recordVo2.setInventoryCredit(inventoryCredit2);
                                     recordVo2.setIsOwn(0);
+                                    recordVo2.setBalanceLibraryDetailId(bld.getId());
                                     Integer consignor = variables.stream().filter(v -> v.getParentValue().equals(wm.getWarehouseId())).mapToInt(v -> Convert.toInt(v.getValue())).findFirst().getAsInt();
                                     recordVo2.setConsignor(consignor);
                                     recordVos.add(recordVo2);
@@ -224,6 +226,7 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
                                 Double inventoryCredit2 = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(), bld.getMaterialCoding(), String.valueOf(0));
                                 recordVo2.setInventoryCredit(inventoryCredit2);
                                 recordVo2.setIsOwn(0);
+                                recordVo2.setBalanceLibraryDetailId(bld.getId());
                                 Integer consignor = variables.stream().filter(v -> v.getParentValue().equals(wm.getWarehouseId())).mapToInt(v -> Convert.toInt(v.getValue())).findFirst().getAsInt();
                                 recordVo2.setConsignor(consignor);
                                 recordVos.add(recordVo2);
@@ -235,6 +238,7 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
                                     recordVo3.setInventoryCredit(inventoryCredit);
                                     recordVo3.setIsOwn(1);
                                     recordVo3.setConsignor(0);
+                                    recordVo3.setBalanceLibraryDetailId(bld.getId());
                                     recordVos.add(recordVo3);
                                 }
                             }

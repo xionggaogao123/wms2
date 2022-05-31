@@ -196,7 +196,6 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
                         for (BalanceLibraryRecord balanceLibraryRecord : balanceLibraryRecordList) {
                             BalanceLibraryRecordVo recordVo = new BalanceLibraryRecordVo();
                             BeanUtil.copyProperties(balanceLibraryRecord, recordVo);
-                            recordVo.setBalanceLibraryDetailId(bld.getId());
                             if (balanceLibraryRecord.getConsignor() == 0) {
                                 //自有
                                 recordVo.setOutWarehouseId(wm.getWarehouseId());
@@ -205,6 +204,10 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
                                 recordVo.setInventoryCredit(inventoryCredit);
                                 recordVo.setIsOwn(1);
                                 recordVo.setBalanceLibraryDetailId(bld.getId());
+                                recordVo.setMaterialCoding(bld.getMaterialCoding());
+                                recordVo.setBalanceLibraryNo(bld.getBalanceLibraryNo());
+                                recordVo.setMaterialId(bld.getMaterialId());
+                                recordVo.setMaterialName(bld.getMaterialName());
                                 recordVo.setConsignor(0);
                                 recordVos.add(recordVo);
                                 if (balanceLibraryRecordList.size() == 1) {
@@ -215,6 +218,10 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
                                     recordVo2.setInventoryCredit(inventoryCredit2);
                                     recordVo2.setIsOwn(0);
                                     recordVo2.setBalanceLibraryDetailId(bld.getId());
+                                    recordVo2.setMaterialCoding(bld.getMaterialCoding());
+                                    recordVo2.setBalanceLibraryNo(bld.getBalanceLibraryNo());
+                                    recordVo2.setMaterialId(bld.getMaterialId());
+                                    recordVo2.setMaterialName(bld.getMaterialName());
                                     Integer consignor = variables.stream().filter(v -> v.getParentValue().equals(wm.getWarehouseId())).mapToInt(v -> Convert.toInt(v.getValue())).findFirst().getAsInt();
                                     recordVo2.setConsignor(consignor);
                                     recordVos.add(recordVo2);
@@ -227,6 +234,10 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
                                 recordVo2.setInventoryCredit(inventoryCredit2);
                                 recordVo2.setIsOwn(0);
                                 recordVo2.setBalanceLibraryDetailId(bld.getId());
+                                recordVo2.setMaterialCoding(bld.getMaterialCoding());
+                                recordVo2.setBalanceLibraryNo(bld.getBalanceLibraryNo());
+                                recordVo2.setMaterialId(bld.getMaterialId());
+                                recordVo2.setMaterialName(bld.getMaterialName());
                                 Integer consignor = variables.stream().filter(v -> v.getParentValue().equals(wm.getWarehouseId())).mapToInt(v -> Convert.toInt(v.getValue())).findFirst().getAsInt();
                                 recordVo2.setConsignor(consignor);
                                 recordVos.add(recordVo2);
@@ -239,6 +250,10 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
                                     recordVo3.setIsOwn(1);
                                     recordVo3.setConsignor(0);
                                     recordVo3.setBalanceLibraryDetailId(bld.getId());
+                                    recordVo3.setMaterialCoding(bld.getMaterialCoding());
+                                    recordVo3.setBalanceLibraryNo(bld.getBalanceLibraryNo());
+                                    recordVo3.setMaterialId(bld.getMaterialId());
+                                    recordVo3.setMaterialName(bld.getMaterialName());
                                     recordVos.add(recordVo3);
                                 }
                             }
@@ -252,12 +267,22 @@ public class BalanceLibraryServiceImpl extends SuperServiceImpl<BalanceLibraryMa
                         recordVo.setInventoryCredit(inventoryCredit);
                         recordVo.setIsOwn(1);
                         recordVo.setConsignor(0);
+                        recordVo.setBalanceLibraryDetailId(bld.getId());
+                        recordVo.setMaterialCoding(bld.getMaterialCoding());
+                        recordVo.setBalanceLibraryNo(bld.getBalanceLibraryNo());
+                        recordVo.setMaterialId(bld.getMaterialId());
+                        recordVo.setMaterialName(bld.getMaterialName());
                         recordVos.add(recordVo);
                         BalanceLibraryRecordVo recordVo2 = new BalanceLibraryRecordVo();
                         BeanUtil.copyProperties(recordVo, recordVo2);
                         Double inventoryCredit2 = inventoryInformationMapper.sumInventoryCreditByWarehouseMaterialCoding(wm.getWarehouseId(), bld.getMaterialCoding(), String.valueOf(0));
                         recordVo2.setInventoryCredit(inventoryCredit2);
                         recordVo2.setIsOwn(0);
+                        recordVo2.setBalanceLibraryDetailId(bld.getId());
+                        recordVo2.setMaterialCoding(bld.getMaterialCoding());
+                        recordVo2.setBalanceLibraryNo(bld.getBalanceLibraryNo());
+                        recordVo2.setMaterialId(bld.getMaterialId());
+                        recordVo2.setMaterialName(bld.getMaterialName());
                         Integer consignor = variables.stream().filter(v -> v.getParentValue().equals(wm.getWarehouseId())).mapToInt(v -> Convert.toInt(v.getValue())).findFirst().getAsInt();
                         recordVo2.setConsignor(consignor);
                         recordVos.add(recordVo2);

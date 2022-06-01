@@ -664,10 +664,6 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                             QueryWrapper<PlanUseOutDetails> queryWrapper = new QueryWrapper<PlanUseOutDetails>();
                             queryWrapper.eq("use_planning_document_number",planUseOut.getDocumentNumber());
                             List<PlanUseOutDetails> planUseOutDetails = planUseOutDetailsMapper.selectList(queryWrapper);
-                            planUseOutDetails.forEach(p->{
-                                materialPriceService.addMaterialPrice(p.getMaterialCoding(),p.getMaterialName(),p.getWarehouseId());
-                            });
-
                             break;
                         //    入库
                         case "enter_warehouse":
@@ -707,21 +703,6 @@ public class ProcessAssignmentServiceImpl extends SuperServiceImpl<ProcessAssign
                                         updateInventoryInformationDTO.setDocumentNumber(enterWarehouse.getDocumentNumber());
 
                                         inventoryInformationService.updateInventoryInformation(updateInventoryInformationDTO);
-                                        //TODO 计算价格入库
-                                        materialPriceService.addMaterialPrice(inventoryInformation.getMaterialCoding(),inventoryInformation.getMaterialName(),inventoryInformation.getWarehouseId());
-                                        Record record = new Record();
-                                        record.setMaterialCoding(inventoryInformation.getMaterialCoding());
-                                        record.setMaterialName(inventoryInformation.getMaterialName());
-                                        record.setBatch(inventoryInformation.getBatch());
-                                        record.setCargoSpaceId(inventoryInformation.getCargoSpaceId());
-                                        record.setConsignor(inventoryInformation.getConsignor());
-                                        record.setInventoryCredit(inventoryInformation.getInventoryCredit());
-                                        record.setType(2);
-                                        record.setInventoryType(1);
-                                        record.setInventoryCredit(inventoryInformation.getInventoryCredit());
-                                        record.setInventoryAlteration(enterWarehouseDetails.getActualQuantity());
-                                        record.setChangeTime(LocalDateTime.now());
-                                        record.setCreateTime(LocalDateTime.now());
                                     }
                                 }
                             }

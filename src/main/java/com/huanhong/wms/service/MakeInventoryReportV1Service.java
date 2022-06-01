@@ -1,6 +1,7 @@
 package com.huanhong.wms.service;
 
 import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.dto.request.UpdateMakeInventoryReportOneRequest;
 import com.huanhong.wms.dto.request.UpdateMakeInventoryReportRequest;
 
 import java.util.Map;
@@ -17,6 +18,13 @@ public interface MakeInventoryReportV1Service {
      * @return
      */
     Result update(UpdateMakeInventoryReportRequest request);
+
+    /**
+     * 更新盘点报告单个数据
+     * @param request
+     * @return
+     */
+    Result updateOne(UpdateMakeInventoryReportOneRequest request);
 
 
     /**

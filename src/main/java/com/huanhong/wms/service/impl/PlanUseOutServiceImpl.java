@@ -534,21 +534,6 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
                         BeanUtil.copyProperties(inventoryInformation, addInventoryInformationDTO);
                         addInventoryInformationDTO.setInventoryCredit(newInventory.doubleValue());
                         Result result = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
-                        //记录出入库数据
-                            //查询物料信息
-                            Record record = new Record();
-                            record.setMaterialName(inventoryInformation.getMaterialName());
-                            record.setMaterialCoding(outboundRecord.getMaterialCoding());
-                            record.setBatch(outboundRecord.getBatch());
-                            record.setCargoSpaceId(outboundRecord.getCargoSpaceId());
-                            record.setInventoryType(3);
-                            record.setType(2);
-                            record.setInventoryCredit(inventoryInformation.getInventoryCredit());
-                            record.setInventoryAlteration(tempNum.doubleValue());
-                            record.setConsignor(addInventoryInformationDTO.getConsignor());
-                            record.setChangeTime(LocalDateTime.now());
-                            record.setCreateTime(LocalDateTime.now());
-                            recordService.addRecord(record);
                         if (result.isOk()) {
                             //更新成功,明细中的数量改为tempNum
                             outboundRecord.setOutQuantity(tempNum.doubleValue());
@@ -570,19 +555,6 @@ public class PlanUseOutServiceImpl extends SuperServiceImpl<PlanUseOutMapper, Pl
                     BeanUtil.copyProperties(inventoryInformation, addInventoryInformationDTO);
                     addInventoryInformationDTO.setInventoryCredit(outboundRecord.getOutQuantity());
                     Result result = inventoryInformationService.addInventoryInformation(addInventoryInformationDTO);
-                    Record record = new Record();
-                    record.setMaterialName(inventoryInformation.getMaterialName());
-                    record.setMaterialCoding(outboundRecord.getMaterialCoding());
-                    record.setBatch(outboundRecord.getBatch());
-                    record.setCargoSpaceId(outboundRecord.getCargoSpaceId());
-                    record.setInventoryType(3);
-                    record.setType(2);
-                    record.setInventoryCredit(inventoryInformation.getInventoryCredit());
-                    record.setInventoryAlteration(outboundRecord.getOutQuantity());
-                    record.setConsignor(addInventoryInformationDTO.getConsignor());
-                    record.setChangeTime(LocalDateTime.now());
-                    record.setCreateTime(LocalDateTime.now());
-                    recordService.addRecord(record);
                     if (!result.isOk()) {
                         return result;
                     }

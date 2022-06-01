@@ -55,23 +55,6 @@ public class PlanUseOutDetailsServiceImpl extends SuperServiceImpl<PlanUseOutDet
             listAddDto.forEach(add->{
                 BeanUtil.copyProperties(add,planUseOutDetails);
                 planUseOutDetailsMapper.insert(planUseOutDetails);
-                //TODO 金额计算
-                materialPriceService.addMaterialPrice(add.getMaterialCoding(), add.getMaterialName(), add.getWarehouseId());
-                //添加出入库明细
-                Record record = new Record();
-                record.setMaterialCoding(add.getMaterialCoding());
-                record.setMaterialName(add.getMaterialName());
-                record.setBatch(add.getBatch());
-                record.setCargoSpaceId(add.getCargoSpaceId());
-                record.setConsignor(add.getConsignor());
-                record.setInventoryAlteration(add.getRequisitionQuantity());
-                record.setType(2);
-                record.setInventoryType(1);
-                record.setInventoryCredit(add.getInventoryCredit());
-                record.setInventoryCredit(add.getApprovalsQuantity());
-                record.setChangeTime(LocalDateTime.now());
-                record.setCreateTime(LocalDateTime.now());
-                recordService.addRecord(record);
             });
             return Result.success();
         }catch (Exception e){

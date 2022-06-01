@@ -78,5 +78,7 @@ public interface Constant {
     Integer CHECK_STATUS_1 = 1;
 
     Integer STATUS_9999 = 9999;
+
+    Double AMOUNT_0 = 0.000000000001;
 }
 

@@ -3,6 +3,7 @@ package com.huanhong.wms.controller;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.ApiSort;
 import com.huanhong.wms.bean.Result;
+import com.huanhong.wms.dto.request.UpdateMakeInventoryReportOneRequest;
 import com.huanhong.wms.dto.request.UpdateMakeInventoryReportRequest;
 import com.huanhong.wms.entity.dto.UpdateMakeInventoryReportAndDetailsDTO;
 import com.huanhong.wms.service.MakeInventoryReportV1Service;
@@ -50,6 +51,18 @@ public class MakeInventoryReportV1Controller {
         try {
             Map map = makeInventoryReportService.selectById(id);
             return Result.success(map);
+        } catch (Exception e) {
+            log.error("系统异常：更新盘点报告主表及明细失败！:{}",e.getMessage());
+            return Result.failure("系统异常，更新失败");
+        }
+    }
+
+    @ApiOperationSupport(order = 3)
+    @ApiOperation(value = "更新单个物料信息", notes = "生成代码")
+    @GetMapping("/updateOne")
+    public Result updateOne(@RequestBody UpdateMakeInventoryReportOneRequest request) {
+        try {
+            return makeInventoryReportService.updateOne(request);
         } catch (Exception e) {
             log.error("系统异常：更新盘点报告主表及明细失败！:{}",e.getMessage());
             return Result.failure("系统异常，更新失败");

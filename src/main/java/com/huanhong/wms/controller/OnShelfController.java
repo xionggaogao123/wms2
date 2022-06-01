@@ -346,7 +346,8 @@ public class OnShelfController extends BaseController {
                 QueryWrapper<CargoSpaceManagement> cargoSpaceManagementQueryWrapper = new QueryWrapper<>();
                 cargoSpaceManagementQueryWrapper .select("cargo_space_id","full");
                 cargoSpaceManagementQueryWrapper .likeRight("cargo_space_id",warehouseId);
-                cargoSpaceManagementQueryWrapper .eq("full",0).or().eq("full",1);
+                //.or().eq("full",1);
+                cargoSpaceManagementQueryWrapper .in("full",0,1);
                 cargoSpaceManagementQueryWrapper .notLike("cargo_space_id", "0000");
                 cargoSpaceManagementQueryWrapper .last("limit 5");
                 List<CargoSpaceManagement> cargoSpaceManagementList = cargoSpaceManagementMapper.selectList(cargoSpaceManagementQueryWrapper);
@@ -433,7 +434,7 @@ public class OnShelfController extends BaseController {
                 QueryWrapper<CargoSpaceManagement> cargoSpaceManagementQueryWrapper = new QueryWrapper<>();
                 cargoSpaceManagementQueryWrapper .select("cargo_space_id","full");
                 cargoSpaceManagementQueryWrapper .likeRight("cargo_space_id",warehouseId);
-                cargoSpaceManagementQueryWrapper .eq("full",0).or().eq("full",1);
+                cargoSpaceManagementQueryWrapper .in("full",0,1);
                 cargoSpaceManagementQueryWrapper .notLike("cargo_space_id", "0000");
                 cargoSpaceManagementQueryWrapper .last("limit 5");
                 List<CargoSpaceManagement> cargoSpaceManagementList = cargoSpaceManagementMapper.selectList(cargoSpaceManagementQueryWrapper);

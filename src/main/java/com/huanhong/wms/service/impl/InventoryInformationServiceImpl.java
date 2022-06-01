@@ -250,7 +250,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
             QueryWrapper<InventoryInformation> inventoryInformationQueryWrapper = new QueryWrapper<>();
             inventoryInformationQueryWrapper.eq("warehouse_id", warehouseId);
             inventoryInformationQueryWrapper.eq("material_coding",addInventoryInformationDTO.getMaterialCoding());
-            inventoryInformationQueryWrapper.likeLeft("inventory_credit",0);
+            inventoryInformationQueryWrapper.eq("inventory_credit",0);
             inventoryInformationQueryWrapper.likeLeft("cargo_space_id","0000");
             inventoryInformationQueryWrapper.eq("batch",addInventoryInformationDTO.getBatch());
             InventoryInformation i = inventoryInformationMapper.selectOne(inventoryInformationQueryWrapper);

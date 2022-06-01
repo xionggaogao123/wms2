@@ -155,6 +155,7 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
         }
 
         int i = inventoryInformationMapper.updateById(inventoryInformationOld);
+
         if (i > 0) {
             return Result.success("更新成功！");
         }
@@ -245,7 +246,15 @@ public class InventoryInformationServiceImpl extends SuperServiceImpl<InventoryI
             String resultString = StringUtil.join(strings, ",");
             inventoryInformationUpdate.setPriorityStorageLocation(resultString);
             int result = inventoryInformationMapper.update(inventoryInformationUpdate, updateWrapper);
-
+            //查询数据中是否有放在暂存区 且数量为 0 删除
+            QueryWrapper<InventoryInformation> inventoryInformationQueryWrapper = new QueryWrapper<>();
+            inventoryInformationQueryWrapper.eq("warehouse_id", warehouseId);
+            inventoryInformationQueryWrapper.eq("material_coding",addInventoryInformationDTO.getMaterialCoding());
+            inventoryInformationQueryWrapper.eq("sales_unit_price",addInventoryInformationDTO.getMaterialCoding());
+            inventoryInformationQueryWrapper.likeLeft("inventory_credit","0000");
+            inventoryInformationQueryWrapper.eq("batch",addInventoryInformationDTO.getBatch());
+            InventoryInformation i = inventoryInformationMapper.selectOne(inventoryInformationQueryWrapper);
+            inventoryInformationMapper.deleteById(i.getId());
             return Result.success("新增库存成功");
         } else {
             return Result.failure(ErrorCode.SYSTEM_ERROR, "新增库存失败！");
